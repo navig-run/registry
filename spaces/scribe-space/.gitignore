@@ -1,0 +1,56 @@
+# NAVIG Space — .gitignore
+
+# Space runtime caches
+.navig/state/
+.navig/proposed/
+
+# Agent output / working files (commit only final outputs)
+*.draft
+*.tmp
+*.bak
+
+# Inbox message queues
+.navig/inbox/*.msg
+.navig/inbox/*.pending
+
+# Secret / credential files
+.env
+.env.*
+*.secret
+vault/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Node (tools / formatters only)
+node_modules/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/settings.json
+*.swp
+*~
+
+# Export artefacts (keep sources, not exports)
+*.pdf
+*.docx
+*.epub
+
+# Working state (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml

@@ -1,0 +1,66 @@
+id: security-mesh
+name: Security Mesh
+version: "1.0.0"
+description: >
+  Continuous security formation covering VLAN/subnet segmentation, default-credential
+  and CVE auditing, and intrusion watch across the IoT fleet. Runs on schedule and
+  event triggers.
+
+agents:
+  lead: warden
+  supporting: [beacon]
+
+trigger_conditions:
+  - "Device found crossing its VLAN/segment boundary"
+  - "credential-audit accepts a default username/password"
+  - "Firmware version matches a known CVE"
+  - "Unexpected outbound connection (cloud phone-home) detected"
+  - "Scheduled: weekly full security review (Sunday 03:00)"
+  - "Manual: navig formation run security-mesh"
+
+action_scope:
+  - ALLOW: vlan-audit, credential-audit, firmware-check (passive)
+  - ALLOW: device-discover (passive, for rogue detection)
+  - ALLOW: write to .navig/memory/known-issues.json
+  - ALLOW: send alerts via inbox channel #security
+  - DENY: modify firewall / VLAN rules without operator approval
+  - DENY: quarantine or block devices automatically
+  - DENY: change device credentials without operator approval
+
+skills_used:
+  - vlan-audit
+  - credential-audit
+  - firmware-check
+  - device-discover
+
+workflows_used:
+  - security-review
+  - morning-mesh-sweep   # rogue-device alert step
+
+threat_response_policy:
+  mode: alert_only      # alert_only | auto_quarantine | auto_block
+  alert_channels: ["#security", "operator_inbox"]
+  incident_log: ".navig/memory/known-issues.json"
+
+baseline_files:
+  ports: ".navig/memory/iot-port-baseline.json"
+  segmentation: ".navig/wiki/segmentation.md"
+
+communication:
+  inbox_channel: "#security"
+  escalation: operator
+  alert_priority: high
+  notify_on:
+    - segment_boundary_crossed
+    - default_credentials_found
+    - cve_match
+    - rogue_device_detected
+
+context_memory:
+  read: [device-registry.json, iot-port-baseline.json, known-issues.json]
+  write: [known-issues.json]
+
+example_invocation: |
+  # Trigger immediate full security sweep:
+  navig formation run security-mesh
+  # warden will: verify VLAN isolation → probe default creds → CVE-check firmware → alert

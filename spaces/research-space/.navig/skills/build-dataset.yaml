@@ -1,0 +1,131 @@
+id: build-dataset
+name: Build Dataset
+version: "1.0.0"
+description: >
+  Merge raw crawl extractions for a dataset, normalize and deduplicate by key,
+  write a canonical CSV/JSON into datasets/, and load it into the research SQLite
+  database. Records dataset lineage and row-count deltas.
+category: data-engineering
+platform: [windows, linux, macos]
+formation: data-foundry
+author: research-space
+
+parameters:
+  - name: dataset
+    type: string
+    required: true
+    description: "Dataset name — matches the crawls/<dataset>-*.jsonl staging files"
+  - name: key
+    type: string
+    required: true
+    description: "Field (or comma-separated fields) that uniquely identifies a record"
+  - name: db
+    type: string
+    required: false
+    default: "out/research.db"
+    description: "SQLite database path to load the dataset into"
+
+steps:
+  - id: build
+    name: "Build and Load Dataset"
+    shell: auto
+    env:
+      NAVIG_PARAM_DATASET: "{{params.dataset}}"
+      NAVIG_PARAM_KEY: "{{params.key}}"
+      NAVIG_PARAM_DB: "{{params.db}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, glob, re, sqlite3
+      from datetime import datetime
+
+      dataset = os.environ.get("NAVIG_PARAM_DATASET", "")
+      key_fields = [k.strip() for k in os.environ.get("NAVIG_PARAM_KEY", "").split(",") if k.strip()]
+      db_path = os.environ.get("NAVIG_PARAM_DB", "") or "out/research.db"
+
+      if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", dataset):
+          print(f"ERROR: invalid dataset name {dataset!r} (use letters, digits, '.', '_' or '-').")
+          raise SystemExit(1)
+      if not key_fields:
+          print("ERROR: 'key' must name at least one field.")
+          raise SystemExit(1)
+
+      def qident(name):
+          return '"' + str(name).replace('"', '""') + '"'
+
+      staging = sorted(glob.glob(f"crawls/{dataset}-*.jsonl"))
+      if not staging:
+          print(f"No staged crawls found for '{dataset}' in crawls/.")
+          raise SystemExit(1)
+
+      rows, seen = [], set()
+      sources = set()
+      for path in staging:
+          with open(path, encoding="utf-8") as f:
+              for line in f:
+                  line = line.strip()
+                  if not line:
+                      continue
+                  rec = json.loads(line)
+                  if rec.get("_meta"):
+                      sources.add(rec.get("source"))
+                      continue
+                  # normalize: trim strings
+                  rec = {k: (v.strip() if isinstance(v, str) else v)
+                         for k, v in rec.items()}
+                  k = tuple(str(rec.get(f, "")).lower() for f in key_fields)
+                  if k in seen:
+                      continue
+                  seen.add(k)
+                  rows.append(rec)
+
+      os.makedirs("datasets", exist_ok=True)
+      out_json = f"datasets/{dataset}.json"
+      with open(out_json, "w", encoding="utf-8") as f:
+          json.dump(rows, f, indent=2, ensure_ascii=False)
+
+      # Load into SQLite
+      cols = sorted({c for r in rows for c in r.keys()})
+      os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
+      con = sqlite3.connect(db_path)
+      cur = con.cursor()
+      coldefs = ", ".join(f"{qident(c)} TEXT" for c in cols)
+      cur.execute(f"DROP TABLE IF EXISTS {qident(dataset)}")
+      cur.execute(f"CREATE TABLE {qident(dataset)} ({coldefs})")
+      for r in rows:
+          vals = [json.dumps(r[c]) if isinstance(r.get(c), (dict, list))
+                  else r.get(c) for c in cols]
+          ph = ", ".join("?" for _ in cols)
+          cur.execute(f"INSERT INTO {qident(dataset)} VALUES ({ph})", vals)
+      con.commit()
+      con.close()
+
+      # Record lineage
+      ds_path = ".navig/memory/datasets.json"
+      try:
+          with open(ds_path, encoding="utf-8") as f:
+              meta = json.load(f)
+      except Exception:
+          meta = {"version": "1.0", "space": "research", "datasets": []}
+      entry = next((d for d in meta["datasets"] if d["name"] == dataset), None)
+      record = {
+          "name": dataset, "rows": len(rows), "columns": cols,
+          "key": key_fields, "sources": sorted(s for s in sources if s),
+          "db": db_path, "json": out_json,
+          "built_at": datetime.utcnow().isoformat() + "Z"
+      }
+      if entry:
+          meta["datasets"][meta["datasets"].index(entry)] = record
+      else:
+          meta["datasets"].append(record)
+      os.makedirs(os.path.dirname(ds_path), exist_ok=True)
+      with open(ds_path, "w", encoding="utf-8") as f:
+          json.dump(meta, f, indent=2, ensure_ascii=False)
+
+      print(f"Dataset '{dataset}': {len(rows)} unique row(s) -> {out_json} "
+            f"and table \"{dataset}\" in {db_path}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: build

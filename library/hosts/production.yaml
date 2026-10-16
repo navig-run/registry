@@ -1,0 +1,39 @@
+# NAVIG Host Configuration — Production VPS
+# Copy this file to ~/.navig/hosts/<yourservername>.yaml and edit as needed.
+# File: ~/.navig/hosts/production.yaml
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Connection
+# ─────────────────────────────────────────────────────────────────────────────
+name: production
+host: myserver.example.com
+port: 22
+user: deploy
+ssh_key: ~/.ssh/id_ed25519
+
+# Default app when no app is specified with this host
+default_app: myapp
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Database (host-level root access for navig db commands)
+# Store the actual password in ~/.navig/vault/ — never plaintext here.
+# ─────────────────────────────────────────────────────────────────────────────
+database:
+  root_user: root
+  root_password: "{{ vault:production_db_root }}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Host metadata (informational — not used by the engine)
+# ─────────────────────────────────────────────────────────────────────────────
+metadata:
+  description: "Primary production VPS"
+  location: "Frankfurt, DE"
+  provider: "Hetzner"
+  os: "Ubuntu 22.04 LTS"
+  created_at: "2025-01-01T00:00:00Z"
+  last_updated: "2025-01-01T00:00:00Z"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Related app config files (library/apps/)
+# ─────────────────────────────────────────────────────────────────────────────
+# See: library/apps/myapp-staging.yaml

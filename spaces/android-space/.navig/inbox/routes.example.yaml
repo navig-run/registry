@@ -1,0 +1,98 @@
+schema_version: "1.0"
+space: android
+updated: "2026-07-10"
+description: >
+  Inbox routing configuration for the android space.
+  Messages arriving on each channel are dispatched to the owning agent.
+  Unrouted messages escalate to the space lead.
+
+# ─────────────────────────────────────────────
+# Channel Routes
+# ─────────────────────────────────────────────
+routes:
+  - channel: "#fleet"
+    owner: pixel
+    description: Device inventory, model/serial enumeration, Android-version & patch drift, battery/storage health
+    triggers:
+      - keyword: ["inventory", "device", "fleet", "model", "serial", "android version", "patch", "battery", "storage", "getprop"]
+      - formation: fleet-patrol
+    response_mode: immediate
+    notify_on: [new_device_detected, device_offline, battery_health_degraded]
+
+  - channel: "#bridge"
+    owner: bridge
+    description: ADB connectivity, USB/wireless debugging, pairing, tcpip transport, shell routing, mirroring
+    triggers:
+      - keyword: ["adb", "connect", "pair", "wireless debug", "tcpip", "unauthorized", "offline", "scrcpy", "mirror", "logcat"]
+      - formation: device-bridge
+    response_mode: immediate
+    notify_on: [device_connected, device_unauthorized, pairing_failed]
+
+  - channel: "#apps"
+    owner: installer
+    description: App install/uninstall, sideload APKs, split bundles, APK extraction, permission grants
+    triggers:
+      - keyword: ["install", "uninstall", "sideload", "apk", "package", "pm install", "extract", "grant", "revoke"]
+      - formation: app-ops
+    response_mode: immediate
+    notify_on: [install_complete, install_failed, untrusted_apk_detected]
+
+  - channel: "#privacy"
+    owner: scrub
+    description: Debloat, bloatware removal, permission audits, tracker blocking, safety review
+    triggers:
+      - keyword: ["debloat", "bloat", "disable-user", "permission", "tracker", "privacy", "audit", "over-privileged"]
+      - formation: privacy-hardening
+    response_mode: immediate
+    notify_on: [bloat_removed, over_privileged_app_detected, unsafe_removal_blocked]
+
+  - channel: "#backup"
+    owner: keeper
+    description: adb backup/restore, media pull, app-data export, phone migration
+    triggers:
+      - keyword: ["backup", "restore", "pull", "media", "migrate", "new phone", "export", "adb backup"]
+      - formation: backup-restore
+    response_mode: scheduled
+    schedule: "0 2 * * *"  # nightly at 02:00
+    notify_on: [backup_complete, backup_verify_failed, migration_complete]
+
+  - channel: "#control"
+    owner: mirror
+    description: Screen mirroring, input injection, screenshots, screen recording
+    triggers:
+      - keyword: ["mirror", "screen", "screenshot", "record", "tap", "swipe", "input", "control"]
+      - formation: device-bridge
+    response_mode: immediate
+    notify_on: [mirror_started, capture_saved]
+
+# ─────────────────────────────────────────────
+# Escalation Rules
+# ─────────────────────────────────────────────
+escalation:
+  unrouted_messages:
+    action: escalate_to_space_lead
+    space_lead: operator
+    notify: true
+    log: true
+
+  no_owner_available:
+    action: queue_and_notify
+    max_queue_minutes: 60
+    notify_operator: true
+
+  critical_unacknowledged:
+    severity: critical
+    unacknowledged_minutes: 5
+    action: escalate_to_operator
+    notify: true
+
+# ─────────────────────────────────────────────
+# Global Notification Settings
+# ─────────────────────────────────────────────
+notifications:
+  channels: ["desktop", "navig-inbox"]
+  quiet_hours:
+    start: "23:00"
+    end: "07:00"
+    override_for: ["critical"]
+  log_all_to: ".navig/logs/inbox.log"

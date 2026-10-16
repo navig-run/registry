@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#new"
+    description: "Newly published community assets"
+    default: true
+  - channel: "#featured"
+    description: "Curated featured assets from the community"
+  - channel: "#submissions"
+    description: "Assets submitted for community review"

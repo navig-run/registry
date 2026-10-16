@@ -1,0 +1,36 @@
+id: destiny-mapping
+name: Destiny Mapping
+version: "1.0.0"
+description: >
+  Long-arc trajectory formation. Destiny Keeper leads destiny log updates.
+  Oracle connects destiny entries to signals and self-version context.
+
+agents:
+  lead: destiny-keeper
+  supporting: [oracle]
+
+trigger_conditions:
+  - "Destiny log entry requested"
+  - "Monthly destiny review workflow"
+  - "Destiny entries pending review > 60 days"
+
+action_scope:
+  - ALLOW: log-insight
+  - ALLOW: write to .navig/memory/destiny-log.json
+  - DENY: write to signals or self-versions
+
+skills_used:
+  - log-insight
+
+workflows_used:
+  - monthly-singularity-review
+
+communication:
+  inbox_channel: "#destiny"
+  escalation: oracle
+  notify_on:
+    - destiny_entry_not_reviewed_60d
+
+context_memory:
+  read: [destiny-log.json, civilization-signals.json]
+  write: [destiny-log.json]

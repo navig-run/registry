@@ -1,0 +1,30 @@
+id: weekly-spending
+name: Weekly Spending Check
+version: "1.0.0"
+description: >
+  Quick mid-week pulse check. No import required — just reads existing
+  categorized transactions and shows MTD pace vs budget. Takes under 2 minutes.
+
+space: finance
+formation: monthly-review
+
+steps:
+  - step: 1
+    name: Spending Pace
+    agent: budget-analyst
+    skill: project-cashflow
+    command: "@budget-analyst pace --month current"
+    automated: true
+    note: Shows current run rate and end-of-month projection per category
+
+  - step: 2
+    name: Flag Overspends
+    agent: budget-analyst
+    skill: budget-variance
+    command: "@budget-analyst variance --month current --threshold 80"
+    automated: true
+    note: Highlights any category that has burned >80% of its monthly budget
+
+cadence: weekly (optional — use if you want mid-month visibility)
+recommended_day: Wednesday or Thursday
+expected_duration: 2-3 minutes

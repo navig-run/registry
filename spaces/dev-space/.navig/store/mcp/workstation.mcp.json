@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "space": "dev",
+  "description": "MCP server configuration for the dev space — file access and shell tool scoping",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Read/write access to dev space workspace directories",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/userscripts-workshop",
+          "{workspace_root}/chrome-extensions-workshop"
+        ],
+        "read_only_roots": [],
+        "max_file_size_mb": 10,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Scoped shell access for linting, testing, and building",
+      "config": {
+        "allowed_commands": ["node", "npm", "npx", "eslint", "jest", "pytest", "python", "py"],
+        "working_dir": "{workspace_root}",
+        "timeout_seconds": 60
+      }
+    }
+  ]
+}

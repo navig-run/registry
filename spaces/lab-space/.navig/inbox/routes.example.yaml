@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#experiments"
+    description: "Command sequences to try or log"
+    default: true
+  - channel: "#snippets"
+    description: "Saved and shareable command snippets"
+  - channel: "#results"
+    description: "Notable experiment results"

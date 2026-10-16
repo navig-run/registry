@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "research",
+  "issues": [
+    {
+      "id": "ki-0001",
+      "title": "Search and fetch backends are pluggable, not bundled",
+      "detail": "web-search and crawl-site stage and log runs but delegate actual fetching to a connected MCP/web tool via RESULTS_JSON / ROWS_JSONL. Bind a backend before expecting populated results.",
+      "severity": "info",
+      "status": "open"
+    }
+  ]
+}

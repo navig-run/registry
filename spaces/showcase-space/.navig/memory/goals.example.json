@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "showcase-space",
+  "goals": [
+    {
+      "id": "10-second-install",
+      "title": "10-second install for any community asset",
+      "description": "From browse to running in a user's NAVIG instance in under 10 seconds",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

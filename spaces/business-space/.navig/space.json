@@ -1,0 +1,16 @@
+{
+  "id": "business-space",
+  "name": "Business Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "E-commerce operations, FBA selling, affiliate marketing, and financial management",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["growth-hacker", "fulfillment-ops", "finance-analyst", "listing-optimizer", "affiliate-manager"],
+  "formations": ["ecommerce-ops", "financial-review", "launch-pipeline"],
+  "skills": ["calculate-margins", "audit-listings", "generate-invoice", "check-fees", "track-affiliate"],
+  "workflows": ["monthly-finance-review", "listing-audit", "product-launch"],
+  "packages": [],
+  "subspaces": []
+}

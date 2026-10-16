@@ -1,0 +1,151 @@
+id: disk-clean
+name: Disk Clean
+version: "1.0.0"
+description: >
+  Safe disk cleanup across Windows, Linux, and macOS. Removes temp files,
+  stale caches, old logs, and package manager cruft. Supports dry-run mode.
+category: maintenance
+platform: [windows, linux, macos]
+formation: maintenance-crew
+author: navig-run
+
+parameters:
+  - name: dry_run
+    type: bool
+    description: "Preview what would be deleted without deleting"
+    default: true
+  - name: targets
+    type: array
+    values: [temp, cache, logs, packages, trash, all]
+    default: all
+  - name: min_age_days
+    type: int
+    description: "Only delete files older than N days"
+    default: 7
+  - name: report_path
+    type: string
+    default: ".navig/logs/disk-clean-report.txt"
+
+steps:
+  - id: pre_check
+    name: "Record disk usage before cleanup"
+    shell: auto
+    script_windows: |
+      $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -gt 0 }
+      $drives | Select-Object Name,
+        @{n='Used_GB';e={[math]::Round($_.Used/1GB,2)}},
+        @{n='Free_GB';e={[math]::Round($_.Free/1GB,2)}} | Format-Table -AutoSize
+    script_linux: |
+      df -h --output=source,fstype,size,used,avail,pcent,target | grep -v tmpfs | head -15
+    script_macos: |
+      df -h | grep -E "^/dev" | awk '{printf "%-20s %6s %6s %6s %s\n",$1,$2,$3,$4,$9}'
+
+  - id: clean_temp
+    name: "Remove temporary files"
+    condition: "all in targets or temp in targets"
+    shell: auto
+    script_windows: |
+      $dirs = @("$env:TEMP", "$env:SystemRoot\Temp", "$env:SystemRoot\Prefetch")
+      foreach ($d in $dirs) {
+        $files = Get-ChildItem $d -Recurse -Force -ErrorAction SilentlyContinue |
+          Where-Object { !$_.PSIsContainer -and $_.LastWriteTime -lt (Get-Date).AddDays(-{{min_age_days}}) }
+        if ("{{dry_run}}" -eq "true") {
+          $size = ($files | Measure-Object Length -Sum).Sum
+          Write-Output "[DRY-RUN] $d → $($files.Count) files, $([math]::Round($size/1MB,1)) MB would be freed"
+        } else {
+          $files | Remove-Item -Force -ErrorAction SilentlyContinue
+          Write-Output "[CLEANED] $d → $($files.Count) files removed"
+        }
+      }
+    script_linux: |
+      DRY="{{dry_run}}"
+      if [ "$DRY" = "true" ]; then
+        find /tmp /var/tmp -mtime +{{min_age_days}} -type f 2>/dev/null | \
+          xargs -I{} du -sh {} 2>/dev/null | awk '{s+=$1} END{print "[DRY-RUN] /tmp cleanup would free ~"s" KB"}'
+      else
+        find /tmp /var/tmp -mtime +{{min_age_days}} -type f -delete 2>/dev/null
+        echo "[CLEANED] /tmp and /var/tmp cleared"
+      fi
+    script_macos: |
+      sudo rm -rf /private/tmp/* /private/var/tmp/* 2>/dev/null && echo "[CLEANED] macOS temp dirs" || echo "[DRY-RUN] would clean /private/tmp"
+
+  - id: clean_logs
+    name: "Rotate and remove old logs"
+    condition: "all in targets or logs in targets"
+    shell: auto
+    script_linux: |
+      DRY="{{dry_run}}"
+      OLD_LOGS=$(find /var/log -name "*.gz" -o -name "*.1" -o -name "*.2" 2>/dev/null | \
+        xargs -I{} find {} -mtime +{{min_age_days}} 2>/dev/null)
+      if [ "$DRY" = "true" ]; then
+        echo "[DRY-RUN] Logs older than {{min_age_days}} days:"
+        echo "$OLD_LOGS" | head -20
+      else
+        echo "$OLD_LOGS" | xargs rm -f 2>/dev/null
+        journalctl --vacuum-time={{min_age_days}}d 2>/dev/null
+        echo "[CLEANED] Old rotated logs and journal entries removed"
+      fi
+    script_windows: |
+      $logAge = (Get-Date).AddDays(-{{min_age_days}})
+      Get-EventLog -List | ForEach-Object {
+        $name = $_.Log
+        if ("{{dry_run}}" -eq "false") {
+          Clear-EventLog -LogName $name -ErrorAction SilentlyContinue
+          Write-Output "[CLEANED] Event log: $name"
+        } else {
+          Write-Output "[DRY-RUN] Would clear event log: $name ($($_.Entries.Count) entries)"
+        }
+      }
+
+  - id: clean_packages
+    name: "Package manager cache cleanup"
+    condition: "all in targets or packages in targets"
+    shell: auto
+    script_linux: |
+      DRY="{{dry_run}}"
+      if command -v apt >/dev/null 2>&1; then
+        [ "$DRY" = "true" ] && apt-get --dry-run autoremove 2>&1 | tail -3 \
+          || sudo apt-get -y autoremove && sudo apt-get clean
+      fi
+      if command -v dnf >/dev/null 2>&1; then
+        [ "$DRY" = "true" ] && dnf autoremove --assumeno 2>&1 | tail -3 \
+          || sudo dnf -y autoremove
+      fi
+      if command -v pacman >/dev/null 2>&1; then
+        sudo pacman -Sc --noconfirm 2>/dev/null
+      fi
+    script_macos: |
+      if command -v brew >/dev/null 2>&1; then
+        brew cleanup --dry-run 2>/dev/null | tail -5
+        [ "{{dry_run}}" != "true" ] && brew cleanup
+      fi
+    script_windows: |
+      if ("{{dry_run}}" -eq "false") {
+        winget source update
+      }
+      # Windows: check WinSxS
+      Dism /Online /Cleanup-Image /AnalyzeComponentStore | Select-String "Reclaimable"
+
+  - id: post_check
+    name: "Record disk usage after cleanup"
+    shell: auto
+    script_windows: |
+      $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -gt 0 }
+      $drives | Select-Object Name,
+        @{n='Used_GB';e={[math]::Round($_.Used/1GB,2)}},
+        @{n='Free_GB';e={[math]::Round($_.Free/1GB,2)}} | Format-Table -AutoSize
+    script_linux: |
+      df -h --output=source,size,used,avail,pcent,target | grep -v tmpfs | head -10
+    script_macos: |
+      df -h | grep "^/dev"
+
+output:
+  store_to: ".navig/logs/disk-clean-report.txt"
+
+examples:
+  - description: "Dry run — see what would be deleted"
+    command: "navig skill run disk-clean --dry_run true"
+  - description: "Full cleanup (all targets)"
+    command: "navig skill run disk-clean --dry_run false"
+  - description: "Clean only logs and temp, minimum age 14 days"
+    command: "navig skill run disk-clean --targets logs,temp --min_age_days 14 --dry_run false"

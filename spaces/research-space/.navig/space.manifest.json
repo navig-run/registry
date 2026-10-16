@@ -1,0 +1,30 @@
+{
+  "space_id": "research-space",
+  "schema_version": "2.0",
+  "type": "work",
+  "name": "Research",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-06-15",
+  "description": "Discovery-to-data research pipeline — search the web, crawl and extract, build datasets at scale, store them in a database, and synthesize cited findings.",
+  "tags": [
+    "research",
+    "web-crawling",
+    "scraping",
+    "datasets",
+    "big-data",
+    "databases",
+    "discovery",
+    "synthesis"
+  ],
+  "theme": {
+    "accent_color": "#38BDF8",
+    "background_hint": "deep-blue-grid",
+    "animation_hint": "data-stream",
+    "icon": "🔭",
+    "tone": "curious-rigorous"
+  },
+  "author": "navig-run",
+  "tier": "work",
+  "status": "active"
+}

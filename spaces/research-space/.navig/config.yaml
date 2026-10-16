@@ -1,0 +1,41 @@
+space: research-space
+version: "1.0.0"
+runtime: navig-space-2
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+
+# Pipeline defaults
+datasets_dir: datasets
+crawls_dir: crawls
+out_dir: out
+database: out/research.db
+
+# Crawler politeness
+respect_robots_txt: true
+default_crawl_delay_ms: 1000
+max_concurrency_per_host: 2
+user_agent: "navig-research-bot/1.0 (+contact: operator)"
+
+# Discovery
+default_search_limit: 10
+stale_topic_days: 14
+
+skills_dir: ".navig/skills/"
+formations_dir: ".navig/store/formations/"
+agents_dir: ".navig/store/agents/"
+workflows_dir: ".navig/store/workflows/"
+prompts_dir: ".navig/store/prompts/"
+wiki_dir: ".navig/wiki/"
+memory_dir: ".navig/memory/"
+default_formation: discovery-run
+escalation_agent: operator
+log_level: info
+audit_log: ".navig/logs/audit.log"
+pack_format: "navig-space-pack"
+pack_exclude:
+  - ".navig/logs/**"
+  - "crawls/**"
+  - "out/**"
+  - "node_modules/**"
+  - ".env"

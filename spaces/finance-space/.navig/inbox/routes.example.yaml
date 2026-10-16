@@ -1,0 +1,33 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+# Schema: channels[] { id, name, agents, priority, keywords, description } + defaults.
+channels:
+  - id: budget
+    name: "#budget"
+    description: Budget tracking, spending reports, monthly close, transaction imports
+    agents: [budget-analyst]
+    priority: normal
+    keywords: [budget, spend, transaction, category, variance, income]
+
+  - id: investments
+    name: "#investments"
+    description: Portfolio updates, rebalancing alerts, return tracking
+    agents: [investment-tracker]
+    priority: normal
+    keywords: [portfolio, stock, ETF, fund, brokerage, rebalance]
+
+  - id: taxes
+    name: "#taxes"
+    description: Tax estimates, deduction logging, document checklist, filing prep
+    agents: [tax-planner, budget-analyst]
+    priority: high
+    keywords: [deduction, tax, filing, W-2, "1099", receipt]
+
+  - id: goals
+    name: "#goals"
+    description: Savings goal progress, milestones, target adjustments
+    agents: [savings-coach, budget-analyst]
+    priority: normal
+    keywords: [goal, saving, emergency fund, down payment]
+
+defaults:
+  unrouted_fallback: budget-analyst

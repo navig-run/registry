@@ -1,0 +1,48 @@
+name: Compress
+description: Extract archives and create zip/7z archives with 7-Zip. Multi-select aware - extracting many archives at once runs in ONE window, each to its own folder.
+version: 1.0.0
+category: files
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+requires: [7z]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: extract-here
+    syntax: navig skill run compress extract-here --target <archive>
+    description: Extract each selected archive into the current folder
+    risk: safe
+  - name: extract-folder
+    syntax: navig skill run compress extract-folder --target <archive>
+    description: Extract each selected archive into its own subfolder (named after the archive)
+    risk: safe
+  - name: zip
+    syntax: navig skill run compress zip --target <path>
+    description: Add the selection to a single .zip archive
+    risk: safe
+  - name: 7z
+    syntax: navig skill run compress 7z --target <path>
+    description: Add the selection to a single .7z archive
+    risk: safe
+  - name: 7z-split
+    syntax: navig skill run compress 7z-split --target <path>
+    description: Add the selection to a .7z archive split into 4 GB volumes
+    risk: safe
+  - name: open
+    syntax: navig skill run compress open --target <archive>
+    description: Open the archive in the 7-Zip file manager
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use when the user wants to extract, unzip, or archive files/folders. Trigger on
+    "extract these", "unzip", "make a zip/7z", "compress this folder".
+  output_format: >
+    Per-archive progress (i/N) plus a final OK/failure count. Archives are created
+    next to the source; extract-folder makes one subfolder per archive.
+  follow_up: >
+    For many archives prefer extract-folder so contents do not collide in one folder.

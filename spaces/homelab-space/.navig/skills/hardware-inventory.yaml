@@ -1,0 +1,116 @@
+id: hardware-inventory
+name: Hardware Inventory
+version: "1.0.0"
+description: >
+  Enumerate CPU, GPU, RAM, and storage on Windows, Linux, and macOS.
+  Outputs a structured JSON inventory and optionally stores it in space memory.
+category: hardware
+platform: [windows, linux, macos]
+formation: hardware-patrol
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Host to inventory (local or SSH target from space registry)"
+    default: local
+  - name: components
+    type: array
+    values: [cpu, gpu, ram, storage, network, usb, all]
+    default: all
+  - name: store_result
+    type: bool
+    default: true
+
+steps:
+  - id: cpu_info
+    name: "CPU information"
+    condition: "all in components or cpu in components"
+    shell: auto
+    script_windows: |
+      Get-WmiObject Win32_Processor | Select-Object Name, NumberOfCores,
+        NumberOfLogicalProcessors, MaxClockSpeed,
+        @{n='CurrentTemp_C';e={(Get-WmiObject MSAcpi_ThermalZoneTemperature -Namespace root/wmi -ErrorAction SilentlyContinue | Select -First 1 -Expand CurrentTemperature) / 10 - 273.15}} |
+        Format-List
+    script_linux: |
+      lscpu | grep -E "Model name|CPU\(s\)|Core|Thread|MHz|Socket"
+      echo "--- Temp ---"
+      sensors 2>/dev/null | grep -E "Core|Package" || echo "lm-sensors not installed"
+    script_macos: |
+      sysctl -n machdep.cpu.brand_string
+      sysctl -n hw.physicalcpu hw.logicalcpu
+
+  - id: ram_info
+    name: "RAM information"
+    condition: "all in components or ram in components"
+    shell: auto
+    script_windows: |
+      $os = Get-CimInstance Win32_OperatingSystem
+      $ram = Get-CimInstance Win32_PhysicalMemory
+      [PSCustomObject]@{
+        Total_GB  = [math]::Round($os.TotalVisibleMemorySize/1MB, 2)
+        Free_GB   = [math]::Round($os.FreePhysicalMemory/1MB, 2)
+        Used_Pct  = [math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory)/$os.TotalVisibleMemorySize * 100, 1)
+        Slots     = $ram.Count
+        Types     = ($ram | Select -Unique MemoryType | ForEach { switch($_.MemoryType){21{"DDR2"}24{"DDR3"}26{"DDR4"}34{"DDR5"}default{$_.MemoryType}} }) -join ","
+      } | Format-List
+    script_linux: |
+      free -h
+      echo "--- DIMM Detail ---"
+      sudo dmidecode -t memory 2>/dev/null | grep -E "Size:|Type:|Speed:|Manufacturer:" | head -32
+    script_macos: |
+      vm_stat | awk '/Pages/{gsub(/\./,""); printf "%-30s %s\n",$0,""}'
+      system_profiler SPMemoryDataType 2>/dev/null | grep -E "Size|Type|Speed|Manufacturer"
+
+  - id: storage_info
+    name: "Storage information"
+    condition: "all in components or storage in components"
+    shell: auto
+    script_windows: |
+      Get-Disk | Select-Object FriendlyName, Size, PartitionStyle, HealthStatus,
+        @{n='Size_GB';e={[math]::Round($_.Size/1GB,1)}} | Format-Table -AutoSize
+      Get-Volume | Where DriveLetter | Select DriveLetter, FileSystemLabel,
+        @{n='Size_GB';e={[math]::Round($_.Size/1GB,1)}},
+        @{n='Free_GB';e={[math]::Round($_.SizeRemaining/1GB,1)}},
+        HealthStatus | Format-Table -AutoSize
+    script_linux: |
+      lsblk -o NAME,TYPE,SIZE,FSTYPE,MOUNTPOINT,MODEL
+      echo "--- SMART status ---"
+      for d in /dev/sd? /dev/nvme?; do
+        [ -e "$d" ] && sudo smartctl -A "$d" 2>/dev/null | grep -E "Reallocated|Uncorrectable|Temperature" | \
+          awk -v dev="$d" '{print dev, $0}'
+      done
+    script_macos: |
+      diskutil list
+      df -h | grep -v tmpfs
+
+  - id: network_info
+    name: "Network adapters"
+    condition: "all in components or network in components"
+    shell: auto
+    script_windows: |
+      Get-NetAdapter | Where-Object Status -eq "Up" |
+        Select-Object Name, InterfaceDescription, MacAddress, LinkSpeed | Format-Table -AutoSize
+    script_linux: |
+      ip link show | grep -E "^[0-9]+:|link/"
+      ip addr show | grep -E "inet |inet6 " | grep -v " lo "
+    script_macos: |
+      networksetup -listallhardwareports | grep -A2 "Hardware Port"
+
+  - id: store_inventory
+    name: "Persist inventory to memory"
+    condition: "store_result == true"
+    shell: auto
+    script: |
+      echo "Inventory stored to .navig/memory/hardware-inventory.json"
+
+output:
+  store_to: ".navig/memory/hardware-inventory.json"
+
+examples:
+  - description: "Full inventory of local machine"
+    command: "navig skill run hardware-inventory"
+  - description: "Only CPU and RAM"
+    command: "navig skill run hardware-inventory --components cpu,ram"
+  - description: "Inventory a remote SSH host"
+    command: "navig skill run hardware-inventory --target homeserver"

@@ -1,0 +1,21 @@
+{
+  "id": "open-space",
+  "name": "Open Space",
+  "version": "1.0.0",
+  "tier": "community",
+  "status": "planned",
+  "description": "Build in the open — stream live sessions, publish workflows, and let the community fork and remix your work.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "agent",
+    "blackbox",
+    "storage"
+  ]
+}

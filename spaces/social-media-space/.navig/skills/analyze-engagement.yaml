@@ -1,0 +1,139 @@
+id: analyze-engagement
+name: Analyze Engagement
+version: "1.0.0"
+description: >
+  Read analytics/{brand}/{YYYY-MM}/engagement.csv and produce a summary of
+  key engagement metrics with trend indicators. Flags anomalies and surfaces
+  top-performing posts and pillars.
+category: analytics
+platform: [windows, linux, macos]
+formation: analytics-review
+author: navig-run
+
+parameters:
+  - name: brand
+    description: Brand slug
+    required: true
+  - name: period
+    description: "last-7-days | last-30-days | this-month | YYYY-MM"
+    required: false
+    default: last-7-days
+  - name: platform
+    description: "Filter to one platform (optional — all platforms if omitted)"
+    required: false
+
+steps:
+  - name: load-data
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_PERIOD: "{{period}}"
+      NAVIG_PARAM_PLATFORM: "{{platform}}"
+    description: Load engagement CSV for the specified period
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      period = os.environ.get("NAVIG_PARAM_PERIOD", "").strip()
+      platform = os.environ.get("NAVIG_PARAM_PLATFORM", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import csv, pathlib, datetime, sys, json
+
+      brand = brand
+      period = period
+      platform_filter = platform
+
+      today = datetime.date.today()
+      if period == "last-7-days":
+          cutoff = today - datetime.timedelta(days=7)
+      elif period == "last-30-days":
+          cutoff = today - datetime.timedelta(days=30)
+      elif period == "this-month":
+          cutoff = today.replace(day=1)
+      else:
+          # YYYY-MM
+          cutoff = datetime.date.fromisoformat(f"{period}-01")
+
+      analytics_base = pathlib.Path("analytics") / brand
+      if not analytics_base.exists():
+          print(f"No analytics data for brand '{brand}'. Start logging post performance to analytics/{brand}/")
+          sys.exit(0)
+
+      all_rows = []
+      for csv_file in sorted(analytics_base.glob("*/engagement.csv")):
+          try:
+              with open(csv_file) as f:
+                  for row in csv.DictReader(f):
+                      if not row.get("date"):
+                          continue
+                      try:
+                          row_date = datetime.date.fromisoformat(row["date"])
+                      except ValueError:
+                          continue
+                      if row_date < cutoff:
+                          continue
+                      if platform_filter and row.get("platform","").lower() != platform_filter.lower():
+                          continue
+                      all_rows.append(row)
+          except Exception:
+              pass
+
+      if not all_rows:
+          print(f"No data found for period '{period}' brand '{brand}'")
+          sys.exit(0)
+
+      # Aggregate
+      total_impressions = sum(int(r.get("impressions",0) or 0) for r in all_rows)
+      total_likes = sum(int(r.get("likes",0) or 0) for r in all_rows)
+      total_comments = sum(int(r.get("comments",0) or 0) for r in all_rows)
+      total_shares = sum(int(r.get("shares",0) or 0) for r in all_rows)
+      total_saves = sum(int(r.get("saves",0) or 0) for r in all_rows)
+      post_count = len(all_rows)
+      avg_engagement_rate = round((total_likes + total_comments + total_shares + total_saves) / max(total_impressions, 1) * 100, 2)
+
+      # Top post
+      top = max(all_rows, key=lambda r: int(r.get("likes",0) or 0))
+
+      # Per-platform breakdown
+      platforms = {}
+      for r in all_rows:
+          p = r.get("platform", "unknown")
+          platforms.setdefault(p, {"posts": 0, "impressions": 0, "likes": 0, "shares": 0})
+          platforms[p]["posts"] += 1
+          platforms[p]["impressions"] += int(r.get("impressions",0) or 0)
+          platforms[p]["likes"] += int(r.get("likes",0) or 0)
+          platforms[p]["shares"] += int(r.get("shares",0) or 0)
+
+      print(f"\n{'='*55}")
+      print(f"  Analytics Report — {brand} — {period}")
+      print(f"{'='*55}")
+      print(f"  Posts analysed:     {post_count}")
+      print(f"  Total impressions:  {total_impressions:,}")
+      print(f"  Total likes:        {total_likes:,}")
+      print(f"  Total shares:       {total_shares:,}")
+      print(f"  Total comments:     {total_comments:,}")
+      print(f"  Avg engagement:     {avg_engagement_rate}%")
+      print(f"\n--- Platform Breakdown ---")
+      for pname, pdata in sorted(platforms.items(), key=lambda x:-x[1]["impressions"]):
+          print(f"  {pname:<14} posts={pdata['posts']}  impressions={pdata['impressions']:,}  likes={pdata['likes']:,}")
+      print(f"\n--- Top Post ---")
+      print(f"  {top.get('post_slug','?')} [{top.get('platform','?')}]")
+      print(f"  Likes: {top.get('likes','?')}  Shares: {top.get('shares','?')}  Hook score: {top.get('hook_score','?')}")
+      print(f"{'='*55}\n")
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $brand = "$($env:NAVIG_PARAM_BRAND)"
+      $period = "$($env:NAVIG_PARAM_PERIOD)"
+      $analyticsBase = "analytics\$brand"
+      if (-not (Test-Path $analyticsBase)) {
+          Write-Host "No analytics data for brand '$brand'."
+          exit 0
+      }
+      $files = Get-ChildItem -Path $analyticsBase -Recurse -Filter "engagement.csv"
+      $totalRows = 0
+      foreach ($file in $files) {
+          $rows = Import-Csv $file
+          $totalRows += $rows.Count
+          Write-Host "Loaded $($rows.Count) rows from $($file.FullName)"
+      }
+      Write-Host "Total rows: $totalRows for brand: $brand period: $period"

@@ -1,0 +1,115 @@
+id: cable-trace
+name: Cable Trace
+version: "1.0.0"
+description: >
+  Interactive wizard to document and label physical cable connections.
+  Walks the operator through labeling each cable end-to-end and stores the
+  structured result in the cable-log wiki entry and memory registry.
+category: infrastructure
+platform: [windows, linux, macos]
+formation: network-ops
+author: navig-run
+
+parameters:
+  - name: mode
+    type: enum
+    values: [add, edit, list, export]
+    default: add
+  - name: cable_id
+    type: string
+    description: "Cable ID to edit (required for edit mode)"
+    required_if: "mode == 'edit'"
+  - name: export_format
+    type: enum
+    values: [csv, json, markdown]
+    default: markdown
+
+steps:
+  - id: list_existing
+    name: "List existing cable records"
+    condition: "mode == 'list'"
+    shell: auto
+    script: |
+      python3 -c "
+      import json, os
+      path = '.navig/memory/cable-log.json'
+      if not os.path.exists(path):
+          print('No cable log found. Run with --mode add to start.')
+      else:
+          cables = json.load(open(path))
+          print(f'Total cables logged: {len(cables[\"cables\"])}')
+          for c in cables['cables']:
+              print(f'  [{c[\"id\"]}] {c[\"from\"]} ---({c[\"type\"]};{c[\"length\"]})--- {c[\"to\"]}  [{c.get(\"label\",\"\")}]')
+      "
+
+  - id: interactive_add
+    name: "Interactive cable entry wizard"
+    condition: "mode == 'add'"
+    shell: auto
+    script: |
+      python3 - <<'EOF'
+      import json, os, datetime
+
+      path = '.navig/memory/cable-log.json'
+      data = json.load(open(path)) if os.path.exists(path) else {"cables": []}
+      idx = len(data["cables"]) + 1
+
+      print("=== Cable Trace Wizard ===")
+      cable_id   = input(f"Cable ID [{idx:03d}]: ").strip() or f"{idx:03d}"
+      cable_from = input("From (device:port, e.g. switch-01:eth1): ").strip()
+      cable_to   = input("To   (device:port, e.g. server-01:nic0): ").strip()
+      cable_type = input("Type [cat6/cat6a/fiber-smf/fiber-mmf/usb-c/hdmi/other]: ").strip()
+      cable_len  = input("Length (e.g. 2m): ").strip()
+      cable_col  = input("Colour/label on cable: ").strip()
+      cable_note = input("Notes (optional): ").strip()
+
+      entry = {
+          "id": cable_id,
+          "from": cable_from,
+          "to": cable_to,
+          "type": cable_type,
+          "length": cable_len,
+          "label": cable_col,
+          "notes": cable_note,
+          "logged_at": datetime.datetime.utcnow().isoformat() + "Z"
+      }
+      data["cables"].append(entry)
+      os.makedirs(os.path.dirname(path), exist_ok=True)
+      json.dump(data, open(path, "w"), indent=2)
+      print(f"\n✓ Cable {cable_id} logged: {cable_from} → {cable_to}")
+      EOF
+
+  - id: export
+    name: "Export cable log"
+    condition: "mode == 'export'"
+    shell: auto
+    # Parameters reach the script as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_EXPORT_FORMAT: "{{export_format}}"
+    script: |
+      python3 -c "
+      import json, csv, sys, io, os
+      data = json.load(open('.navig/memory/cable-log.json'))
+      fmt = os.environ.get('NAVIG_PARAM_EXPORT_FORMAT', 'json')
+      if fmt == 'csv':
+          w = csv.DictWriter(sys.stdout, fieldnames=['id','from','to','type','length','label','notes'])
+          w.writeheader(); w.writerows(data['cables'])
+      elif fmt == 'markdown':
+          print('| ID | From | To | Type | Length | Label | Notes |')
+          print('|----|------|----|------|--------|-------|-------|')
+          for c in data['cables']:
+              print(f'| {c[\"id\"]} | {c[\"from\"]} | {c[\"to\"]} | {c[\"type\"]} | {c[\"length\"]} | {c[\"label\"]} | {c.get(\"notes\",\"\")} |')
+      else:
+          print(json.dumps(data, indent=2))
+      "
+
+output:
+  store_to: ".navig/memory/cable-log.json"
+
+examples:
+  - description: "Add a new cable entry interactively"
+    command: "navig skill run cable-trace"
+  - description: "List all logged cables"
+    command: "navig skill run cable-trace --mode list"
+  - description: "Export as Markdown table"
+    command: "navig skill run cable-trace --mode export --export_format markdown"

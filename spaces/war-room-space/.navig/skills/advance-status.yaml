@@ -1,0 +1,81 @@
+id: advance-status
+name: Advance Status
+version: "1.0.0"
+description: >
+  Advance an operation's status through the war room pipeline:
+  planning → active → hold → closed | aborted
+category: operations
+platform: [windows, linux, macos]
+formation: ops-command
+author: war-room-space
+
+parameters:
+  - name: operation
+    type: string
+    required: true
+    description: "Operation ID (op_XXXX) or name"
+  - name: new_status
+    type: enum
+    values: [active, hold, closed, aborted]
+    required: true
+  - name: update
+    type: string
+    required: true
+    description: "SITREP — what changed, what was achieved, or why status changed"
+  - name: outcome
+    type: string
+    required: false
+    default: ""
+    description: "Final outcome (required when closing)"
+
+steps:
+  - id: advance_operation_status
+    name: "Advance Operation Status"
+    shell: auto
+    env:
+      NAVIG_PARAM_OPERATION: "{{params.operation}}"
+      NAVIG_PARAM_NEW_STATUS: "{{params.new_status}}"
+      NAVIG_PARAM_UPDATE: "{{params.update}}"
+      NAVIG_PARAM_OUTCOME: "{{params.outcome}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      ops_path = ".navig/memory/operations.json"
+      op_arg = os.environ.get("NAVIG_PARAM_OPERATION", "")
+      op_filter = op_arg.lower()
+      new_status = os.environ.get("NAVIG_PARAM_NEW_STATUS", "")
+      update = os.environ.get("NAVIG_PARAM_UPDATE", "")
+      outcome = os.environ.get("NAVIG_PARAM_OUTCOME", "")
+
+      try:
+          with open(ops_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          print("ERROR: operations.json not found.")
+          raise SystemExit(1)
+
+      op = next((o for o in data.get("operations", [])
+                 if o.get("id", "").lower() == op_filter or o.get("name", "").lower() == op_filter), None)
+      if not op:
+          print(f"ERROR: Operation '{op_arg}' not found.")
+          raise SystemExit(1)
+
+      old_status = op.get("status", "unknown")
+      op["status"] = new_status
+      op["updated_at"] = datetime.utcnow().isoformat() + "Z"
+      op.setdefault("sitrep_log", []).append({"status": new_status, "update": update, "timestamp": datetime.utcnow().isoformat() + "Z"})
+      if outcome:
+          op["outcome"] = outcome
+
+      with open(ops_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Op [{op['id']}] {op['name']}: {old_status} → {new_status}")
+      print(f"SITREP: {update}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: advance_operation_status

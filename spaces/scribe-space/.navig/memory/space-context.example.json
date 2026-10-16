@@ -1,0 +1,11 @@
+{
+  "purpose": "The ultimate writers' space — fiction, journalism, screenwriting, technical docs, and content strategy.",
+  "owner": {"handle": "operator", "timezone": "UTC", "primary_OS": "Windows", "primary_shell": "PowerShell"},
+  "project_count": 0,
+  "platforms": ["Windows", "Linux", "macOS"],
+  "sub_workspaces": ["book-writing", "journalism", "general-writing", "screenwriting", "technical-writing", "content-strategy"],
+  "active_formations": ["fiction-workshop", "journalism-workflow", "content-pipeline", "production-draft"],
+  "active_agents": ["storyteller", "journalist", "editor", "content-strategist", "screenwriter", "tech-writer"],
+  "skills_installed": ["word-count", "grammar-check", "outline-draft", "export-pdf", "readability-score"],
+  "notes": "Edit after completing initial project setup."
+}

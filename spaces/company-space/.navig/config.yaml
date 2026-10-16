@@ -1,0 +1,102 @@
+space: company
+version: "2.0.0"
+description: "Business operations, active projects, financial management, client relations, and company execution workflows"
+default_formation: company-ops
+runtime: navig-space-2
+language: en
+timezone: UTC
+
+# ── Company Identity (configure per instance) ──
+company:
+  name: "{{COMPANY_NAME}}"
+  legal_name: "{{LEGAL_NAME}}"
+  type: "{{ENTITY_TYPE}}"          # e.g. micro-entrepreneur, LLC, GmbH, sole-trader
+  id: "{{COMPANY_ID}}"             # SIRET, EIN, Company Number, etc.
+  address: "{{COMPANY_ADDRESS}}"
+  email: "{{COMPANY_EMAIL}}"
+  phone: "{{COMPANY_PHONE}}"
+  website: "{{COMPANY_WEBSITE}}"
+  founded: "{{FOUNDED_YEAR}}"
+  owner: "{{OWNER_NAME}}"
+  jurisdiction: "{{JURISDICTION}}"  # governing law named in contract drafts
+
+# ── Financial Configuration ──
+finance:
+  currency: "{{CURRENCY}}"         # EUR, USD, GBP, etc.
+  tax_rate: 0.0                    # Social contribution rate (e.g. 0.218 for 21.8%)
+  tax_threshold: 0                 # Revenue threshold for tax registration
+  revenue_ceiling: 0               # Regime ceiling (if applicable)
+  tax_exemption_note: ""           # legally required tax mention printed on invoices/quotes
+  retention_years: 10              # Document retention period
+
+  # Optional locale profile — e.g. a French micro-entreprise sets:
+  #   currency: "EUR"
+  #   tax_exemption_note: "TVA non applicable, art. 293 B du CGI"
+
+  invoicing:
+    prefix: "INV"                  # Invoice prefix (e.g. INV, or your initials)
+    format: "PREFIX-YYYY-NNN"
+    sequential: true
+    no_gaps: true
+    payment_terms_days: 30
+    late_penalty_text: ""          # Late payment penalty wording per local law
+    recovery_indemnity_text: ""    # Recovery compensation wording per local law
+
+  quotes:
+    prefix: "QUO"                  # Quote prefix (e.g. QUO, EST)
+    format: "PREFIX-YYYY-NNN"
+    validity_days: 30
+
+  expenses:
+    prefix: "EXP"
+    format: "EXP-YYYY-NNN"
+    categories:
+      - domain-hosting
+      - software-licenses
+      - hardware
+      - office-supplies
+      - professional-services
+      - marketing-advertising
+      - travel-transport
+      - meals-entertainment
+      - telecommunications
+      - insurance
+      - training-education
+      - subscriptions-saas
+      - banking-fees
+      - coworking
+      - printing
+      - shipping
+      - subcontracting
+      - networking-events
+      - legal-fees
+      - taxes-contributions
+      - miscellaneous
+
+# ── Client Segments (top 10 — extend as needed) ──
+client_segments:
+  - sme-tech
+  - creative-agencies
+  - ecommerce
+  - saas-companies
+  - non-profits
+  - healthcare
+  - education
+  - real-estate
+  - hospitality
+  - professional-services
+
+# ── Service Lines (examples — replace with your own) ──
+services:
+  - id: web-development
+    label: Web Development
+  - id: graphic-design
+    label: Graphic Design
+  - id: sys-admin
+    label: Systems Administration
+  - id: seo
+    label: SEO & Analytics
+  - id: copywriting-translation
+    label: Copywriting & Translation
+  - id: digital-marketing
+    label: Digital Marketing

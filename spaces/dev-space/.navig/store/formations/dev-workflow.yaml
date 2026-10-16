@@ -1,0 +1,48 @@
+id: dev-workflow
+name: Development Workflow
+version: "1.0.0"
+description: >
+  Core development formation. Active for all code authoring, scaffolding, and
+  debugging tasks. Combines Coder and Debugger for the full build-test-fix loop.
+
+agents:
+  lead: coder
+  supporting: [debugger]
+
+trigger_conditions:
+  - "New development task in #code"
+  - "Skill failure requiring investigation"
+  - "Manual: navig formation run dev-workflow"
+  - "Daily standup workflow starts"
+
+action_scope:
+  - ALLOW: scaffold-project, code-lint, run-tests
+  - ALLOW: write to .navig/wiki/architecture.md
+  - ALLOW: write to .navig/memory/space-context.json
+  - ALLOW: write to .navig/memory/known-issues.json
+  - DENY: deploy to production without operator confirmation
+
+skills_used:
+  - code-lint
+  - run-tests
+  - scaffold-project
+
+workflows_used:
+  - daily-standup
+  - run-tests
+
+communication:
+  inbox_channel: "#code"
+  escalation: operator
+  notify_on:
+    - skill_failure
+    - new_project_detected
+    - lint_errors_found
+
+context_memory:
+  read: [space-context.json, known-issues.json, architecture.md]
+  write: [space-context.json, known-issues.json, architecture.md]
+
+example_invocation: |
+  navig formation run dev-workflow
+  # coder will: assess open tasks → scaffold or implement → run lint → hand to debugger if needed

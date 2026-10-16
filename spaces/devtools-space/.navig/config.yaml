@@ -1,0 +1,35 @@
+space: devtools-space
+version: "1.0.0"
+status: planned
+
+# Primary settings
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+engine: "bin/devtools.ps1"          # the unified dispatcher every skill calls
+
+# Safety policy
+dry_run_default: true               # destructive commands show a plan before acting
+quarantine_root: "_DEVTOOLS_TRASH"  # per-drive recoverable trash; never hard-delete
+literal_paths_only: true            # filenames contain [ ] ( ) — always -LiteralPath
+
+# Windows context-menu integration
+menu_manifest: "bin/menu.manifest.json"
+menu_deploy_dir: "%LOCALAPPDATA%/Navig/devtools"
+menu_scope: hkcu                    # per-user, no administrator required
+
+# Paths
+bin_dir: "bin/"
+skills_dir: ".navig/skills/"
+
+# Logging
+log_level: info
+audit_log: ".navig/logs/audit.log"
+
+# Pack / sharing
+pack_format: "navig-space-pack"
+pack_exclude:
+  - ".navig/logs/**"
+  - ".smoketest/**"
+  - "config.json"
+  - ".env"

@@ -1,0 +1,48 @@
+id: sample-lab
+name: Sample Lab
+version: "1.0.0"
+description: >
+  Sample discovery, processing, and cataloging formation. Manages the entire
+  sample library lifecycle — from raw material to indexed, searchable assets.
+
+agents:
+  lead: sound-designer
+  supporting: [producer]
+
+trigger_conditions:
+  - "New samples added to library"
+  - "Sample harvest workflow triggered"
+  - "Manual invocation: navig formation run sample-lab"
+  - "Duplicate detection requested"
+
+action_scope:
+  - ALLOW: sample-catalog, bpm-detect, key-detect, format-convert
+  - ALLOW: write to samples/
+  - ALLOW: write to .navig/memory/space-context.json
+  - DENY: session modifications
+  - DENY: release operations
+
+skills_used:
+  - sample-catalog
+  - bpm-detect
+  - key-detect
+  - format-convert
+
+workflows_used:
+  - sample-harvest
+
+communication:
+  inbox_channel: "#samples"
+  escalation: producer
+  notify_on:
+    - new_samples_cataloged
+    - duplicates_found
+    - catalog_complete
+
+context_memory:
+  read: [space-context.json]
+  write: [space-context.json]
+
+example_invocation: |
+  navig formation run sample-lab
+  # sound-designer will: scan directories → detect BPM/key → tag → index → report

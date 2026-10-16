@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "d1-create-migrate",
+      "prompt": "How do I create a D1 database with wrangler and apply its migrations against production data?",
+      "expect": { "contains": ["wrangler d1 create", "migrations apply", "--remote"], "excludes": [] }
+    },
+    {
+      "id": "set-secret-ci",
+      "prompt": "What's the safe way to set a Worker secret with wrangler, and how do I authenticate wrangler in CI without leaking the value?",
+      "expect": { "contains": ["wrangler secret put", "CLOUDFLARE_API_TOKEN"], "excludes": [] }
+    },
+    {
+      "id": "deploy-safely",
+      "prompt": "How do I validate a Worker without deploying it, then deploy it to the staging environment?",
+      "expect": { "contains": ["--dry-run", "--env staging"], "excludes": [] }
+    }
+  ]
+}

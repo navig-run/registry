@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "space": "iot",
+  "updated": "2026-07-10",
+  "operational_goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Complete IoT device inventory",
+      "priority": "high",
+      "status": "pending",
+      "description": "Discover and register every IoT device across Wi-Fi, Zigbee, Z-Wave, Matter, and BLE. Every device must have a complete entry in device-registry.json including protocol, IP/MAC or IEEE address, firmware, mqtt_topic, and VLAN.",
+      "success_criteria": "All devices visible via 'navig skill run device-discover' and 'zigbee-scan', all registered in device-registry.json, all correlated to their MQTT topics.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Establish the morning mesh sweep",
+      "priority": "high",
+      "status": "pending",
+      "description": "Configure the morning-mesh-sweep workflow to run automatically at 07:00 daily. Results (new devices, offline devices, segmentation glance) should be written to memory and the inbox.",
+      "success_criteria": "Workflow runs on schedule, produces a readable summary, anomalies surface as entries in known-issues.json.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Enforce IoT VLAN segmentation",
+      "priority": "high",
+      "status": "pending",
+      "description": "Move all IoT devices onto the isolated IoT VLAN (20) and confirm they cannot initiate connections into the trusted LAN. Maintain segmentation.md and iot-port-baseline.json.",
+      "success_criteria": "vlan-audit passes: every device inside the IoT subnet, isolation probe fails as intended, no boundary crossings.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Map and secure the MQTT bus",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Map the full topic tree, correlate every topic to a registered device, disable anonymous broker access, and document retained messages. Maintain mqtt-topics.md.",
+      "success_criteria": "mqtt-topics.md fully populated, no orphan topics, anonymous MQTT rejected, credentials in the vault.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Bring the fleet to current firmware",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Run a firmware audit, resolve any CVE exposure via staged OTA rollouts, and eliminate version drift across Tasmota/ESPHome/Shelly devices.",
+      "success_criteria": "No device on CVE-affected firmware; drift limited to non-critical devices; every flash verified and recorded in the registry.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-006",
+      "title": "Baseline every device's open ports",
+      "priority": "low",
+      "status": "pending",
+      "description": "Fill iot-port-baseline.json for every device class in the registry so the security-mesh formation can flag unexpected listeners.",
+      "success_criteria": "Every registered device matches a device_classes entry; the weekly security-review raises no unbaselined ports.",
+      "target_date": null
+    }
+  ]
+}

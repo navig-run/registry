@@ -1,0 +1,22 @@
+{
+  "name": "radar-space",
+  "version": "1.0.0",
+  "description": "Resource costs and cloud spend — tracked before they surprise you",
+  "owner": "navig-run",
+  "tier": "platform",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "storage",
+    "tools",
+    "agent"
+  ],
+  "config_key": null,
+  "viral_hook": "Monthly cost anomaly report — the number that makes your team act",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

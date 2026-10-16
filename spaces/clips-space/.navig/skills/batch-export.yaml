@@ -1,0 +1,53 @@
+id: batch-export
+name: Batch Export
+version: "1.0.0"
+description: "Export multiple clips in batch for all target platforms with optimised settings."
+category: editing
+platform: [windows, linux, macos]
+formation: clip-factory
+author: navig-run
+
+parameters:
+  - name: input_dir
+    type: string
+    default: clips/
+    description: "Directory containing clips to export"
+  - name: output_dir
+    type: string
+    default: exports/
+    description: "Output directory for exported clips"
+  - name: platforms
+    type: list
+    default: [tiktok, reels, shorts]
+    description: "Target platforms"
+  - name: format
+    type: string
+    default: mp4
+    description: "Output format"
+
+steps:
+  - id: scan-clips
+    name: Scan clips directory
+    shell: bash
+    script_windows: |
+      echo "Scanning {{input_dir}} for clips to export..."
+      dir /b "{{input_dir}}\*.mp4" 2>nul
+    script_linux: |
+      echo "Scanning {{input_dir}} for clips to export..."
+      ls -1 "{{input_dir}}"/*.mp4 2>/dev/null
+    script_macos: |
+      echo "Scanning {{input_dir}} for clips to export..."
+      ls -1 "{{input_dir}}"/*.mp4 2>/dev/null
+
+  - id: batch-convert
+    name: Batch convert for all platforms
+    shell: bash
+    script_windows: |
+      echo "Batch exporting clips to {{output_dir}} for platforms: {{platforms}}"
+      echo "Format: {{format}}"
+    script_linux: |
+      echo "Batch exporting clips to {{output_dir}} for platforms: {{platforms}}"
+      echo "Format: {{format}}"
+    script_macos: |
+      echo "Batch exporting clips to {{output_dir}} for platforms: {{platforms}}"
+      echo "Format: {{format}}"

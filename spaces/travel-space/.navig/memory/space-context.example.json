@@ -1,0 +1,16 @@
+{
+  "active_trips": [],
+  "upcoming_trips": [],
+  "completed_trips": [],
+  "document_status": {
+    "passport": { "valid": null, "expiry": null },
+    "global_entry": { "enrolled": false, "expiry": null },
+    "tsa_precheck": { "enrolled": false, "expiry": null }
+  },
+  "preferences": {
+    "preferred_seat": "window",
+    "dietary_restrictions": [],
+    "frequent_flyer_programs": []
+  },
+  "default_trip_currency": "USD"
+}

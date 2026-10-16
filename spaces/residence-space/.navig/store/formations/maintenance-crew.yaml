@@ -1,0 +1,47 @@
+id: maintenance-crew
+name: Maintenance Crew
+version: "1.0.0"
+description: >
+  Formation for all home maintenance operations: logging new tasks, marking
+  completions, scheduling recurring jobs, and surfacing overdue items.
+  Steward leads — housekeeper available for room context.
+
+agents:
+  lead: steward
+  supporting: [housekeeper]
+
+trigger_conditions:
+  - "New message in #maintenance inbox"
+  - "Scheduled maintenance item due within 7 days"
+  - "Weekly home review workflow — maintenance step"
+  - "Manual: navig formation run maintenance-crew"
+
+action_scope:
+  - ALLOW: write to .navig/memory/maintenance-log.json
+  - ALLOW: read from .navig/memory/room-registry.json
+  - DENY: authorize expenditure above operator-defined threshold without confirmation
+  - DENY: close recurring task without scheduling next occurrence
+
+workflows_used:
+  - weekly-home-review
+  - monthly-inventory-audit
+
+communication:
+  inbox_channel: "#maintenance"
+  escalation: operator
+  notify_on:
+    - maintenance_item_overdue
+    - high_priority_item_due_within_7_days
+    - cost_estimate_exceeds_budget_threshold
+
+alert_thresholds:
+  overdue_warn_days: 7
+  high_cost_alert_threshold: 500
+
+context_memory:
+  read: [maintenance-log.json, room-registry.json]
+  write: [maintenance-log.json]
+
+example_invocation: |
+  navig formation run maintenance-crew
+  # steward will: surface overdue + upcoming items → prompt for completion or reschedule

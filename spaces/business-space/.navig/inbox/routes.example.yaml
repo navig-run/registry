@@ -1,0 +1,21 @@
+channels:
+  - id: ecom
+    name: "#ecommerce"
+    agents: [growth-hacker, listing-optimizer, fulfillment-ops]
+    priority: normal
+  - id: finance
+    name: "#finance"
+    agents: [finance-analyst]
+    priority: high
+  - id: launch
+    name: "#launch"
+    agents: [growth-hacker, listing-optimizer]
+    priority: normal
+  - id: affiliate
+    name: "#affiliate"
+    agents: [affiliate-manager]
+    priority: normal
+  - id: ops
+    name: "#ops"
+    agents: [fulfillment-ops]
+    priority: normal

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ISS-001",
+    "title": "Example — inbox items waiting past the 48h SLA",
+    "description": "Replace this entry with a real issue. Fields: id, title, description, severity (low|medium|high), status (open|mitigated|resolved), detected_by (agent id), resolution, resolved_at.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "ops-manager"
+  }
+]

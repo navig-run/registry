@@ -1,0 +1,40 @@
+name: monthly-growth-review
+version: "2.0.0"
+description: Monthly personal growth review — learning progress, book completions, skill development, habit portfolio check, and goal alignment.
+schedule:
+  cron: "0 10 1 * *"
+  timezone: "{{TIMEZONE}}"
+  enabled: true
+on_demand: true
+formation: growth-ops
+
+steps:
+  - name: learning-summary
+    description: Summarise books, courses, and articles logged this month
+    skill: track-learning
+    params:
+      mode: read
+      period: last-30-days
+
+  - name: habit-portfolio
+    description: Review all active habits — drop stale ones, max 5 active
+    skill: check-habit-streak
+    params:
+      period: last-30-days
+
+  - name: growth-prompt
+    description: Generate guided growth review prompt
+    prompt: monthly-growth-review
+    depends_on: [learning-summary, habit-portfolio]
+
+  - name: journal-summary
+    description: Count journal entries and average mood for the month
+    skill: body-metrics-report
+    params:
+      period: last-30-days
+    depends_on: learning-summary
+
+  - name: notify
+    description: Post growth review to #growth
+    inbox_channel: "#growth"
+    depends_on: growth-prompt

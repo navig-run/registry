@@ -1,0 +1,58 @@
+id: noise-reduce
+name: "Noise Reduce"
+version: "1.0.0"
+description: "Remove background noise from audio recordings using ffmpeg filters"
+category: editing
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: input_path
+    type: string
+    required: true
+    description: "Input audio file path"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output audio file path"
+  - name: sensitivity
+    type: string
+    default: "moderate"
+    description: "Noise reduction sensitivity: light, moderate, aggressive"
+
+steps:
+  - id: analyse-noise
+    env:
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+    name: "Analyse Noise Floor"
+    shell: bash
+    script_linux: |
+      ffmpeg -i "${NAVIG_PARAM_INPUT_PATH}" -af "volumedetect" -f null /dev/null 2>&1 | grep -E "mean_volume|max_volume"
+    script_windows: |
+      ffmpeg -i "$($env:NAVIG_PARAM_INPUT_PATH)" -af "volumedetect" -f null NUL 2>&1 | findstr "mean_volume max_volume"
+    script_macos: |
+      ffmpeg -i "${NAVIG_PARAM_INPUT_PATH}" -af "volumedetect" -f null /dev/null 2>&1 | grep -E "mean_volume|max_volume"
+
+  - id: apply-noise-reduction
+    env:
+      NAVIG_PARAM_SENSITIVITY: "{{sensitivity}}"
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Apply Noise Reduction"
+    shell: bash
+    script_linux: |
+      GATE="afftdn=nf=-25"
+      if [ "${NAVIG_PARAM_SENSITIVITY}" = "light" ]; then GATE="afftdn=nf=-20"; fi
+      if [ "${NAVIG_PARAM_SENSITIVITY}" = "aggressive" ]; then GATE="afftdn=nf=-30"; fi
+      ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -af "$GATE" "${NAVIG_PARAM_OUTPUT_PATH}"
+    script_windows: |
+      $gate = "afftdn=nf=-25"
+      if ("$($env:NAVIG_PARAM_SENSITIVITY)" -eq "light") { $gate = "afftdn=nf=-20" }
+      if ("$($env:NAVIG_PARAM_SENSITIVITY)" -eq "aggressive") { $gate = "afftdn=nf=-30" }
+      ffmpeg -y -i "$($env:NAVIG_PARAM_INPUT_PATH)" -af $gate "$($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_macos: |
+      GATE="afftdn=nf=-25"
+      if [ "${NAVIG_PARAM_SENSITIVITY}" = "light" ]; then GATE="afftdn=nf=-20"; fi
+      if [ "${NAVIG_PARAM_SENSITIVITY}" = "aggressive" ]; then GATE="afftdn=nf=-30"; fi
+      ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -af "$GATE" "${NAVIG_PARAM_OUTPUT_PATH}"

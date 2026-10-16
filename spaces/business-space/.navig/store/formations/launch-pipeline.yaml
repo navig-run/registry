@@ -1,0 +1,47 @@
+id: launch-pipeline
+name: Product Launch Pipeline
+version: "1.0.0"
+description: End-to-end process for researching, listing, and launching a new product SKU.
+
+agents:
+  lead: growth-hacker
+  supporting:
+    - listing-optimizer
+    - finance-analyst
+    - fulfillment-ops
+
+trigger_conditions:
+  - New product sourcing decision made
+  - Launch campaign requested
+  - Seasonal product window approaching
+
+action_scope:
+  - Market and keyword research
+  - SKU margin validation
+  - Listing creation across target channels
+  - Launch sequence design (PPC, promotions, affiliate seeding)
+  - Post-launch performance review
+
+skills_used:
+  - calculate-margins
+  - audit-listings
+
+workflows_used:
+  - product-launch
+
+communication:
+  inbox_channel: "#launch"
+  escalation: finance-analyst
+  notify_on:
+    - listing live
+    - first sale
+    - margin below target during launch
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+    - .navig/memory/space-context.json
+  write:
+    - .navig/plans/briefs/
+
+example_invocation: "@launch-pipeline start --sku NEW-SKU-001 --channels amazon,etsy"

@@ -1,0 +1,71 @@
+space: human-space
+version: "2.0"
+description: "Personal life operating system — health, habits, daily rhythm, growth, and administrative life"
+default_formation: morning-routine
+runtime: navig-space-2
+language: en
+timezone: "UTC"   # set your IANA timezone, e.g. Europe/Paris
+
+# ─── Health & Wellness ───────────────────────────────────────────
+health:
+  metrics_file: spaces/health/metrics.csv
+  tracked_metrics:
+    - sleep_hours
+    - steps
+    - weight_kg
+    - energy_1_10
+    - mood_1_10
+    - hrv
+  sleep_target: 7.5
+  steps_target: 8000
+  mood_alert_threshold: 3
+  anomaly_window_days: 7
+
+# ─── Habits ──────────────────────────────────────────────────────
+habits:
+  log_file: spaces/growth/habits.csv
+  max_active_habits: 5
+  minimum_adherence_target: 0.8
+  streak_celebration_threshold: 7
+  habit_design_framework: "atomic-habits"
+
+# ─── Journal ─────────────────────────────────────────────────────
+journal:
+  directory: spaces/growth/journal/
+  format: markdown
+  daily_prompt: true
+  include_mood: true
+  include_gratitude: true
+
+# ─── Learning & Growth ───────────────────────────────────────────
+growth:
+  learning_log: spaces/growth/learning.csv
+  retro_directory: spaces/growth/retros/
+  book_notes_directory: spaces/growth/books/
+  quarterly_review: true
+
+# ─── Bureau (Administrative Life) ────────────────────────────────
+bureau:
+  directory: spaces/bureau/
+  renewal_alert_days: 30
+  categories:
+    - identity_documents
+    - subscriptions
+    - appointments
+    - insurance
+    - banking
+    - housing
+    - vehicle
+    - memberships
+
+# ─── Inbox ───────────────────────────────────────────────────────
+inbox:
+  routing: .navig/inbox/routes.yaml
+  sla_default: 24h
+  channels:
+    - "#daily"
+    - "#health"
+    - "#habits"
+    - "#growth"
+    - "#journal"
+    - "#bureau"

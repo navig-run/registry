@@ -1,0 +1,55 @@
+id: audio-record
+name: "Audio Record"
+version: "1.0.0"
+description: "Configure and start audio recording sessions with proper settings"
+category: recording
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: output_path
+    type: string
+    required: true
+    description: "Output file path for the recording"
+  - name: format
+    type: string
+    default: "wav"
+    description: "Recording format (wav, flac)"
+  - name: sample_rate
+    type: integer
+    default: 48000
+    description: "Sample rate in Hz"
+  - name: channels
+    type: integer
+    default: 2
+    description: "Number of audio channels"
+  - name: duration_seconds
+    type: integer
+    default: 0
+    description: "Max recording duration (0 = unlimited)"
+
+steps:
+  - id: check-audio-device
+    name: "Check Audio Input Device"
+    shell: bash
+    script_windows: |
+      ffmpeg -list_devices true -f dshow -i dummy 2>&1 | findstr "audio"
+    script_linux: |
+      arecord -l 2>/dev/null || pactl list sources short
+    script_macos: |
+      ffmpeg -f avfoundation -list_devices true -i "" 2>&1 | grep -A 20 "audio"
+
+  - id: start-recording
+    env:
+      NAVIG_PARAM_SAMPLE_RATE: "{{sample_rate}}"
+      NAVIG_PARAM_CHANNELS: "{{channels}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Start Recording"
+    shell: bash
+    script_windows: |
+      ffmpeg -f dshow -i audio="Microphone" -acodec pcm_s24le -ar $($env:NAVIG_PARAM_SAMPLE_RATE) -ac $($env:NAVIG_PARAM_CHANNELS) "$($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_linux: |
+      ffmpeg -f pulse -i default -acodec pcm_s24le -ar ${NAVIG_PARAM_SAMPLE_RATE} -ac ${NAVIG_PARAM_CHANNELS} "${NAVIG_PARAM_OUTPUT_PATH}"
+    script_macos: |
+      ffmpeg -f avfoundation -i ":0" -acodec pcm_s24le -ar ${NAVIG_PARAM_SAMPLE_RATE} -ac ${NAVIG_PARAM_CHANNELS} "${NAVIG_PARAM_OUTPUT_PATH}"

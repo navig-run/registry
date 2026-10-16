@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "space": "android",
+  "updated": "2026-07-10",
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "Device registry has placeholder entries",
+      "severity": "info",
+      "status": "open",
+      "device": "all",
+      "detected": "2026-07-10",
+      "detected_by": "pixel",
+      "description": "device-registry.json contains two example entries (and-001, and-002). Real device data must be entered after the first device-inventory and onboarding.",
+      "resolution": "Run the new-device-onboard workflow (ask the space agent to run it) for each real device, then remove example entries.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-002",
+      "title": "ADB / scrcpy binary paths not confirmed",
+      "severity": "info",
+      "status": "open",
+      "device": "space",
+      "detected": "2026-07-10",
+      "detected_by": "bridge",
+      "description": "adb and scrcpy must be installed (see tools/platform-tools and tools/scrcpy) before any skill will run. With adb_path / scrcpy_path empty in config.yaml they are resolved from PATH, then $ANDROID_HOME/platform-tools.",
+      "resolution": "Install platform-tools and scrcpy, then confirm `adb version` and `scrcpy --version` work, or set adb_path / scrcpy_path in .navig/config.yaml.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-003",
+      "title": "adb backup unreliable on Android 12+",
+      "severity": "warning",
+      "status": "open",
+      "device": "space",
+      "detected": "2026-07-10",
+      "detected_by": "keeper",
+      "description": "The app-backup skill relies on 'adb backup', which is deprecated and skipped by many apps (allowBackup=false) on Android 12+. Full app-data backup without root is unreliable.",
+      "resolution": "Treat media pull (file-transfer) + APK extraction (apk-extract) as the dependable backup core. Use per-app in-app export for critical chat/notes apps. Document exceptions in backup-strategy.",
+      "resolved": null
+    }
+  ],
+  "schema": {
+    "description": "Log operational issues, anomalies, and incidents here. Agents write to this file automatically.",
+    "severity_levels": ["info", "warning", "critical", "resolved"],
+    "status_values": ["open", "investigating", "mitigated", "resolved", "wont-fix"],
+    "template": {
+      "id": "ISS-NNN",
+      "title": "Short issue description",
+      "severity": "warning",
+      "status": "open",
+      "device": "serial/name or 'space' for space-wide",
+      "detected": "YYYY-MM-DD",
+      "detected_by": "agent-name or 'operator'",
+      "description": "Detailed description of the issue",
+      "resolution": "Steps taken or planned to resolve",
+      "resolved": null
+    }
+  }
+}

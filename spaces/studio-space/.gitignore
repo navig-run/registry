@@ -1,0 +1,103 @@
+# NAVIG Studio Space — .gitignore
+
+# ─────────────────────────────────────────────
+# NAVIG vault & secrets — NEVER commit these
+# ─────────────────────────────────────────────
+.navig/vault/
+.navig/vault.yaml
+.navig/*.key
+.navig/*.pem
+.navig/*.p12
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets.*
+**/credentials.*
+
+# ─────────────────────────────────────────────
+# Local session data — may contain large audio
+# ─────────────────────────────────────────────
+sessions/**/*.wav
+sessions/**/*.mp3
+sessions/**/*.flac
+sessions/**/*.aif
+sessions/**/*.ogg
+samples/**/*.wav
+samples/**/*.mp3
+releases/**/*.wav
+releases/**/*.mp3
+releases/**/*.flac
+
+# ─────────────────────────────────────────────
+# Logs and audit trails
+# ─────────────────────────────────────────────
+.navig/logs/
+*.log
+*.log.*
+logs/
+
+# ─────────────────────────────────────────────
+# NAVIG runtime state (local-only)
+# ─────────────────────────────────────────────
+.navig/.lock
+.navig/memory/*.json
+.navig/session/
+.navig/cache/
+.navig/tmp/
+
+# ─────────────────────────────────────────────
+# OS junk
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ─────────────────────────────────────────────
+# Editor junk
+# ─────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.#*
+
+# ─────────────────────────────────────────────
+# Temporary / scratch files
+# ─────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+scratch/
+temp/
+tmp/
+
+# ─────────────────────────────────────────────
+# NAVIG space pack artifacts
+# ─────────────────────────────────────────────
+*.navig-space
+*.space.zip
+*.space.tar.gz
+dist/
+
+# ─────────────────────────────────────────────
+# What IS committed (override safety nets above)
+# ─────────────────────────────────────────────
+!.navig/skills/
+!.navig/store/
+!.navig/wiki/
+!.navig/memory/README.md
+!.navig/memory/*.example.json
+!.navig/inbox/
+!.navig/mcp/
+!space.manifest.json
+!README.md
+!PREVIEW.md
+!CHANGELOG.md
+!LICENSE
+!screenshots/
+!.navig/config.yaml
+!.navig/context.md

@@ -1,0 +1,73 @@
+# spaces/schema.yaml — the NAVIG space manifest
+# Version: 2.0.0 | Updated: 2026-10-16
+#
+# The canonical manifest is `<space>/.navig/space.json` — NAVIG Core reads it first.
+# Older files (`.navig/space.config.json`, `.navig/space.manifest.json`, a root
+# `space.manifest.json`) are still read for compatibility; when present they must agree with
+# space.json on id, name, tier, status and author.
+#
+# The publish gate (`node scripts/check-registry.mjs`) enforces the rules marked [gate].
+# Use `empty-space/` as the skeleton for a new space.
+
+space_json:
+  # ── Identity ──────────────────────────────────────────────────────────────
+  id:          string   # (required) [gate] equals the folder name, kebab-case, ends in -space
+  name:        string   # (required) display name
+  version:     string   # (required) semver, e.g. "1.0.0"
+  description: string   # (required) one or two plain sentences
+  author:      string   # (required) [gate] "navig-run" for first-party spaces
+  license:     string   # (required) "MIT"; the folder also ships a LICENSE file [gate]
+
+  # ── Classification ────────────────────────────────────────────────────────
+  tier:                 # (required) a content category — unrelated to price
+    type:   enum
+    values: [personal, work, studio, platform, community, labs]
+    # personal  — your own life: self, home, health, relationships, growth
+    # work      — professional domains: company, clients, code, infrastructure
+    # studio    — building and configuring NAVIG itself: agents, tools, packages
+    # platform  — operational dashboards: deployments, cost, incidents
+    # community — sharing, showcasing and remixing with others
+    # labs      — experimental, opt-in (formations, swarms, councils)
+  status:               # (required)
+    type:   enum
+    values: [active, ready, planned, labs, archived]
+    # active   — ships working agents, skills and workflows
+    # ready    — complete, not yet in wide use
+    # planned  — designed; capabilities still to be built. Never sold.
+    # labs     — experimental, may change or break. Never sold.
+    # archived — no longer maintained; not listed
+
+  # ── Capabilities (list only what exists in the folder) ─────────────────────
+  agents:     array[string]   # ids under .navig/store/agents/
+  formations: array[string]   # ids under .navig/store/formations/
+  skills:     array[string]   # ids under .navig/skills/
+  workflows:  array[string]   # ids under .navig/store/workflows/
+  packages:   array[string]   # navig plugins the space expects ("packages", never "plugins")
+
+  # ── Real nested spaces (not logical links) ────────────────────────────────
+  subspaces:
+    type: array[{ id: string, path: string, description: string }]
+    # Folders inside this space that are spaces themselves, e.g. { path: "spaces/ops" }.
+    # A relationship between two independent spaces is NOT a subspace.
+
+# ── Files every published space ships ──────────────────────────────────────
+layout:
+  required:
+    - .navig/space.json
+    - LICENSE
+    - README.md
+  example_state_only:   # [gate] only README.md, .gitkeep or *.example.<ext> under these
+    - .navig/memory/
+    - .navig/inbox/
+    - .navig/state/
+
+# ── Rules ──────────────────────────────────────────────────────────────────
+validation:
+  - "[gate] No machine-specific absolute paths (C:\\..., D:\\..., /home/<name>) — use a config key, an env var or a relative path"
+  - "[gate] No personal data: real names, handles, hostnames, inventories, diaries, ops history"
+  - "[gate] No secrets"
+  - "[gate] Every .json parses"
+  - "[gate] spaces/registry.json lists every published space folder, once"
+  - "No {{placeholder}} tokens outside the empty-space and example-space templates"
+  - "Commands in docs exist in the navig CLI"
+  - "Values reach scripts through env vars or argv — never pasted into code"

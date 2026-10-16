@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "space": "homelab",
+  "updated": "2026-02-26",
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "Device registry has placeholder entries",
+      "severity": "info",
+      "status": "open",
+      "device": "all",
+      "detected": "2026-02-26",
+      "detected_by": "archivist",
+      "description": "device-registry.json contains two example entries (dev-001, dev-002). Real device data must be entered after initial network scan and onboarding.",
+      "resolution": "Run the onboard-device workflow (navig ask \"run the onboard-device workflow\") for each real host, then remove example entries.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-002",
+      "title": "Network subnet not confirmed",
+      "severity": "info",
+      "status": "open",
+      "device": "space",
+      "detected": "2026-02-26",
+      "detected_by": "archivist",
+      "description": "space-context.json has default subnet 192.168.1.0/24. This must be updated to match the actual LAN range before network-scan and port-audit skills will produce accurate results.",
+      "resolution": "Edit .navig/memory/space-context.json and update primary_network.subnet, gateway, and dns fields.",
+      "resolved": null
+    }
+  ],
+  "schema": {
+    "description": "Log operational issues, anomalies, and incidents here. Agents write to this file automatically.",
+    "severity_levels": ["info", "warning", "critical", "resolved"],
+    "status_values": ["open", "investigating", "mitigated", "resolved", "wont-fix"],
+    "template": {
+      "id": "ISS-NNN",
+      "title": "Short issue description",
+      "severity": "warning",
+      "status": "open",
+      "device": "hostname or 'space' for space-wide",
+      "detected": "YYYY-MM-DD",
+      "detected_by": "agent-name or 'operator'",
+      "description": "Detailed description of the issue",
+      "resolution": "Steps taken or planned to resolve",
+      "resolved": null
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "system-space",
+  "kind": "space",
+  "name": "System",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "active",
+  "description": "OS & filesystem operator wired into navig.",
+  "agent": {
+    "default": "organizer",
+    "formation": "organize-pipeline"
+  },
+  "agents": [
+    {"id": "inspector", "role": "Inventory, sizing, audit",                 "formation": "organize-pipeline"},
+    {"id": "organizer", "role": "Classify, file, index",                    "formation": "organize-pipeline"},
+    {"id": "mover",     "role": "Safe move/migrate/delete, long-path purge","formation": "safe-migration"},
+    {"id": "converter", "role": "Archive/doc/image conversion",             "formation": "organize-pipeline"}
+  ],
+  "formations": [
+    {"id": "organize-pipeline", "description": "Inventory, classify, file, index"},
+    {"id": "safe-migration",    "description": "Verify on dest, trash original, log, never hard-delete"}
+  ],
+  "skills": [],
+  "workflows": [],
+  "packages": [
+    {"id": "robocopy",   "version": "*", "bin_windows": "robocopy"},
+    {"id": "powershell", "version": "7", "bin_windows": "pwsh"},
+    {"id": "7zip",       "version": "*", "bin_windows": "7z"},
+    {"id": "pandoc",     "version": "*", "bin_windows": "pandoc"}
+  ],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": ["windows", "filesystem", "automation"],
+    "platform": ["Windows"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "active_learning": [],
+  "completed": [],
+  "paused": [],
+  "abandoned": [],
+  "skills": [],
+  "review_queue": [],
+  "total_insights_captured": 0,
+  "weekly_review_streak": 0,
+  "last_review_date": null,
+  "learning_preferences": {
+    "preferred_format": [],
+    "daily_learning_minutes_target": 30,
+    "weekly_review_day": "sunday"
+  }
+}

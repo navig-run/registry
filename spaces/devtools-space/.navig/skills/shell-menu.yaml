@@ -1,0 +1,36 @@
+name: Shell Menu
+description: Install / remove the Windows right-click context menu that exposes these tools. Per-user (HKCU), no admin needed.
+version: 1.0.0
+category: system
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: elevated
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: install
+    syntax: navig skill run shell-menu install
+    description: Deploy the engine and register the right-click menu under HKCU (no admin)
+    risk: elevated
+  - name: uninstall
+    syntax: navig skill run shell-menu uninstall
+    description: Remove the right-click menu from HKCU
+    risk: elevated
+  - name: doctor
+    syntax: navig skill run shell-menu doctor
+    description: Report which underlying tools (7z, git, yt-dlp, npm, docker, ssh) are installed
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use to set up, remove, or repair the Windows context-menu integration, or to
+    check the toolchain. Trigger on "install the right-click menu", "remove the
+    context menu".
+  output_format: >
+    Registers/removes HKCU verbs from bin/menu.manifest.json and reports counts.
+  follow_up: >
+    Edit bin/menu.manifest.json to change which commands appear in the menu, then
+    re-run install. Preview first with `pwsh bin\menu\install.ps1 -DryRun`.

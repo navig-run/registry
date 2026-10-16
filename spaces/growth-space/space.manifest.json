@@ -1,0 +1,27 @@
+{
+  "space_id": "growth-space",
+  "type": "human",
+  "name": "Personal Growth",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-02",
+  "description": "Learning, habit formation, and self-improvement — courses, reading logs, skill targets, and reflection.",
+  "paths": {
+    "docs": "docs",
+    "ops": "ops",
+    "inbox": "inbox",
+    "out": "out"
+  },
+  "meta": {
+    "tags": [
+      "learning",
+      "habits",
+      "self-improvement",
+      "skills",
+      "reflection"
+    ]
+  },
+  "author": "navig-run",
+  "tier": "personal",
+  "status": "planned"
+}

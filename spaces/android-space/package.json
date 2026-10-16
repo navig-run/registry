@@ -1,0 +1,34 @@
+{
+  "name": "android-space",
+  "version": "1.0.0",
+  "description": "NAVIG space — cross-platform Android device command hub",
+  "private": true,
+  "author": "navig-run",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/android-space"
+  },
+  "scripts": {
+    "validate":     "navig space doctor --no-interactive",
+    "status":       "navig space check --no-interactive",
+    "skills":       "navig skill list",
+    "connect":      "navig skill run adb-connect",
+    "inventory":    "navig skill run device-inventory",
+    "doctor":       "navig space doctor --no-interactive && navig skill list"
+  },
+  "navig": {
+    "type": "space",
+    "min_navig_version": "2.0.0",
+    "skills_dir": ".navig/skills",
+    "entry_workflow": "morning-device-check"
+  },
+  "keywords": [
+    "navig",
+    "space",
+    "android",
+    "adb",
+    "mobile"
+  ],
+  "license": "MIT"
+}

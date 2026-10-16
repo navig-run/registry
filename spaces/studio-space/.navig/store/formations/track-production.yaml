@@ -1,0 +1,50 @@
+id: track-production
+name: Track Production
+version: "1.0.0"
+description: >
+  End-to-end single track production pipeline. Covers concept, arrangement,
+  recording, mixing, and mastering handoff for one track.
+
+agents:
+  lead: producer
+  supporting: [mix-engineer, sound-designer, session-planner]
+
+trigger_conditions:
+  - "New track production started"
+  - "Manual invocation: navig formation run track-production"
+  - "Session created with production flag"
+
+action_scope:
+  - ALLOW: bpm-detect, key-detect, daw-project-scan, stem-export, backup-session
+  - ALLOW: write to .navig/memory/space-context.json
+  - ALLOW: write to sessions/
+  - DENY: release operations
+  - DENY: sample library modifications
+
+skills_used:
+  - bpm-detect
+  - key-detect
+  - daw-project-scan
+  - stem-export
+  - backup-session
+
+workflows_used:
+  - track-production
+  - session-prep
+
+communication:
+  inbox_channel: "#production"
+  escalation: operator
+  notify_on:
+    - session_created
+    - arrangement_complete
+    - mix_ready
+    - track_complete
+
+context_memory:
+  read: [space-context.json, goals.json]
+  write: [space-context.json]
+
+example_invocation: |
+  navig formation run track-production
+  # producer will: create session → set BPM/key → arrange → coordinate mix → review

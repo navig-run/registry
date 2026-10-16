@@ -1,0 +1,119 @@
+{
+  "id": "studio-space",
+  "kind": "space",
+  "name": "Studio Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "description": "Music production command center — from first beat to final master, manage sessions, mixes, releases, and samples in one space.",
+  "agent": {
+    "default": "producer",
+    "formation": "track-production"
+  },
+  "agents": [
+    {
+      "id": "producer",
+      "role": "Creative direction and session orchestration",
+      "formation": "track-production"
+    },
+    {
+      "id": "mix-engineer",
+      "role": "Mixing, levels, EQ, and spatial placement",
+      "formation": "mastering-suite"
+    },
+    {
+      "id": "sound-designer",
+      "role": "Sample creation, synthesis, sound palette",
+      "formation": "sample-lab"
+    },
+    {
+      "id": "release-manager",
+      "role": "Distribution, metadata, platform compliance",
+      "formation": "release-pipeline"
+    },
+    {
+      "id": "session-planner",
+      "role": "Calendar, deadlines, session prep",
+      "formation": "collab-session"
+    }
+  ],
+  "formations": [
+    {
+      "id": "track-production",
+      "description": "End-to-end single track production pipeline"
+    },
+    {
+      "id": "release-pipeline",
+      "description": "From final master to live on all platforms"
+    },
+    {
+      "id": "sample-lab",
+      "description": "Sample discovery, processing, and cataloging"
+    },
+    {
+      "id": "mastering-suite",
+      "description": "Final mix QC and master delivery"
+    },
+    {
+      "id": "collab-session",
+      "description": "Multi-artist session coordination"
+    }
+  ],
+  "skills": [
+    "bpm-detect",
+    "key-detect",
+    "loudness-check",
+    "stem-export",
+    "format-convert",
+    "metadata-tag",
+    "upload-distro",
+    "backup-session",
+    "sample-catalog",
+    "daw-project-scan"
+  ],
+  "workflows": [
+    {
+      "id": "morning-studio",
+      "schedule": "daily"
+    },
+    {
+      "id": "release-cycle",
+      "schedule": "on-demand"
+    },
+    {
+      "id": "sample-harvest",
+      "schedule": "on-demand"
+    },
+    {
+      "id": "session-prep",
+      "schedule": "on-demand"
+    },
+    {
+      "id": "track-production",
+      "schedule": "on-demand"
+    },
+    {
+      "id": "weekly-review",
+      "schedule": "weekly"
+    }
+  ],
+  "packages": [],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": [
+      "music",
+      "production",
+      "daw",
+      "mixing",
+      "mastering",
+      "releases"
+    ],
+    "platform": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  }
+}

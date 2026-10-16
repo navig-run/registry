@@ -1,0 +1,25 @@
+{
+  "space_id": "radar-space",
+  "display_name": "Radar Space",
+  "description": "Resource costs and cloud spend — tracked before they surprise you.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "platform",
+  "status": "planned",
+  "tags": [
+    "radar",
+    "costs",
+    "cloud",
+    "spend",
+    "monitoring",
+    "budget"
+  ],
+  "capability_deps": [
+    "storage",
+    "tools",
+    "agent"
+  ]
+}

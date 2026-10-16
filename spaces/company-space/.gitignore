@@ -1,0 +1,30 @@
+# Environment & Secrets
+.env
+.env.*
+vault/
+secrets/
+*.private.*
+
+# Financial sensitive data
+finance/invoices/*.pdf
+finance/expenses/receipts/
+finance/tax/declarations/
+*.bank
+*.iban
+
+# Client sensitive data
+clients/*.private.md
+contracts/signed/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+node_modules/
+*.log
+
+# Working state (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml

@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "space": "android-space",
+  "description": "MCP server configuration for the android space — defines tool access, agent scoping, and security policy for ADB / scrcpy / fastboot operations",
+  "updated": "2026-07-10",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Read/write access to space directories, APK staging, and backup destinations",
+      "config": {
+        "allowed_roots": [
+          "{space_root}",
+          "{space_root}/devices/apks",
+          "{space_root}/devices/backups",
+          "{space_root}/devices/media"
+        ],
+        "read_only_roots": [
+          "{android_home}/platform-tools",
+          "{scrcpy_dir}"
+        ],
+        "max_file_size_mb": 4096,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "adb",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Controlled ADB command execution against connected / paired Android devices",
+      "config": {
+        "adb_path": "adb",
+        "allowed_transports": ["usb", "tcpip"],
+        "timeout_seconds": 60,
+        "blocked_commands": [
+          "adb shell su",
+          "adb shell rm -rf /",
+          "adb shell wipe data",
+          "fastboot flash",
+          "fastboot -w",
+          "adb shell recovery --wipe_data",
+          "adb reboot bootloader"
+        ],
+        "require_confirmation_for": [
+          "adb shell pm uninstall",
+          "adb shell pm disable-user",
+          "adb shell pm clear",
+          "adb restore",
+          "adb reboot",
+          "adb shell settings put"
+        ],
+        "max_output_kb": 512
+      }
+    },
+    {
+      "id": "scrcpy",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Screen mirroring and input injection via scrcpy",
+      "config": {
+        "scrcpy_path": "scrcpy",
+        "default_max_size": 1024,
+        "default_bit_rate": "8M",
+        "default_max_fps": 60,
+        "allow_control": true,
+        "require_confirmation_for_control": false
+      }
+    },
+    {
+      "id": "device-monitor",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Device health and inventory sensors via adb dumpsys / getprop",
+      "config": {
+        "tools": ["getprop", "dumpsys", "pm", "df", "pidof", "logcat"],
+        "poll_interval_seconds": 300,
+        "alert_thresholds": {
+          "battery_temp_celsius": 40,
+          "battery_level_percent_low": 15,
+          "storage_usage_percent": 90
+        }
+      }
+    }
+  ],
+  "agent_tool_allowlist": {
+    "pixel": ["adb", "device-monitor", "filesystem"],
+    "bridge": ["adb", "device-monitor"],
+    "installer": ["adb", "filesystem"],
+    "scrub": ["adb", "device-monitor"],
+    "mirror": ["scrcpy", "adb"],
+    "keeper": ["adb", "filesystem", "device-monitor"]
+  },
+  "security_policy": {
+    "require_space_active": true,
+    "log_all_tool_calls": true,
+    "log_path": ".navig/logs/mcp-audit.log",
+    "rate_limits": {
+      "installs_per_hour": 30,
+      "adb_commands_per_minute": 120,
+      "file_writes_per_minute": 60
+    },
+    "alert_on": [
+      "blocked_command_attempt",
+      "uninstall_or_disable_attempt",
+      "file_access_outside_allowed_roots",
+      "rate_limit_exceeded"
+    ]
+  }
+}

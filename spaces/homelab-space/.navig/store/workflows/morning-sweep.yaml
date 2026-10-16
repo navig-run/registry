@@ -1,0 +1,115 @@
+name: morning-sweep
+description: |
+  Scheduled morning infrastructure sweep. Runs network discovery, hardware health
+  checks, disk space audit, and anomaly detection across all registered hosts.
+  Delivers a consolidated status report to the space inbox.
+
+schedule:
+  cron: "0 7 * * 1-5"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: hardware-patrol
+
+steps:
+  - id: network_scan
+    name: "Network Discovery"
+    skill: network-scan
+    params:
+      target: "auto"       # reads subnet from space config
+      output_format: json
+    on_error: continue     # don't abort the whole sweep for a network glitch
+    timeout_seconds: 120
+
+  - id: check_registry
+    name: "Compare Scan to Registry"
+    depends_on: [network_scan]
+    agent: atlas
+    action: compare_scan_to_registry
+    params:
+      scan_result: "{{steps.network_scan.output}}"
+      registry_path: ".navig/memory/device-registry.json"
+    on_error: continue
+
+  - id: hardware_health
+    name: "Hardware Health Check"
+    skill: hardware-inventory
+    params:
+      targets: "all_registered"
+      include_gpu: true
+      include_smart: true
+    parallel: true          # run against all hosts in parallel
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: gpu_health
+    name: "GPU Health Check"
+    skill: gpu-health
+    depends_on: []
+    params:
+      targets: "all_gpu_hosts"
+      alert_threshold_c: 80
+    parallel: true
+    timeout_seconds: 60
+    on_error: continue
+
+  - id: disk_space
+    name: "Disk Space Audit"
+    agent: pulse
+    action: disk_space_report
+    params:
+      targets: "all_registered"
+      warn_threshold_pct: 85
+      critical_threshold_pct: 95
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: anomaly_check
+    name: "Log Anomaly Scan"
+    agent: sentinel
+    action: scan_anomalies
+    params:
+      hosts: "all_registered"
+      lookback_minutes: 480   # since yesterday evening
+      patterns: ["ERROR", "CRITICAL", "authentication failure", "Out of memory"]
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: new_devices_alert
+    name: "Alert on Unknown Devices"
+    depends_on: [check_registry]
+    agent: sentinel
+    action: alert_unknown_devices
+    params:
+      unknown_devices: "{{steps.check_registry.unknown}}"
+    condition: "{{steps.check_registry.unknown | length}} > 0"
+
+  - id: write_memory
+    name: "Write Health Snapshot to Memory"
+    depends_on: [hardware_health, gpu_health, disk_space]
+    agent: archivist
+    action: write_memory
+    params:
+      file: ".navig/memory/health-snapshots.json"
+      data:
+        timestamp: "{{now_iso}}"
+        hardware: "{{steps.hardware_health.output}}"
+        gpu: "{{steps.gpu_health.output}}"
+        disk: "{{steps.disk_space.output}}"
+
+  - id: report
+    name: "Compose & Deliver Morning Report"
+    depends_on: [network_scan, hardware_health, gpu_health, disk_space, anomaly_check]
+    agent: herald
+    action: compose_report
+    params:
+      template: "morning-sweep"
+      sections:
+        - network: "{{steps.network_scan.output}}"
+        - hardware: "{{steps.hardware_health.output}}"
+        - gpu: "{{steps.gpu_health.output}}"
+        - disk: "{{steps.disk_space.output}}"
+        - anomalies: "{{steps.anomaly_check.output}}"
+      deliver_to: inbox
+      channel: "#ops"

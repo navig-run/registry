@@ -1,0 +1,43 @@
+{
+  "space_id": "channel-space",
+  "name": "Channel Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "paths": {
+    "docs": "docs/",
+    "ops": ".navig/ops/",
+    "inbox": ".navig/inbox/",
+    "skills": ".navig/skills/",
+    "scripts": "scripts/",
+    "tests": "tests/"
+  },
+  "agents": [
+    "art-director",
+    "editor",
+    "growth-analyst",
+    "scriptwriter",
+    "showrunner"
+  ],
+  "formations": [
+    "channel-growth",
+    "community-ops",
+    "content-planning",
+    "thumbnail-lab",
+    "video-production"
+  ],
+  "skills": [
+    "analytics-pull",
+    "competitor-scan",
+    "description-writer",
+    "hook-analyzer",
+    "retention-analysis",
+    "schedule-publish",
+    "seo-audit",
+    "tag-optimizer",
+    "thumbnail-score",
+    "title-generator"
+  ]
+}

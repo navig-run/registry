@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "run-untrusted",
+      "prompt": "How do I run untrusted, LLM-generated Python code safely on Cloudflare and capture its output?",
+      "expect": { "contains": ["getSandbox", "runCode", "@cloudflare/sandbox"], "excludes": [] }
+    },
+    {
+      "id": "config-and-export",
+      "prompt": "What wrangler config and Worker export are required for the Sandbox SDK to deploy at all?",
+      "expect": { "contains": ["containers", "export { Sandbox }", "new_sqlite_classes"], "excludes": [] }
+    },
+    {
+      "id": "expose-port",
+      "prompt": "How do I expose an HTTP server running inside the sandbox, and what does this require in production?",
+      "expect": { "contains": ["exposePort", "wildcard DNS"], "excludes": [] }
+    }
+  ]
+}

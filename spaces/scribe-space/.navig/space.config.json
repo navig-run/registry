@@ -1,0 +1,99 @@
+{
+  "id": "scribe-space",
+  "kind": "space",
+  "name": "Scribe Space",
+  "version": "1.0.1",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "license": "MIT",
+  "display_name": "Scribe Space",
+  "description": "The ultimate writers' space — fiction, journalism, screenwriting, technical docs, content strategy, and more.",
+  "agent": {
+    "default": "editor",
+    "formation": "fiction-workshop"
+  },
+  "agents": [
+    {
+      "id": "storyteller",
+      "name": "Storyteller",
+      "role": "Long-form fiction and narrative non-fiction",
+      "formation": "fiction-workshop"
+    },
+    {
+      "id": "journalist",
+      "name": "Journalist",
+      "role": "Investigative articles, stories, interview notes",
+      "formation": "journalism-workflow"
+    },
+    {
+      "id": "editor",
+      "name": "Editor",
+      "role": "Structural editing, line editing, copy editing",
+      "formation": "fiction-workshop"
+    },
+    {
+      "id": "content-strategist",
+      "name": "Content Strategist",
+      "role": "Editorial calendars, brand voice, content briefs",
+      "formation": "content-pipeline"
+    },
+    {
+      "id": "screenwriter",
+      "name": "Screenwriter",
+      "role": "Feature film and TV scripts in Fountain format",
+      "formation": "production-draft"
+    },
+    {
+      "id": "tech-writer",
+      "name": "Tech Writer",
+      "role": "API docs, user guides, SOPs, reference documentation",
+      "formation": "content-pipeline"
+    }
+  ],
+  "formations": [
+    "fiction-workshop",
+    "journalism-workflow",
+    "content-pipeline",
+    "production-draft"
+  ],
+  "skills": [
+    "word-count",
+    "grammar-check",
+    "outline-draft",
+    "export-pdf",
+    "readability-score"
+  ],
+  "workflows": [
+    {
+      "id": "first-draft",
+      "trigger": "on-demand",
+      "description": "Generate a first draft from an outline or brief"
+    },
+    {
+      "id": "editorial-review",
+      "trigger": "on-demand",
+      "description": "Full editorial review: structure → line → copy"
+    },
+    {
+      "id": "publish-checklist",
+      "trigger": "on-demand",
+      "description": "Pre-publish verification checklist"
+    }
+  ],
+  "meta": {
+    "tags": [
+      "writing",
+      "fiction",
+      "journalism",
+      "screenwriting",
+      "content",
+      "technical-writing"
+    ],
+    "platforms": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  }
+}

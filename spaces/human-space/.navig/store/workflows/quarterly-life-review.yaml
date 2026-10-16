@@ -1,0 +1,55 @@
+name: quarterly-life-review
+version: "2.0.0"
+description: Quarterly all-domains review — health trends, growth progress, habit evolution, bureau status, goal realignment, and next-quarter planning.
+schedule:
+  cron: "0 10 1 1,4,7,10 *"
+  timezone: "{{TIMEZONE}}"
+  enabled: true
+on_demand: true
+formation: growth-ops
+
+steps:
+  - name: health-quarter
+    description: 90-day health metrics summary with trend analysis
+    skill: body-metrics-report
+    params:
+      period: last-90-days
+
+  - name: sleep-quarter
+    description: 90-day sleep analysis
+    skill: sleep-analysis
+    params:
+      period: last-30-days
+
+  - name: habit-evolution
+    description: Review habit additions, drops, and streak records this quarter
+    skill: check-habit-streak
+    params:
+      period: last-30-days
+
+  - name: learning-quarter
+    description: Books, courses, and skills logged this quarter
+    skill: track-learning
+    params:
+      mode: read
+      period: last-90-days
+
+  - name: bureau-status
+    description: Check all upcoming renewals for next quarter
+    skill: renewal-check
+    params:
+      days_ahead: 90
+
+  - name: review-prompt
+    description: Generate quarterly life review with guided reflection
+    prompt: quarterly-life-review
+    depends_on: [health-quarter, sleep-quarter, habit-evolution, learning-quarter, bureau-status]
+
+  - name: goal-realign
+    description: Review goals.json alignment and suggest adjustments
+    depends_on: review-prompt
+
+  - name: notify
+    description: Post quarterly review to #planning
+    inbox_channel: "#planning"
+    depends_on: goal-realign

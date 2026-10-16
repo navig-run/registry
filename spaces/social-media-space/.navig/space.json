@@ -1,0 +1,17 @@
+{
+  "id": "social-media-space",
+  "name": "Social Media Space",
+  "version": "1.0.1",
+  "tier": "work",
+  "status": "active",
+  "description": "Unified command layer for all social media — brands, accounts, content pipelines, scheduling, analytics, and viral intelligence.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": { "default": "content-strategist", "formation": "content-pipeline" },
+  "agents": ["content-strategist", "post-writer", "analytics-watcher", "brand-guardian", "scheduler"],
+  "formations": ["content-pipeline", "analytics-review", "viral-radar"],
+  "skills": ["create-post-draft", "schedule-post", "analyze-engagement", "check-brand-voice", "hashtag-research"],
+  "workflows": ["weekly-content-plan", "daily-post-review", "analytics-weekly", "viral-monitor"],
+  "packages": ["content-pipeline", "analytics", "scheduling", "brand-voice"],
+  "subspaces": []
+}

@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "add-command",
+      "prompt": "I'm working in the Anchor app. How do I add a new Rust backend command and call it from the React frontend so invoke() actually reaches it?",
+      "expect": {
+        "contains": ["src-tauri", "invoke_handler", "#[tauri::command]", "capabilities"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "dev-does-nothing",
+      "prompt": "I ran tauri:dev on Anchor and nothing happens — no window opens. What's going on and how do I fix it?",
+      "expect": {
+        "contains": ["single-instance", "productName", "tauri.conf.json"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "ship-installer",
+      "prompt": "How do I build the release installer for Anchor and package it for the Microsoft Store?",
+      "expect": {
+        "contains": ["MSIX", "tauri.conf.json", "bundle"],
+        "excludes": []
+      }
+    }
+  ]
+}

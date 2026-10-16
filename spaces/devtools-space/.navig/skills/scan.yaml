@@ -1,0 +1,26 @@
+name: Scan
+description: Upload a file (or a zipped folder) to VirusTotal and open the analysis. Falls back to the website when no API key is set.
+version: 1.0.0
+category: security
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: virustotal
+    syntax: navig skill run scan virustotal --target <file-or-folder>
+    description: Scan with VirusTotal (folders are zipped first; 650 MB limit)
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use to check a file or folder for malware. Trigger on "scan this with virustotal",
+    "is this file safe", "check this download".
+  output_format: >
+    Uploads, prints the analysis id, and opens the result page in the browser.
+  follow_up: >
+    Needs virustotal_api_key in config.json; otherwise it opens the upload website.

@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "secret-compare",
+      "prompt": "Review this Worker: it compares an incoming API token to the stored secret with ===. What's the vulnerability and what should it use instead?",
+      "expect": { "contains": ["timingSafeEqual", "timing"], "excludes": [] }
+    },
+    {
+      "id": "waituntil-gotcha",
+      "prompt": "How should a Worker run background work after returning a response, and what's the gotcha with destructuring ctx?",
+      "expect": { "contains": ["ctx.waitUntil", "Illegal invocation"], "excludes": [] }
+    },
+    {
+      "id": "large-payload",
+      "prompt": "My Worker reads an unbounded upload with await response.text(). Why is that risky and what's the right approach?",
+      "expect": { "contains": ["stream", "128 MB"], "excludes": [] }
+    }
+  ]
+}

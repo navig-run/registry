@@ -1,0 +1,105 @@
+name: episode-production
+description: |
+  End-to-end episode production from concept to mastered audio file.
+  Covers topic prep, recording, editing, mastering, show notes, and
+  transcript generation.
+schedule:
+  cron: null
+  timezone: "UTC"
+  enabled: false
+on_demand: true
+formation: episode-production
+
+steps:
+  - id: prep-topic
+    name: "Prepare Topic"
+    agent: show-planner
+    action: "Research topic and prepare outline"
+    params:
+      depth: "thorough"
+      output: "episode-brief"
+    depends_on: []
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: prep-guest
+    name: "Prepare Guest Brief"
+    agent: show-planner
+    action: "Research guest background and prepare interview questions"
+    params:
+      template: "guest-prep"
+    depends_on: ["prep-topic"]
+    on_error: "skip"
+    timeout_seconds: 300
+    condition: "params.has_guest == true"
+
+  - id: record-session
+    name: "Record Episode"
+    skill: audio-record
+    params:
+      format: "wav"
+      sample_rate: 48000
+      channels: 2
+    depends_on: ["prep-topic"]
+    on_error: "pause"
+    timeout_seconds: 7200
+
+  - id: noise-reduce
+    name: "Reduce Background Noise"
+    skill: noise-reduce
+    params:
+      sensitivity: "moderate"
+    depends_on: ["record-session"]
+    on_error: "pause"
+    timeout_seconds: 600
+
+  - id: edit-audio
+    name: "Edit Audio"
+    skill: audio-edit
+    params:
+      operations: ["trim-silence", "remove-filler", "balance-levels"]
+    depends_on: ["noise-reduce"]
+    on_error: "pause"
+    timeout_seconds: 1200
+
+  - id: master-audio
+    name: "Master to Broadcast Quality"
+    skill: loudness-normalize
+    params:
+      target_lufs: -16
+      true_peak: -1.5
+    depends_on: ["edit-audio"]
+    on_error: "pause"
+    timeout_seconds: 600
+
+  - id: generate-transcript
+    name: "Generate Transcript"
+    skill: transcript-generate
+    params:
+      model: "whisper-large"
+      language: "auto"
+    depends_on: ["master-audio"]
+    on_error: "skip"
+    timeout_seconds: 1800
+    parallel: true
+
+  - id: write-show-notes
+    name: "Write Show Notes"
+    skill: show-notes-write
+    params:
+      template: "show-notes"
+      include_timestamps: true
+    depends_on: ["master-audio"]
+    on_error: "skip"
+    timeout_seconds: 300
+    parallel: true
+
+  - id: final-review
+    name: "Final Review"
+    agent: host
+    action: "Review mastered audio, show notes, and transcript"
+    params:
+      checklist: ["audio_quality", "show_notes", "transcript", "metadata"]
+    depends_on: ["generate-transcript", "write-show-notes"]
+    on_error: "pause"
+    timeout_seconds: 600

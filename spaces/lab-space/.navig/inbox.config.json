@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "inbox": ".navig/inbox",
+  "docs": ".navig/inbox/docs",
+  "shortcuts": ".navig/inbox/shortcuts",
+  "crossplatform": true
+}

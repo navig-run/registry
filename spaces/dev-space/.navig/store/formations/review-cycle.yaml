@@ -1,0 +1,42 @@
+id: review-cycle
+name: Review Cycle
+version: "1.0.0"
+description: >
+  Formation for structured code review. Reviewer audits code quality, security,
+  and convention compliance; Coder acts on findings.
+
+agents:
+  lead: reviewer
+  supporting: [coder]
+
+trigger_conditions:
+  - "Review request in #review"
+  - "code-review workflow invoked"
+  - "Manual: navig formation run review-cycle"
+
+action_scope:
+  - ALLOW: code-lint (read-only analysis)
+  - ALLOW: read any file in the workspace
+  - DENY: write to source files directly
+  - DENY: approve merges
+
+skills_used:
+  - code-lint
+
+workflows_used:
+  - code-review
+
+communication:
+  inbox_channel: "#review"
+  escalation: operator
+  notify_on:
+    - review_complete
+    - critical_finding
+    - review_passed
+
+context_memory:
+  read: [space-context.json, architecture.md]
+
+example_invocation: |
+  navig formation run review-cycle
+  # reviewer will: lint → read target files → produce structured report → notify #review

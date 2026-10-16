@@ -1,0 +1,54 @@
+id: performance-review
+name: Performance Review
+version: "1.0.0"
+description: |
+  Cross-platform analytics and optimisation formation. Aggregates
+  performance data from TikTok, Reels, and Shorts, identifies top
+  performers, analyses retention patterns, and generates actionable
+  insights for content strategy.
+
+agents:
+  lead: trend-scout
+  supporting:
+    - clip-director
+    - distributor
+
+trigger_conditions:
+  - "analytics"
+  - "performance"
+  - "review"
+  - "what's working"
+
+action_scope:
+  ALLOW:
+    - Analytics aggregation
+    - Performance reporting
+    - Trend analysis
+    - Content strategy recommendations
+  DENY:
+    - Clip modification
+    - Publishing or scheduling
+    - Account settings changes
+
+skills_used:
+  - analytics-aggregate
+  - trend-scan
+  - hashtag-optimize
+
+workflows_used:
+  - weekly-analytics
+
+communication:
+  inbox_channel: "#analytics"
+  escalation: clip-director
+  notify_on: [completed]
+
+context_memory:
+  read:
+    - memory/space-context.json
+    - memory/goals.json
+  write:
+    - memory/goals.json
+
+example_invocation: |
+  navig formation run "Review the last 7 days of clip performance on TikTok, Reels and Shorts"

@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#ideas"
+    description: "New capability ideas for the dream compiler"
+    default: true
+  - channel: "#builds"
+    description: "Active builds and WIP packs"
+  - channel: "#shipped"
+    description: "Packs ready for or published to community store"

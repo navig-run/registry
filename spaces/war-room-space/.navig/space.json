@@ -1,0 +1,19 @@
+{
+  "id": "war-room-space",
+  "name": "War Room",
+  "version": "2.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Operator command center for OSINT, investigation, and authorized offensive security. Find, investigate, and operate: open-source intelligence, structured case-work, attack-surface mapping, ethical hacking against authorized targets, digital forensics, and an isolated lab — all gated by written authorization and rules of engagement.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": { "default": "strategist", "formation": "ops-command" },
+  "agents": ["strategist", "osint-analyst", "recon-operator", "red-team-lead", "forensics-investigator", "case-manager", "intelligence-officer", "legal-counsel", "narrative-engineer"],
+  "formations": ["ops-command", "osint-sweep", "recon-and-map", "investigation", "red-team-op", "intel-sweep", "narrative-war"],
+  "skills": ["build-op", "advance-status", "log-intel", "arsenal-search", "open-case", "log-finding", "add-entity", "map-asset", "start-engagement"],
+  "workflows": ["weekly-war-room-brief"],
+  "packages": [],
+  "subspaces": [
+    { "id": "incident", "path": "spaces/incident", "description": "Incident triage from alert to post-mortem" }
+  ]
+}

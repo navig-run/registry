@@ -1,0 +1,9 @@
+id: trip-planning
+name: Trip Planning
+version: "1.0.0"
+description: End-to-end trip preparation from idea to departure-ready.
+space: travel
+lead: trip-planner
+supporting: [itinerary-builder, budget-watcher, document-keeper]
+trigger_conditions: [new trip created, booking added, pre-departure check]
+workflows: [new-trip, pre-departure]

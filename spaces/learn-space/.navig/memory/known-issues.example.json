@@ -1,0 +1,10 @@
+{
+  "issues": [
+    {
+      "id": "ISS-001",
+      "description": "No learning items added yet",
+      "action": "Ask @course-tracker to add your first course or book (workflow: .navig/store/workflows/start-course.yaml)",
+      "severity": "info"
+    }
+  ]
+}

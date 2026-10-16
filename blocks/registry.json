@@ -1,0 +1,58 @@
+{
+  "version": "0.1",
+  "updated": "2026-07-07",
+  "description": "Index of NAVIG Blocks — installable, executable, verifiable outcomes ('apply an outcome'). Canonical form is the <id>/BLOCK.md folder. During the preview, blocks install first-party only (from navig-run/registry); entries without a marketplace block are free. Install: `navig apply <id>` (auto-installs) or `navig install add block:navig-run/registry/blocks/<id>`.",
+  "preview": true,
+  "blocks": [
+    {
+      "id": "wombie-persona",
+      "category": "persona",
+      "file": "wombie-persona/BLOCK.md",
+      "description": "Install the Wombie small-talk & identity persona pack into the active space.",
+      "version": "1.0.0",
+      "target": "local",
+      "verify_summary": "persona.json present under ~/.navig/personas/wombie",
+      "install": "navig apply wombie-persona"
+    },
+    {
+      "id": "steam-build-upload",
+      "category": "game-dev",
+      "file": "steam-build-upload/BLOCK.md",
+      "description": "Build the SteamPipe app_build VDF and upload a build via a pre-authenticated steamcmd. Does NOT set a branch live (see steam-release-live).",
+      "version": "0.1.0",
+      "target": "local",
+      "verify_summary": "steamcmd app_status reports the app after upload",
+      "install": "navig apply steam-build-upload --input app_id=... --input build_dir=..."
+    },
+    {
+      "id": "safe-deployment",
+      "category": "ops",
+      "file": "safe-deployment/BLOCK.md",
+      "description": "Deploy a build to a host with a backup and config test, verified by a post-deploy health check. Server-mutating steps are --approve-gated.",
+      "version": "1.0.0",
+      "target": "local",
+      "verify_summary": "navig health reports the host healthy after the restart",
+      "install": "navig apply safe-deployment --input host=... --input build_dir=... --approve backup --approve upload --approve permissions --approve restart"
+    },
+    {
+      "id": "db-snapshot",
+      "category": "ops",
+      "file": "db-snapshot/BLOCK.md",
+      "description": "Export a remote database and pull it to the workspace; the verified outcome is a local dump file that exists.",
+      "version": "1.0.0",
+      "target": "local",
+      "verify_summary": "the downloaded dump file exists under local_dir",
+      "install": "navig apply db-snapshot --input host=... --input db_name=... --approve dump --approve cleanup"
+    },
+    {
+      "id": "msstore-publish",
+      "category": "app-dist",
+      "file": "msstore-publish/BLOCK.md",
+      "description": "Publish an app to the Microsoft Store — upload a built MSIX and commit a submission via a pre-authenticated Microsoft Store Developer CLI (msstore). The Microsoft-Store analogue of steam-build-upload.",
+      "version": "0.1.0",
+      "target": "local",
+      "verify_summary": "msstore submission status reports the submission after commit",
+      "install": "navig apply msstore-publish --input product_id=... --input package_path=... --approve publish"
+    }
+  ]
+}

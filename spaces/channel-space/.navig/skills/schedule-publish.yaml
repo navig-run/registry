@@ -1,0 +1,42 @@
+id: schedule-publish
+name: Schedule Publish
+version: "1.0.0"
+description: Schedules a video for publishing at the optimal time based on audience analytics and timezone.
+category: publishing
+platform: [windows, linux, macos]
+formation: video-production
+author: navig-run
+
+parameters:
+  - name: video_title
+    type: string
+    required: true
+    description: Video title for reference
+  - name: preferred_day
+    type: string
+    required: false
+    description: "Preferred day: monday-sunday or best"
+  - name: preferred_time
+    type: string
+    required: false
+    description: "Preferred time in HH:MM format or peak"
+  - name: timezone
+    type: string
+    required: false
+    default: UTC
+    description: Target timezone
+
+steps:
+  - id: check-schedule
+    name: Check existing schedule
+    shell: true
+    script_windows: "if exist \"content\\schedule.json\" (type \"content\\schedule.json\") else (echo No schedule found)"
+    script_linux: "cat content/schedule.json 2>/dev/null || echo 'No schedule found'"
+    script_macos: "cat content/schedule.json 2>/dev/null || echo 'No schedule found'"
+
+  - id: add-to-schedule
+    name: Add video to schedule
+    shell: true
+    script_windows: "echo {\"title\": \"{{video_title}}\", \"day\": \"{{preferred_day}}\", \"time\": \"{{preferred_time}}\", \"timezone\": \"{{timezone}}\"} >> \"content\\schedule.json\""
+    script_linux: "echo '{\"title\": \"{{video_title}}\", \"day\": \"{{preferred_day}}\", \"time\": \"{{preferred_time}}\", \"timezone\": \"{{timezone}}\"}' >> content/schedule.json"
+    script_macos: "echo '{\"title\": \"{{video_title}}\", \"day\": \"{{preferred_day}}\", \"time\": \"{{preferred_time}}\", \"timezone\": \"{{timezone}}\"}' >> content/schedule.json"

@@ -1,0 +1,60 @@
+id: publish-extension
+name: Publish Extension
+version: "1.0.0"
+description: Package a Chrome/Firefox extension for local sideloading or Chrome Web Store submission.
+category: publishing
+platform: [windows, linux, macos]
+formation: extension-build
+author: navig-run
+
+parameters:
+  - name: source_dir
+    type: string
+    description: "Directory containing the extension (must have manifest.json)"
+    default: "chrome-extensions-workshop"
+  - name: mode
+    type: enum
+    values: [local, cws]
+    default: local
+    description: "local = zip for sideloading; cws = submit to Chrome Web Store"
+  - name: output_dir
+    type: string
+    default: "dist"
+
+steps:
+  - id: validate_manifest
+    name: "Validate manifest.json"
+    agent: reviewer
+    action: check_manifest
+    params:
+      manifest: "{{params.source_dir}}/manifest.json"
+    on_error: stop
+
+  - id: pack_extension
+    name: "Pack Extension"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      EXT_SOURCE_DIR: "{{params.source_dir}}"
+      EXT_OUTPUT_DIR: "{{params.output_dir}}"
+    script: |
+      $out = $env:EXT_OUTPUT_DIR
+      if (-not (Test-Path -LiteralPath $out)) { New-Item -ItemType Directory -Path $out | Out-Null }
+      $zip = Join-Path (Resolve-Path -LiteralPath $out) 'extension.zip'
+      Compress-Archive -Path (Join-Path $env:EXT_SOURCE_DIR '*') -DestinationPath $zip -Force
+      Write-Output "packed=$zip"
+    script_linux: |
+      mkdir -p "$EXT_OUTPUT_DIR"
+      zip_path="$(cd "$EXT_OUTPUT_DIR" && pwd)/extension.zip"
+      (cd "$EXT_SOURCE_DIR" && zip -r "$zip_path" .)
+      echo "packed=$zip_path"
+
+  - id: submit_cws
+    name: "Submit to Chrome Web Store"
+    condition: "params.mode == 'cws'"
+    depends_on: [pack_extension]
+    agent: scripter
+    action: submit_to_cws
+    params:
+      zip: "{{steps.pack_extension.output.packed}}"
+    on_error: stop

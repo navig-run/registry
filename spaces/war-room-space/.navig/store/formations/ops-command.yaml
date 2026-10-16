@@ -1,0 +1,41 @@
+id: ops-command
+name: Ops Command
+version: "1.0.0"
+description: >
+  Default formation. Full-theater command and coordination.
+  Strategist leads with Legal Counsel as support for legal-flagged operations.
+
+agents:
+  lead: strategist
+  supporting: [legal-counsel, intelligence-officer]
+
+trigger_conditions:
+  - "Weekly war-room review"
+  - "#war-room inbox activity"
+  - "Active operation status change"
+  - "Critical threat detected"
+
+action_scope:
+  - ALLOW: build-op
+  - ALLOW: advance-status
+  - ALLOW: write to .navig/memory/operations.json
+  - DENY: legal arsenal deployment without operator approval
+
+skills_used:
+  - build-op
+  - advance-status
+
+workflows_used:
+  - weekly-war-room-brief
+
+communication:
+  inbox_channel: "#war-room"
+  escalation: operator
+  notify_on:
+    - critical_threat_detected
+    - legal_action_required
+    - operation_stalled_7_days
+
+context_memory:
+  read: [operations.json, intel-log.json, space-context.json]
+  write: [operations.json, space-context.json]

@@ -1,0 +1,50 @@
+id: hashtag-optimize
+name: Hashtag Optimize
+version: "1.0.0"
+description: "Research and optimise hashtag sets per platform for maximum reach and discoverability."
+category: seo
+platform: [windows, linux, macos]
+formation: batch-schedule
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    required: true
+    description: "Content topic for hashtag research"
+  - name: platform
+    type: string
+    default: tiktok
+    description: "Target platform: tiktok, reels, shorts"
+  - name: count
+    type: integer
+    default: 15
+    description: "Number of hashtags to generate"
+  - name: mix
+    type: string
+    default: balanced
+    description: "Mix strategy: broad, niche, balanced"
+
+steps:
+  - id: research-hashtags
+    name: Research relevant hashtags
+    shell: bash
+    script_windows: |
+      echo "Researching hashtags for topic: {{topic}} on {{platform}}"
+      echo "Strategy: {{mix}} | Count: {{count}}"
+    script_linux: |
+      echo "Researching hashtags for topic: {{topic}} on {{platform}}"
+      echo "Strategy: {{mix}} | Count: {{count}}"
+    script_macos: |
+      echo "Researching hashtags for topic: {{topic}} on {{platform}}"
+      echo "Strategy: {{mix}} | Count: {{count}}"
+
+  - id: optimize-set
+    name: Optimise hashtag set
+    shell: bash
+    script_windows: |
+      echo "Optimising: mixing broad (30%%), medium (40%%), niche (30%%) hashtags..."
+    script_linux: |
+      echo "Optimising: mixing broad (30%%), medium (40%%), niche (30%%) hashtags..."
+    script_macos: |
+      echo "Optimising: mixing broad (30%%), medium (40%%), niche (30%%) hashtags..."

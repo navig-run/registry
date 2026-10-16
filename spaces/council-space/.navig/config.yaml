@@ -1,0 +1,11 @@
+space_id: council-space
+runtime: navig-space-2
+default_formation: council-debate
+
+council:
+  default_size: 5
+  min_agents: 2
+  max_agents: 9
+  debate_rounds: 3
+  require_dissent_log: true
+  decision_quorum_pct: 60

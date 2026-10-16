@@ -1,0 +1,22 @@
+{
+  "goals": [
+    {
+      "id": "G001",
+      "description": "Complete a pre-departure checklist before every trip",
+      "metric": "Run pre-departure workflow for every trip > 3 nights",
+      "status": "active"
+    },
+    {
+      "id": "G002",
+      "description": "Stay within trip budget",
+      "metric": "Actual trip cost within 10% of budgeted amount",
+      "status": "active"
+    },
+    {
+      "id": "G003",
+      "description": "Debrief within 48 hours of returning",
+      "metric": "Debrief.md exists for all completed trips",
+      "status": "active"
+    }
+  ]
+}

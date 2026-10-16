@@ -1,0 +1,28 @@
+{
+  "space_id": "learn-space",
+  "name": "Learn Space",
+  "version": "1.0.0",
+  "type": "personal",
+  "tier": "personal",
+  "runtime": "navig-space-2",
+  "description": "Track every course, book, and skill — build continuously, retain deliberately.",
+  "agents": [
+    "course-tracker",
+    "book-synthesizer",
+    "skill-planner",
+    "review-scheduler"
+  ],
+  "formations": [
+    "active-learning",
+    "weekly-review",
+    "skill-sprint"
+  ],
+  "skills": [],
+  "workflows": [
+    "start-course",
+    "weekly-review",
+    "skill-assessment"
+  ],
+  "author": "navig-run",
+  "status": "planned"
+}

@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "id": "decision-not-scan",
+      "prompt": "What is this folder and what should I do with it?",
+      "expect": {
+        "contains": ["decision", "Folder Intelligence Report", "TL;DR"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "fake-freshness",
+      "prompt": "Tell me if this project is actually active or just looks fresh.",
+      "expect": {
+        "contains": ["fake freshness", "lockfile", "commit"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "scores-and-revival",
+      "prompt": "Is this worth keeping, and how hard would it be to revive?",
+      "expect": {
+        "contains": ["Strategic value", "Technical health", "Revival estimate", "revive-candidate"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "secret-safety",
+      "prompt": "Scan this folder for risks but stay safe.",
+      "expect": {
+        "contains": ["Never print a secret", "filename", "Read-only"],
+        "excludes": []
+      }
+    }
+  ]
+}

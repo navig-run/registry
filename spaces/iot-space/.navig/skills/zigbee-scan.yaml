@@ -1,0 +1,61 @@
+id: zigbee-scan
+name: Zigbee Scan
+version: "1.0.0"
+description: Enumerate the Zigbee (and Z-Wave) mesh via Zigbee2MQTT / coordinator bridge topics.
+category: discovery
+platform: [windows, linux, macos]
+formation: discovery-sweep
+author: navig-run
+
+parameters:
+  - name: host
+    type: string
+    description: "MQTT broker host carrying the Zigbee2MQTT bridge topics"
+    default: "{{config.mqtt_host}}"
+  - name: port
+    type: int
+    default: 1883
+  - name: base_topic
+    type: string
+    description: "Zigbee2MQTT base topic"
+    default: "zigbee2mqtt"
+  - name: permit_join
+    type: bool
+    description: "Open the network for new device pairing (temporary)"
+    default: false
+
+steps:
+  - id: request_devices
+    name: "Request the device list from the bridge"
+    shell: auto
+    script: |
+      # Zigbee2MQTT publishes the full mesh on <base>/bridge/devices (retained)
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{base_topic}}/bridge/devices" -C 1 -W 5 | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); [print(x.get('friendly_name'), x.get('ieee_address'), x.get('type'), (x.get('definition') or {}).get('model')) for x in d]" 2>/dev/null || \
+        echo "no retained device list — is Zigbee2MQTT running?"
+
+  - id: request_networkmap
+    name: "Request a network topology map"
+    shell: auto
+    script: |
+      mosquitto_pub -h {{host}} -p {{port}} -t "{{base_topic}}/bridge/request/networkmap" -m '{"type":"graphviz","routes":true}'
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{base_topic}}/bridge/response/networkmap" -C 1 -W 15
+
+  - id: permit_join
+    name: "Optionally open the network for pairing"
+    condition: "permit_join == 'true'"
+    shell: auto
+    script: |
+      mosquitto_pub -h {{host}} -p {{port}} -t "{{base_topic}}/bridge/request/permit_join" -m '{"value":true,"time":120}'
+      echo "permit_join OPEN for 120s — pair the device now, then it will auto-close."
+
+output:
+  fields: [friendly_name, ieee_address, type, model, link_quality]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "List the whole Zigbee mesh"
+    command: "navig skill run zigbee-scan"
+  - description: "Open the network to pair a new sensor"
+    command: "navig skill run zigbee-scan --permit_join true"

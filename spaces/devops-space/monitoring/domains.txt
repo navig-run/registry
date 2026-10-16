@@ -1,0 +1,7 @@
+# Monitored domains — one per line
+# Lines starting with # are ignored
+# Used by: cert-check skill, weekly-reliability-review workflow
+#
+# Example:
+# example.com
+# api.example.com

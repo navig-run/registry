@@ -1,0 +1,89 @@
+id: wireless-debug
+name: Wireless Debug
+version: "1.0.0"
+description: >
+  Set up wireless ADB. Two paths: (1) legacy tcpip — plug in over USB, run
+  `adb tcpip 5555`, then `adb connect <ip>:5555`; (2) Android 11+ pairing —
+  `adb pair <host>:<pairport>` with the 6-digit code, then connect on the debug
+  port. Discovers the device IP automatically when on USB.
+category: connectivity
+platform: [windows, linux, macos]
+formation: device-bridge
+author: navig-run
+
+parameters:
+  - name: method
+    type: enum
+    values: [tcpip, pair]
+    default: tcpip
+  - name: host
+    type: string
+    description: "Device IP (blank = auto-detect from a USB-connected device)"
+    default: ""
+  - name: pair_port
+    type: string
+    description: "Pairing port shown in Wireless debugging (Android 11+ pair mode)"
+    default: ""
+  - name: pair_code
+    type: string
+    description: "6-digit pairing code (Android 11+ pair mode)"
+    default: ""
+  - name: connect_port
+    type: int
+    description: "Debug/connect port"
+    default: 5555
+
+steps:
+  - id: detect_ip
+    name: "Auto-detect device IP (USB attached)"
+    condition: "host == ''"
+    shell: auto
+    script_windows: |
+      $ip = (& adb shell ip route 2>$null | Select-String "wlan0").ToString() -replace '.*src\s+(\S+).*','$1'
+      if (-not $ip) { $ip = (& adb shell ip -f inet addr show wlan0 2>$null | Select-String "inet ").ToString() -replace '.*inet\s+(\d+\.\d+\.\d+\.\d+).*','$1' }
+      Write-Output "detected_ip=$ip"
+    script_linux: |
+      ip=$(adb shell ip route 2>/dev/null | grep wlan0 | sed -E 's/.*src ([0-9.]+).*/\1/' | tr -d '\r')
+      [ -z "$ip" ] && ip=$(adb shell ip -f inet addr show wlan0 2>/dev/null | grep -oE 'inet [0-9.]+' | awk '{print $2}' | tr -d '\r')
+      echo "detected_ip=$ip"
+
+  - id: enable_tcpip
+    name: "Enable tcpip mode over the USB transport"
+    condition: "method == 'tcpip'"
+    shell: auto
+    script: |
+      adb tcpip {{connect_port}}
+      echo "Device switched to tcpip:{{connect_port}} — you may now unplug USB."
+
+  - id: pair
+    name: "Pair (Android 11+ wireless debugging)"
+    condition: "method == 'pair'"
+    shell: auto
+    script: |
+      echo "Pairing with {{host}}:{{pair_port}} ..."
+      adb pair {{host}}:{{pair_port}} {{pair_code}}
+
+  - id: connect
+    name: "Connect over Wi-Fi"
+    shell: auto
+    script_windows: |
+      $h = "{{host}}"
+      if (-not $h) { Write-Warning "No host given; use the detected_ip from the previous step."; exit 0 }
+      adb connect "${h}:{{connect_port}}"
+      adb devices -l
+    script_linux: |
+      h="{{host}}"
+      [ -z "$h" ] && { echo "[WARN] No host given; use the detected_ip above."; exit 0; }
+      adb connect "$h:{{connect_port}}"
+      adb devices -l
+
+output:
+  fields: [host, port, state]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Enable wireless via legacy tcpip (device on USB)"
+    command: "navig skill run wireless-debug --method tcpip --host 192.168.1.42"
+  - description: "Pair on Android 11+ then connect"
+    command: "navig skill run wireless-debug --method pair --host 192.168.1.42 --pair_port 37105 --pair_code 314159 --connect_port 37000"

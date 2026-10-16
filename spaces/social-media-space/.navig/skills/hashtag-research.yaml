@@ -1,0 +1,134 @@
+id: hashtag-research
+name: Hashtag Research
+version: "1.0.0"
+description: >
+  Analyse past post performance to identify the brand's best-performing hashtags
+  per platform. Cross-references topic keywords with a local hashtag performance
+  log. Produces a ranked list with recommended hashtag sets for a given topic.
+category: content
+platform: [windows, linux, macos]
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: brand
+    description: Brand slug
+    required: true
+  - name: platform
+    description: "twitter | instagram | linkedin | tiktok | threads | bluesky"
+    required: true
+  - name: topic
+    description: Topic keywords to guide hashtag selection
+    required: false
+  - name: limit
+    description: "Number of hashtags to return (default: 10)"
+    required: false
+    default: "10"
+
+steps:
+  - name: load-hashtag-data
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_PLATFORM: "{{platform}}"
+      NAVIG_PARAM_TOPIC: "{{topic}}"
+      NAVIG_PARAM_LIMIT: "{{limit}}"
+    description: Read hashtag performance log and produce ranked recommendations
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      platform = os.environ.get("NAVIG_PARAM_PLATFORM", "").strip()
+      topic = os.environ.get("NAVIG_PARAM_TOPIC", "").strip()
+      limit = os.environ.get("NAVIG_PARAM_LIMIT", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import json, pathlib, sys, csv
+
+      brand = brand
+      platform = platform
+      topic = topic
+      limit = int(limit or 10)
+
+      htag_log = pathlib.Path("analytics") / brand / "hashtags.json"
+
+      # If no log exists, create a starter set based on platform best practices
+      starter_tags = {
+          "twitter":    ["#thread", "#tips", "#growth", "#marketing", "#business", "#entrepreneur", "#ai", "#tech", "#startup", "#build"],
+          "instagram":  ["#entrepreneur", "#business", "#motivation", "#success", "#mindset", "#growth", "#startup", "#viral", "#digital", "#branding"],
+          "linkedin":   ["#leadership", "#business", "#innovation", "#career", "#growth", "#marketing", "#entrepreneur", "#ai", "#strategy", "#technology"],
+          "tiktok":     ["#fyp", "#viral", "#businesstok", "#entrepreneur", "#tips", "#learn", "#success", "#motivation", "#growthtips", "#startup"],
+          "threads":    ["#threads", "#community", "#discussion", "#thoughts", "#business"],
+          "bluesky":    ["#tech", "#ai", "#startup", "#build", "#webdev"],
+          "mastodon":   ["#technology", "#foss", "#discussion", "#community", "#startup"]
+      }
+
+      if not htag_log.exists():
+          recs = starter_tags.get(platform, ["#content", "#brand", "#marketing"])[:limit]
+          print(f"\n[Hashtag Research] — {brand} / {platform}")
+          print(f"No performance data yet. Using platform-default starter set.")
+          print(f"\nRecommended hashtags ({limit}):")
+          for i, tag in enumerate(recs, 1):
+              print(f"  {i:2}. {tag}")
+          print(f"\nTip: Log hashtag performance after publishing to build a brand-specific ranked list.")
+          print(f"     File: analytics/{brand}/hashtags.json")
+          sys.exit(0)
+
+      data = json.loads(htag_log.read_text())
+      platform_data = [d for d in data if d.get("platform","").lower() == platform.lower()]
+
+      if not platform_data:
+          recs = starter_tags.get(platform, [])[:limit]
+          print(f"No {platform} data yet. Showing platform defaults.")
+          for i, tag in enumerate(recs, 1):
+              print(f"  {i:2}. {tag}")
+          sys.exit(0)
+
+      # Score by avg engagement rate when used
+      tag_scores = {}
+      for entry in platform_data:
+          for tag in entry.get("hashtags", []):
+              tag = tag.lower().strip()
+              if tag not in tag_scores:
+                  tag_scores[tag] = {"uses": 0, "total_eng": 0.0}
+              tag_scores[tag]["uses"] += 1
+              tag_scores[tag]["total_eng"] += float(entry.get("engagement_rate", 0) or 0)
+
+      ranked = sorted(tag_scores.items(), key=lambda x: x[1]["total_eng"] / max(x[1]["uses"],1), reverse=True)
+
+      # Topic filter if provided
+      if topic:
+          topic_words = [w.lower() for w in topic.split()]
+          ranked_topic = [(t, d) for t, d in ranked if any(w in t for w in topic_words)]
+          ranked_other = [(t, d) for t, d in ranked if (t, d) not in ranked_topic]
+          ranked = (ranked_topic + ranked_other)[:limit]
+
+      print(f"\n[Hashtag Research] — {brand} / {platform}")
+      if topic:
+          print(f"[Topic filter]: {topic}")
+      print(f"\nTop {min(limit, len(ranked))} hashtags (ranked by avg engagement rate when used):\n")
+      print(f"  {'Rank':<5} {'Hashtag':<25} {'Uses':>5}  {'Avg ER':>7}")
+      print(f"  {'-'*50}")
+      for i, (tag, d) in enumerate(ranked[:limit], 1):
+          avg_er = d["total_eng"] / max(d["uses"], 1)
+          print(f"  {i:<5} {tag:<25} {d['uses']:>5}  {avg_er:>6.2f}%")
+      print()
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $brand = "$($env:NAVIG_PARAM_BRAND)"
+      $platform = "$($env:NAVIG_PARAM_PLATFORM)"
+      $hashtagLog = "analytics\$brand\hashtags.json"
+      $starters = @{
+          twitter   = "#thread #tips #growth #marketing #business #entrepreneur #ai #tech #startup #build"
+          linkedin  = "#leadership #business #innovation #career #growth #marketing #entrepreneur #ai #strategy #technology"
+          instagram = "#entrepreneur #business #motivation #success #mindset #growth #startup #viral #digital #branding"
+          tiktok    = "#fyp #viral #businesstok #entrepreneur #tips #learn #success #motivation"
+          threads   = "#threads #community #discussion #thoughts #business"
+      }
+      if (-not (Test-Path $hashtagLog)) {
+          Write-Host "No hashtag data yet for $brand/$platform. Platform-default suggestions:"
+          if ($starters[$platform]) { Write-Host $starters[$platform] }
+          else { Write-Host "#content #brand #marketing #growth #social" }
+      } else {
+          $data = Get-Content $hashtagLog | ConvertFrom-Json
+          Write-Host "Loaded $($data.Count) entries for $brand. Filter by $platform."
+      }

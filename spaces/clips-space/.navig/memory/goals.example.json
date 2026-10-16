@@ -1,0 +1,35 @@
+{
+  "space": "clips-space",
+  "goals": [
+    {
+      "id": "posting-cadence",
+      "goal": "Establish daily posting cadence across TikTok, Reels, and Shorts",
+      "status": "not-started",
+      "priority": "high"
+    },
+    {
+      "id": "hook-library",
+      "goal": "Build a hook template library with 20+ proven openers",
+      "status": "not-started",
+      "priority": "high"
+    },
+    {
+      "id": "trend-response",
+      "goal": "Reduce trend response time to under 4 hours",
+      "status": "not-started",
+      "priority": "medium"
+    },
+    {
+      "id": "repurpose-pipeline",
+      "goal": "Set up automated repurpose pipeline from long-form content",
+      "status": "not-started",
+      "priority": "medium"
+    },
+    {
+      "id": "analytics-dashboard",
+      "goal": "Unified cross-platform analytics with weekly reporting",
+      "status": "not-started",
+      "priority": "medium"
+    }
+  ]
+}

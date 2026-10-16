@@ -1,0 +1,45 @@
+id: osint-sweep
+name: OSINT Sweep
+version: "1.0.0"
+description: >
+  Open-source collection and entity-graph enrichment formation. OSINT Analyst leads
+  collection from open/passive sources and builds the graph; Case Manager supports
+  to anchor findings to a case and shape the product. Passive sources only — no
+  active recon, no unauthorized access.
+
+agents:
+  lead: osint-analyst
+  supporting: [case-manager]
+
+trigger_conditions:
+  - "New subject or selector submitted for enrichment"
+  - "open-case skill invoked"
+  - "Entity graph pivot requested"
+  - "Manual: activate the osint-sweep formation"
+
+action_scope:
+  - ALLOW: open-case
+  - ALLOW: add-entity
+  - ALLOW: log-finding
+  - ALLOW: write to .navig/memory/entities.json
+  - ALLOW: write to .navig/memory/cases.json
+  - ALLOW: write to .navig/memory/findings.json
+  - DENY: any active recon, scanning, or probing of target infrastructure
+  - DENY: any non-passive collection or unauthorized access
+
+skills_used:
+  - open-case
+  - add-entity
+  - log-finding
+
+communication:
+  inbox_channel: "#osint"
+  escalation: strategist
+  notify_on:
+    - high_value_entity_added
+    - corroborated_finding_logged
+    - active_collection_required
+
+context_memory:
+  read: [entities.json, cases.json, findings.json, intel-log.json]
+  write: [entities.json, cases.json, findings.json]

@@ -1,0 +1,48 @@
+name: weekly-research-review
+description: |
+  Weekly research status. Dataset growth and health, new findings, stale topics,
+  and the open questions the data still can't answer.
+
+schedule:
+  cron: "0 8 * * 0"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: analysis-lab
+
+steps:
+  - id: dataset_health
+    name: "Dataset Health"
+    agent: archivist
+    action: report_dataset_stats
+    params:
+      include_growth: true
+    on_error: continue
+
+  - id: new_findings
+    name: "New Findings"
+    agent: analyst
+    action: list_findings
+    params:
+      since_days: 7
+    on_error: continue
+
+  - id: stale_topics
+    name: "Stale Topics"
+    agent: scout
+    action: list_stale_topics
+    params:
+      stale_after_days: 14
+    on_error: continue
+
+  - id: research_brief
+    name: "Deliver Research Brief"
+    depends_on: [dataset_health, new_findings, stale_topics]
+    agent: analyst
+    action: generate_weekly_brief
+    params:
+      datasets: "{{steps.dataset_health.output}}"
+      findings: "{{steps.new_findings.output}}"
+      stale: "{{steps.stale_topics.output}}"
+      deliver_to: operator

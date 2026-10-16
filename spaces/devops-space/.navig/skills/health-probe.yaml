@@ -1,0 +1,71 @@
+id: health-probe
+name: Health Probe
+version: "1.0.0"
+description: >
+  Check the health of a service by probing its health endpoint, checking process status,
+  or running a connectivity test. Returns OK / DEGRADED / DOWN.
+category: monitoring
+platform: [windows, linux, macos]
+formation: sre-ops
+author: navig-run
+
+parameters:
+  - name: service
+    type: string
+    required: true
+    description: "Service name or URL to probe"
+  - name: environment
+    type: string
+    required: false
+    default: "prod"
+    description: "Target environment"
+  - name: timeout
+    type: integer
+    required: false
+    default: "5"
+    description: "Request timeout in seconds"
+
+steps:
+  - name: probe
+    description: HTTP health check probe
+    shell: auto
+    script: |
+      python3 - "{{service}}" "{{timeout}}" <<'EOF'
+      import urllib.request, sys, os, time
+
+      # Values arrive as argv — never pasted into Python source.
+      svc = sys.argv[1]
+      timeout = int(sys.argv[2] or 5)
+      # Resolve to URL if bare service name provided
+      url = svc if svc.startswith("http") else f"http://{svc}/health"
+      start = time.time()
+      try:
+          with urllib.request.urlopen(url, timeout=timeout) as r:
+              latency = round((time.time() - start) * 1000)
+              status = r.status
+              if status < 400:
+                  print(f"OK  {svc}  HTTP {status}  {latency}ms")
+              else:
+                  print(f"DEGRADED  {svc}  HTTP {status}  {latency}ms")
+                  sys.exit(1)
+      except Exception as e:
+          print(f"DOWN  {svc}  {e}")
+          sys.exit(2)
+      EOF
+    script_windows: |
+      try {
+          $start = Get-Date
+          $svc = "{{service}}"
+          $url = if ($svc -like "http*") { $svc } else { "http://$svc/health" }
+          $resp = Invoke-WebRequest -Uri $url -TimeoutSec {{timeout}} -UseBasicParsing
+          $ms = [int]((Get-Date) - $start).TotalMilliseconds
+          if ($resp.StatusCode -lt 400) {
+              Write-Output "OK  $svc  HTTP $($resp.StatusCode)  ${ms}ms"
+          } else {
+              Write-Output "DEGRADED  $svc  HTTP $($resp.StatusCode)  ${ms}ms"
+              exit 1
+          }
+      } catch {
+          Write-Output "DOWN  {{service}}  $_"
+          exit 2
+      }

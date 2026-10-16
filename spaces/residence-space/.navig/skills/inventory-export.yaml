@@ -1,0 +1,101 @@
+id: inventory-export
+name: Inventory Export
+version: "1.0.0"
+description: >
+  Export the household inventory to Markdown or CSV format. Can export the
+  full home inventory or filter by room or category.
+category: inventory
+platform: [windows, linux, macos]
+formation: household-ops
+author: residence-space
+
+parameters:
+  - name: format
+    type: enum
+    values: [markdown, csv, json]
+    required: false
+    default: markdown
+    description: "Output format"
+  - name: room
+    type: string
+    required: false
+    default: "all"
+    description: "Room to export, or 'all'"
+  - name: category
+    type: string
+    required: false
+    default: "all"
+    description: "Category to filter by, or 'all'"
+  - name: output_file
+    type: string
+    required: false
+    default: ""
+    description: "Output file path. If empty, prints to stdout."
+
+steps:
+  - id: export_inventory
+    name: "Export Inventory"
+    shell: auto
+    env:
+      NAVIG_PARAM_FORMAT: "{{params.format}}"
+      NAVIG_PARAM_ROOM: "{{params.room}}"
+      NAVIG_PARAM_CATEGORY: "{{params.category}}"
+      NAVIG_PARAM_OUTPUT_FILE: "{{params.output_file}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, csv, io
+      from datetime import datetime
+
+      memory_path = ".navig/memory/inventory.json"
+      try:
+          with open(memory_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          print("No inventory found. Log items first with the log-item skill.")
+          raise SystemExit(0)
+
+      items = [i for i in data.get("items", []) if i.get("status") == "active"]
+      room_filter = os.environ.get("NAVIG_PARAM_ROOM", "") or "all"
+      cat_filter = os.environ.get("NAVIG_PARAM_CATEGORY", "") or "all"
+      fmt = os.environ.get("NAVIG_PARAM_FORMAT", "") or "markdown"
+      out_file = os.environ.get("NAVIG_PARAM_OUTPUT_FILE", "")
+
+      if room_filter != "all":
+          items = [i for i in items if i.get("room") == room_filter]
+      if cat_filter != "all":
+          items = [i for i in items if i.get("category") == cat_filter]
+
+      if fmt == "csv":
+          buf = io.StringIO()
+          w = csv.DictWriter(buf, fieldnames=["id","name","room","category","qty","condition","location_note","added"])
+          w.writeheader()
+          for i in items:
+              w.writerow({k: i.get(k, "") for k in w.fieldnames})
+          output = buf.getvalue()
+      elif fmt == "json":
+          output = json.dumps(items, indent=2, ensure_ascii=False)
+      else:
+          lines = [f"# Home Inventory Export\n_Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}_\n",
+                   f"**Total items:** {len(items)}\n",
+                   "| ID | Name | Room | Category | Qty | Condition | Location |",
+                   "|-----|------|------|----------|-----|-----------|---------|"]
+          def cell(v):
+              return str(v).replace("|", "\\|").replace("\r", " ").replace("\n", " ")
+          for i in items:
+              cols = ["id", "name", "room", "category", "qty", "condition", "location_note"]
+              lines.append("| " + " | ".join(cell(i.get(k, "")) for k in cols) + " |")
+          output = "\n".join(lines)
+
+      if out_file:
+          os.makedirs(os.path.dirname(out_file) if os.path.dirname(out_file) else ".", exist_ok=True)
+          with open(out_file, "w", encoding="utf-8") as f:
+              f.write(output)
+          print(f"Exported {len(items)} items to {out_file}")
+      else:
+          print(output)
+      EOF
+    on_error: fail
+
+outputs:
+  - name: export
+    from: export_inventory

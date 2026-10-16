@@ -1,0 +1,128 @@
+id: scrcpy
+name: scrcpy
+version: "1.0.0"
+description: >
+  Wraps scrcpy ("screen copy") as a NAVIG tool. Mirrors an Android device's display
+  to the desktop over ADB and lets you control it with mouse/keyboard, inject input,
+  and record. Low-latency, no app install on the device, works over USB or Wi-Fi.
+author: navig-run
+navig_min_version: "2.0.0"
+category: control
+formation: device-bridge
+
+install:
+  windows:
+    method: winget
+    package: Genymobile.scrcpy
+    version: "2.7"
+    # scrcpy is resolved from the config key `android.scrcpy_path`
+    # (.navig/config.yaml → scrcpy_path), then PATH. Nothing edits the machine PATH.
+    bin_path: "scrcpy"
+    post_install: |
+      # Read-only check: report where scrcpy resolves from. Never modifies PATH.
+      $c = Get-Command scrcpy -ErrorAction SilentlyContinue
+      if ($c) { Write-Output "scrcpy=$($c.Source)" }
+      else { Write-Output "scrcpy not on PATH — set scrcpy_path in .navig/config.yaml or add its folder to your user PATH" }
+  linux:
+    method: package_manager
+    apt: scrcpy
+    dnf: scrcpy
+    pacman: scrcpy
+  macos:
+    method: homebrew
+    brew: scrcpy
+
+discovery:
+  type: static
+  refresh_on_start: false
+
+tools:
+  - id: scrcpy
+    name: scrcpy
+    description: Android screen mirroring and control
+    category: control
+    icon: 📱
+    platform: [windows, linux, macos]
+    requires_elevation: false
+    bin_windows: scrcpy            # or the value of config key android.scrcpy_path
+    bin_config_key: android.scrcpy_path
+    bin_linux: scrcpy
+    bin_macos: scrcpy
+
+    commands:
+      - name: mirror
+        description: "Mirror + control the device with tuned quality"
+        shell_windows: '"{bin}" --max-size {max_size} --video-bit-rate {bit_rate} --max-fps {max_fps}'
+        shell_linux: 'scrcpy --max-size {max_size} --video-bit-rate {bit_rate} --max-fps {max_fps}'
+        shell_macos: 'scrcpy --max-size {max_size} --video-bit-rate {bit_rate} --max-fps {max_fps}'
+        args:
+          max_size:
+            type: int
+            required: false
+            default: 1024
+            description: "Max dimension in px (0 = native)"
+          bit_rate:
+            type: string
+            required: false
+            default: "8M"
+          max_fps:
+            type: int
+            required: false
+            default: 60
+
+      - name: view
+        description: "View-only mirror (no input control)"
+        shell_windows: '"{bin}" --no-control --max-size {max_size}'
+        shell_linux: 'scrcpy --no-control --max-size {max_size}'
+        shell_macos: 'scrcpy --no-control --max-size {max_size}'
+        args:
+          max_size:
+            type: int
+            required: false
+            default: 1024
+
+      - name: record
+        description: "Mirror and record the session to an mp4"
+        shell_windows: '"{bin}" --record "{out}"'
+        shell_linux: 'scrcpy --record "{out}"'
+        shell_macos: 'scrcpy --record "{out}"'
+        args:
+          out:
+            type: string
+            required: false
+            default: "recording.mp4"
+
+      - name: device
+        description: "Target a specific device by serial"
+        shell_windows: '"{bin}" -s {serial}'
+        shell_linux: 'scrcpy -s {serial}'
+        shell_macos: 'scrcpy -s {serial}'
+        args:
+          serial:
+            type: string
+            required: true
+            description: "Device serial (from adb devices)"
+
+notes:
+  - "scrcpy requires an authorized ADB connection first (run adb-connect / platform-tools)"
+  - "Windows and Linux packages bundle a compatible adb; the space's adb_path still applies to skills"
+  - "Wireless mirroring works once the device is on tcpip — expect higher latency than USB"
+  - "Lower --max-size and --video-bit-rate for smoother wireless mirroring on slow networks"
+  - "--no-control gives a safe view-only mode for demos and screenshots"
+
+examples:
+  - description: "Mirror the connected device"
+    command: "scrcpy"
+  - description: "High-quality native-resolution mirror"
+    command: "scrcpy --max-size 0 --video-bit-rate 16M"
+  - description: "View-only mirror"
+    command: "scrcpy --no-control"
+  - description: "Record the session"
+    command: "scrcpy --record demo.mp4"
+  - description: "Through the space's skills"
+    command: "navig skill run screen-mirror"
+
+# Changelog
+# - 2026-07-10: created — wraps scrcpy 2.7 for screen mirroring / control
+#               in the android space; pairs with platform-tools (adb)
+# - 2026-10-16: binary resolved from PATH / config key; no machine PATH edits

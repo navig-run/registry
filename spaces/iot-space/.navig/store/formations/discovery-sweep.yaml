@@ -1,0 +1,52 @@
+id: discovery-sweep
+name: Discovery Sweep
+version: "1.0.0"
+description: >
+  Formation covering IoT device discovery, fingerprinting, and registry maintenance
+  via mDNS, SSDP, and ARP. Active when the device inventory is unknown or the mesh
+  changes.
+
+agents:
+  lead: beacon
+  supporting: [sensor, warden]
+
+trigger_conditions:
+  - "New device appears on the mesh (detected by device-discover)"
+  - "Telemetry shows a previously-known device has gone silent"
+  - "Manual invocation: navig formation run discovery-sweep"
+  - "Daily scheduled morning mesh sweep (07:00)"
+  - "Zigbee/Z-Wave coordinator reports a new pairing"
+
+action_scope:
+  - ALLOW: device-discover, zigbee-scan, sensor-telemetry
+  - ALLOW: write to .navig/wiki/devices.md
+  - ALLOW: write to .navig/memory/device-registry.json
+  - ALLOW: read device web UIs (fingerprinting)
+  - DENY: firmware flashing
+  - DENY: VLAN / firewall changes
+
+skills_used:
+  - device-discover
+  - zigbee-scan
+  - sensor-telemetry
+
+workflows_used:
+  - morning-mesh-sweep   # device-discover step
+  - device-onboard       # fingerprint step
+
+communication:
+  inbox_channel: "#discovery"
+  escalation: operator
+  notify_on:
+    - new_device_detected
+    - device_offline
+    - unfingerprinted_device
+
+context_memory:
+  read: [device-registry.json, devices.md]
+  write: [device-registry.json, devices.md]
+
+example_invocation: |
+  # Trigger a full discovery sweep manually:
+  navig formation run discovery-sweep
+  # beacon will: discover (mDNS/SSDP/ARP) → fingerprint → update registry → report new devices

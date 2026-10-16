@@ -1,0 +1,9 @@
+id: active-learning
+name: Active Learning
+version: "1.0.0"
+description: Daily learning and insight capture — the core operating rhythm.
+space: learn
+lead: course-tracker
+supporting: [book-synthesizer]
+trigger_conditions: [learning session, insight captured]
+workflows: [start-course]

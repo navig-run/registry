@@ -1,0 +1,85 @@
+name: fleet-audit
+description: |
+  On-demand deep audit of the entire device fleet. Enumerates every device, records
+  Android version / security-patch drift, battery and storage health, dangerous
+  permission posture, and installed-app footprint — producing a dated wiki entry
+  ready to archive in the space's operational history.
+
+schedule:
+  cron: null
+  timezone: "local"
+  enabled: false
+
+on_demand: true
+formation: fleet-patrol
+
+steps:
+  - id: connect
+    name: "Connect to All Devices"
+    skill: adb-connect
+    params:
+      mode: auto
+    on_error: continue
+    timeout_seconds: 90
+
+  - id: inventory
+    name: "Full Fleet Inventory"
+    skill: device-inventory
+    depends_on: [connect]
+    params:
+      output_format: json
+    parallel: true
+    timeout_seconds: 240
+    on_error: continue
+
+  - id: battery
+    name: "Battery Health Across Fleet"
+    skill: battery-report
+    depends_on: [connect]
+    params:
+      warn_temp_c: 40
+    parallel: true
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: permission_posture
+    name: "Dangerous Permission Posture"
+    skill: permission-audit
+    depends_on: [connect]
+    params:
+      permission: all
+    parallel: true
+    timeout_seconds: 300
+    on_error: continue
+
+  - id: patch_drift
+    name: "Android Version & Security Patch Drift"
+    depends_on: [inventory]
+    agent: pixel
+    action: analyze_patch_drift
+    params:
+      inventory: "{{steps.inventory.output}}"
+
+  - id: write_history
+    name: "Write Dated Fleet Audit to Wiki"
+    depends_on: [inventory, battery, permission_posture, patch_drift]
+    agent: pixel
+    action: write_memory
+    params:
+      file: ".navig/wiki/history/fleet-audit-{{today}}.md"
+      data:
+        timestamp: "{{now_iso}}"
+        inventory: "{{steps.inventory.output}}"
+        battery: "{{steps.battery.output}}"
+        permissions: "{{steps.permission_posture.output}}"
+        drift: "{{steps.patch_drift.output}}"
+
+  - id: report
+    name: "Fleet Audit Report"
+    depends_on: [write_history]
+    agent: pixel
+    action: compose_report
+    params:
+      template: "fleet-audit"
+      deliver_to: inbox
+      channel: "#fleet"

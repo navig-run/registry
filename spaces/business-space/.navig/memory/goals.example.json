@@ -1,0 +1,37 @@
+[
+  {
+    "id": "GOAL-001",
+    "goal": "Grow monthly net profit margin to ≥25% across all channels",
+    "agent": "finance-analyst",
+    "status": "active",
+    "target_date": "2026-12-31"
+  },
+  {
+    "id": "GOAL-002",
+    "goal": "Launch at least 3 new SKUs per quarter on Amazon FBA",
+    "agent": "listing-optimizer",
+    "status": "active",
+    "target_date": "2026-12-31"
+  },
+  {
+    "id": "GOAL-003",
+    "goal": "Build affiliate network to 50 active partners",
+    "agent": "affiliate-manager",
+    "status": "active",
+    "target_date": "2026-12-31"
+  },
+  {
+    "id": "GOAL-004",
+    "goal": "Diversify revenue: no single channel >60% of gross revenue",
+    "agent": "growth-hacker",
+    "status": "active",
+    "target_date": "2026-12-31"
+  },
+  {
+    "id": "GOAL-005",
+    "goal": "Maintain 90-day cash flow forecast updated weekly",
+    "agent": "finance-analyst",
+    "status": "active",
+    "target_date": "ongoing"
+  }
+]

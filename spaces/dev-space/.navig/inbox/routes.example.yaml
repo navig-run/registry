@@ -1,0 +1,32 @@
+schema: "1.0"
+space: dev
+updated: 2026-03-11
+
+channels:
+  - id: code
+    owner: coder
+    formation: dev-workflow
+    response_mode: immediate
+    description: "Code authoring requests, scaffolding, implementation tasks"
+
+  - id: debug
+    owner: debugger
+    formation: dev-workflow
+    response_mode: immediate
+    description: "Bug reports, error traces, debugging sessions"
+
+  - id: review
+    owner: reviewer
+    formation: review-cycle
+    response_mode: immediate
+    description: "Code review requests, refactoring proposals, quality checks"
+
+  - id: extensions
+    owner: scripter
+    formation: extension-build
+    response_mode: immediate
+    description: "Browser extension and userscript authoring, packaging, publishing"
+
+defaults:
+  unrouted: "#code"
+  escalation: operator

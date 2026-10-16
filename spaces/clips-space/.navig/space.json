@@ -1,0 +1,62 @@
+{
+  "id": "clips-space",
+  "name": "Clips Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Short-form video factory — create, optimise, and distribute TikTok, Instagram Reels, and YouTube Shorts at scale.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": {
+    "default": "clip-director",
+    "formation": "clip-factory"
+  },
+  "agents": [
+    "clip-director",
+    "clip-editor",
+    "distributor",
+    "hook-writer",
+    "trend-scout"
+  ],
+  "formations": [
+    "batch-schedule",
+    "clip-factory",
+    "performance-review",
+    "repurpose-lab",
+    "trend-ride"
+  ],
+  "skills": [
+    "analytics-aggregate",
+    "batch-export",
+    "caption-generate",
+    "clip-trim",
+    "format-adapt",
+    "hashtag-optimize",
+    "hook-score",
+    "multi-post",
+    "sound-match",
+    "trend-scan"
+  ],
+  "workflows": [
+    "batch-week",
+    "daily-clip",
+    "morning-clips",
+    "repurpose-pipeline",
+    "trend-alert",
+    "weekly-analytics"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "paths": {
+    "skills": ".navig/skills",
+    "agents": ".navig/store/agents",
+    "formations": ".navig/store/formations",
+    "workflows": ".navig/store/workflows",
+    "prompts": ".navig/store/prompts",
+    "mcp": ".navig/store/mcp",
+    "wiki": ".navig/wiki",
+    "memory": ".navig/memory",
+    "inbox": ".navig/inbox",
+    "plans": ".navig/plans"
+  }
+}

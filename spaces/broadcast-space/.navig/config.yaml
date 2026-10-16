@@ -1,0 +1,87 @@
+# Broadcast Space — Configuration
+
+# Directory layout
+episodes_dir: ".navig/episodes"
+guests_dir: ".navig/guests"
+assets_dir: ".navig/assets"
+exports_dir: ".navig/exports"
+
+# Audio defaults
+audio_defaults:
+  sample_rate: 48000
+  bit_depth: 24
+  channels: 2
+  format: "wav"
+  export_format: "mp3"
+  export_bitrate: "192k"
+  codec: "libmp3lame"
+
+# Loudness standards
+loudness_standards:
+  podcast:
+    target_lufs: -16
+    true_peak: -1.5
+    loudness_range: 8
+  youtube:
+    target_lufs: -14
+    true_peak: -1.0
+    loudness_range: 10
+  streaming:
+    target_lufs: -16
+    true_peak: -1.5
+    loudness_range: 8
+
+# Episode defaults
+episode_defaults:
+  format: "interview"
+  target_duration_minutes: 45
+  intro_seconds: 15
+  outro_seconds: 20
+  segments:
+    - intro
+    - main_content
+    - ad_break
+    - closing
+
+# Platform configuration
+platforms:
+  apple_podcasts:
+    feed_type: "rss"
+    max_file_size_mb: 250
+    preferred_format: "mp3"
+    preferred_bitrate: "192k"
+  spotify:
+    feed_type: "rss"
+    max_file_size_mb: 200
+    preferred_format: "mp3"
+    preferred_bitrate: "128k"
+  youtube:
+    upload_type: "api"
+    preferred_format: "mp4"
+    audio_only: false
+  rss:
+    validate_before_publish: true
+    items_in_feed: 50
+
+# Guest defaults
+guest_defaults:
+  prep_days_before: 3
+  research_depth: "thorough"
+  prep_doc_template: "guest-prep"
+  follow_up_days_after: 2
+
+# Publishing schedule
+publishing_defaults:
+  release_day: "tuesday"
+  release_time: "06:00"
+  timezone: "UTC"
+  social_clips_per_episode: 3
+  clip_max_duration_seconds: 60
+
+# Agent defaults
+agent_defaults:
+  model: "auto"
+  temperature: 0.5
+  max_tokens: 4096
+  confirm_before_publish: true
+  confirm_before_record: false

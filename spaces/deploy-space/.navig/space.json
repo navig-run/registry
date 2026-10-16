@@ -1,0 +1,20 @@
+{
+  "id": "deploy-space",
+  "name": "Deploy Space",
+  "version": "1.0.0",
+  "tier": "platform",
+  "status": "planned",
+  "description": "Every deploy, every diff, every rollback — one unified view.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "storage",
+    "tools"
+  ]
+}

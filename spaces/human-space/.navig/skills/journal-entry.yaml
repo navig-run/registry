@@ -1,0 +1,99 @@
+id: journal-entry
+name: Journal Entry
+version: "2.0.0"
+description: Create a structured daily journal entry with mood, gratitude, highlights, and reflections. Saves to spaces/growth/journal/YYYY-MM-DD.md.
+category: growth
+platform: [windows, linux, macos]
+formation: evening-reflection
+author: navig-run
+
+parameters:
+  - name: mood
+    description: "Mood score 1-10"
+    required: false
+  - name: gratitude
+    description: "What are you grateful for today?"
+    required: false
+  - name: highlight
+    description: "Best moment or accomplishment today"
+    required: false
+  - name: challenge
+    description: "Biggest challenge faced today"
+    required: false
+  - name: tomorrow
+    description: "One intention for tomorrow"
+    required: false
+  - name: freeform
+    description: "Free-form journal text"
+    required: false
+
+steps:
+  - name: create-journal
+    description: Write structured journal entry
+    env:
+      NAVIG_PARAM_MOOD: "{{mood}}"
+      NAVIG_PARAM_GRATITUDE: "{{gratitude}}"
+      NAVIG_PARAM_HIGHLIGHT: "{{highlight}}"
+      NAVIG_PARAM_CHALLENGE: "{{challenge}}"
+      NAVIG_PARAM_TOMORROW: "{{tomorrow}}"
+      NAVIG_PARAM_FREEFORM: "{{freeform}}"
+    script: |
+      import os, pathlib, datetime
+      today = datetime.date.today()
+      d = pathlib.Path("spaces/growth/journal")
+      d.mkdir(parents=True, exist_ok=True)
+      fp = d / f"{today.isoformat()}.md"
+      mood = os.environ.get("NAVIG_PARAM_MOOD", "")
+      gratitude = os.environ.get("NAVIG_PARAM_GRATITUDE", "")
+      highlight = os.environ.get("NAVIG_PARAM_HIGHLIGHT", "")
+      challenge = os.environ.get("NAVIG_PARAM_CHALLENGE", "")
+      tomorrow = os.environ.get("NAVIG_PARAM_TOMORROW", "")
+      freeform = os.environ.get("NAVIG_PARAM_FREEFORM", "")
+      lines = [f"# Journal — {today.strftime('%A, %B %d, %Y')}", ""]
+      if mood:
+          lines += [f"**Mood**: {mood}/10", ""]
+      if gratitude:
+          lines += ["## Gratitude", gratitude, ""]
+      if highlight:
+          lines += ["## Highlight", highlight, ""]
+      if challenge:
+          lines += ["## Challenge", challenge, ""]
+      if tomorrow:
+          lines += ["## Tomorrow", tomorrow, ""]
+      if freeform:
+          lines += ["## Notes", freeform, ""]
+      lines.append(f"---\n*Logged at {datetime.datetime.now().strftime('%H:%M')}*\n")
+      if fp.exists():
+          with open(fp, "a", encoding="utf-8") as f:
+              f.write("\n" + "\n".join(lines))
+          print(f"Appended to existing journal: {fp}")
+      else:
+          fp.write_text("\n".join(lines), encoding="utf-8")
+          print(f"Journal created: {fp}")
+    script_windows: |
+      $today = Get-Date
+      $dir = "spaces\growth\journal"
+      if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+      $fp = Join-Path $dir "$($today.ToString('yyyy-MM-dd')).md"
+      $mood = $env:NAVIG_PARAM_MOOD
+      $gratitude = $env:NAVIG_PARAM_GRATITUDE
+      $highlight = $env:NAVIG_PARAM_HIGHLIGHT
+      $challenge = $env:NAVIG_PARAM_CHALLENGE
+      $tomorrow = $env:NAVIG_PARAM_TOMORROW
+      $freeform = $env:NAVIG_PARAM_FREEFORM
+      $lines = @("# Journal — $($today.ToString('dddd, MMMM dd, yyyy'))", "")
+      if ($mood) { $lines += "**Mood**: $mood/10", "" }
+      if ($gratitude) { $lines += "## Gratitude", $gratitude, "" }
+      if ($highlight) { $lines += "## Highlight", $highlight, "" }
+      if ($challenge) { $lines += "## Challenge", $challenge, "" }
+      if ($tomorrow) { $lines += "## Tomorrow", $tomorrow, "" }
+      if ($freeform) { $lines += "## Notes", $freeform, "" }
+      $lines += "---", "*Logged at $($today.ToString('HH:mm'))*", ""
+      $content = $lines -join "`n"
+      if (Test-Path $fp) {
+          Add-Content -Path $fp -Value "`n$content"
+          Write-Host "Appended to existing journal: $fp"
+      } else {
+          Set-Content -Path $fp -Value $content
+          Write-Host "Journal created: $fp"
+      }

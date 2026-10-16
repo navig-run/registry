@@ -1,0 +1,96 @@
+id: log-finding
+name: Log Finding
+version: "1.0.0"
+description: >
+  Log a case finding with severity, confidence, source, and an evidence reference.
+  A finding separates fact from assessment and must cite at least one source —
+  a lead is a hypothesis, a finding is corroborated.
+category: investigation
+platform: [windows, linux, macos]
+formation: investigation
+author: war-room-space
+
+parameters:
+  - name: case
+    type: string
+    required: true
+    description: "Case id this finding belongs to (e.g. 'case_0001')"
+  - name: finding
+    type: string
+    required: true
+    description: "The finding statement (fact or assessment)"
+  - name: severity
+    type: enum
+    values: [info, low, medium, high, critical]
+    required: false
+    default: "medium"
+  - name: confidence
+    type: enum
+    values: [low, medium, high, confirmed]
+    required: false
+    default: "medium"
+  - name: source
+    type: string
+    required: true
+    description: "Source backing this finding (required — at least one)"
+  - name: evidence
+    type: string
+    required: false
+    default: ""
+    description: "Evidence reference — path or URL to the supporting artifact"
+
+steps:
+  - id: log_finding
+    name: "Log Finding"
+    shell: auto
+    env:
+      NAVIG_PARAM_SOURCE: "{{params.source}}"
+      NAVIG_PARAM_CASE: "{{params.case}}"
+      NAVIG_PARAM_FINDING: "{{params.finding}}"
+      NAVIG_PARAM_SEVERITY: "{{params.severity}}"
+      NAVIG_PARAM_CONFIDENCE: "{{params.confidence}}"
+      NAVIG_PARAM_EVIDENCE: "{{params.evidence}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, sys
+      from datetime import datetime
+
+      source = os.environ.get("NAVIG_PARAM_SOURCE", "").strip()
+      if not source:
+          print("REFUSED: a finding requires at least one source. No source provided.")
+          sys.exit(1)
+
+      find_path = ".navig/memory/findings.json"
+      try:
+          with open(find_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "last_updated": "", "findings": []}
+      data.setdefault("findings", [])
+
+      now = datetime.utcnow().isoformat() + "Z"
+      finding = {
+          "id": f"find_{len(data['findings']) + 1:04d}",
+          "case": os.environ.get("NAVIG_PARAM_CASE", ""),
+          "finding": os.environ.get("NAVIG_PARAM_FINDING", ""),
+          "severity": os.environ.get("NAVIG_PARAM_SEVERITY", ""),
+          "confidence": os.environ.get("NAVIG_PARAM_CONFIDENCE", ""),
+          "source": source,
+          "evidence": os.environ.get("NAVIG_PARAM_EVIDENCE", ""),
+          "status": "open",
+          "logged_at": now
+      }
+      data["findings"].append(finding)
+      data["last_updated"] = now[:10]
+      os.makedirs(os.path.dirname(find_path), exist_ok=True)
+      with open(find_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      ev = f" | evidence: {finding['evidence']}" if finding["evidence"] else ""
+      print(f"Finding logged: [{finding['id']}] {finding['severity'].upper()} | {finding['case']} | confidence: {finding['confidence']}")
+      print(f"Source: {finding['source']}{ev}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: log_finding

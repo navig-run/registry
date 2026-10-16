@@ -1,0 +1,45 @@
+id: ecommerce-ops
+name: E-commerce Operations
+version: "1.0.0"
+description: Handles day-to-day selling operations — listings, inventory, fulfilment, and channel health.
+
+agents:
+  lead: listing-optimizer
+  supporting:
+    - fulfillment-ops
+    - affiliate-manager
+
+trigger_conditions:
+  - Channel health check requested
+  - New listing creation or audit requested
+  - Inventory restock threshold reached
+  - Weekly ops review time
+
+action_scope:
+  - Product listing creation and optimisation
+  - Inventory monitoring and replenishment
+  - Fulfilment health checks
+  - Affiliate status review
+
+skills_used:
+  - audit-listings
+  - check-fees
+  - track-affiliate
+
+workflows_used:
+  - listing-audit
+
+communication:
+  inbox_channel: "#ecommerce"
+  escalation: finance-analyst
+  notify_on:
+    - listing rank drop
+    - inventory below safety-stock
+    - affiliate fraud flag
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write: []
+
+example_invocation: "@ecommerce-ops review --channel amazon --date today"

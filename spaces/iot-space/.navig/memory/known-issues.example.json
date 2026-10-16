@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "space": "iot",
+  "updated": "2026-07-10",
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "Device registry has placeholder entries",
+      "severity": "info",
+      "status": "open",
+      "device": "all",
+      "detected": "2026-07-10",
+      "detected_by": "beacon",
+      "description": "device-registry.json contains two example entries (iot-001, iot-002). Real device data must be entered after initial discovery and onboarding.",
+      "resolution": "Run the device-onboard workflow (ask the space agent to run it) for each real device, then remove example entries.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-002",
+      "title": "MQTT broker host not confirmed",
+      "severity": "info",
+      "status": "open",
+      "device": "space",
+      "detected": "2026-07-10",
+      "detected_by": "broker",
+      "description": "space-context.json and config.yaml have a default broker host 192.168.1.10:1883. This must be updated to match the actual Mosquitto broker before mqtt-subscribe/publish and telemetry skills will work.",
+      "resolution": "Edit .navig/config.yaml and .navig/memory/space-context.json — update mqtt.host/port and confirm anonymous access is disabled.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-003",
+      "title": "IoT VLAN / subnet not confirmed",
+      "severity": "info",
+      "status": "open",
+      "device": "space",
+      "detected": "2026-07-10",
+      "detected_by": "warden",
+      "description": "space-context.json has default iot_subnet 192.168.20.0/24 and iot_vlan 20. These must be updated to match the actual isolated segment before vlan-audit produces accurate results.",
+      "resolution": "Edit .navig/config.yaml and .navig/memory/space-context.json — set iot_subnet, iot_vlan, gateway; update segmentation.md.",
+      "resolved": null
+    }
+  ],
+  "schema": {
+    "description": "Log operational issues, anomalies, and incidents here. Agents write to this file automatically.",
+    "severity_levels": ["info", "warning", "critical", "resolved"],
+    "status_values": ["open", "investigating", "mitigated", "resolved", "wont-fix"],
+    "template": {
+      "id": "ISS-NNN",
+      "title": "Short issue description",
+      "severity": "warning",
+      "status": "open",
+      "device": "device-name or 'space' for space-wide",
+      "detected": "YYYY-MM-DD",
+      "detected_by": "agent-name or 'operator'",
+      "description": "Detailed description of the issue",
+      "resolution": "Steps taken or planned to resolve",
+      "resolved": null
+    }
+  }
+}

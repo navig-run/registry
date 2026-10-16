@@ -1,0 +1,11 @@
+# Project content (typically want to version but exclude sensitive items)
+projects/*/decisions.md
+projects/archived/
+
+# Generated
+reports/
+
+# Working state (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml

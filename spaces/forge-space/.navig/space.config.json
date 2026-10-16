@@ -1,0 +1,22 @@
+{
+  "name": "forge-space",
+  "version": "1.0.0",
+  "description": "Build, test, and ship new tool capabilities and packages. Also the home of the dream-compiler workflow: describe what you want in plain English, get a deployable package.",
+  "owner": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "tools",
+    "storage",
+    "agent"
+  ],
+  "config_key": null,
+  "viral_hook": "Ship a capability pack and see it installed by 100 other Navig instances",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

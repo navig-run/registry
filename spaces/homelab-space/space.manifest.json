@@ -1,0 +1,18 @@
+{
+  "space_id": "homelab-space",
+  "display_name": "Homelab Space",
+  "description": "Command-and-control hub for all hardware, devices, and networks in a personal homelab environment.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "version": "1.2.0",
+  "created": "2026-03-05",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["homelab", "infrastructure", "hardware", "networking", "automation", "devops"],
+  "status": "active",
+  "agents": ["atlas", "sentinel", "wrench", "herald", "archivist", "pulse"],
+  "formations": ["network-ops", "hardware-patrol", "cross-platform-ops", "security-watch", "maintenance-crew"],
+  "subspaces": []
+}

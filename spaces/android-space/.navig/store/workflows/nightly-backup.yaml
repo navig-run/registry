@@ -1,0 +1,79 @@
+name: nightly-backup
+description: |
+  Nightly data-safety pass. Pulls all media (DCIM, Pictures, Downloads, Movies) from
+  every connected device to backup storage, creates adb backups of key apps, verifies
+  the archives, and logs the result per device.
+
+schedule:
+  cron: "0 2 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: backup-restore
+
+steps:
+  - id: connect
+    name: "Ensure ADB connectivity"
+    skill: adb-connect
+    params:
+      mode: auto
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: media_pull
+    name: "Pull All Media to Backup Storage"
+    skill: file-transfer
+    depends_on: [connect]
+    agent: keeper
+    params:
+      direction: media
+      dest: "devices/media"
+    parallel: true
+    timeout_seconds: 1800
+    on_error: continue
+
+  - id: app_backup
+    name: "Backup Key App Data"
+    skill: app-backup
+    depends_on: [connect]
+    agent: keeper
+    params:
+      action: backup
+      archive: "devices/backups"
+      include_apk: true
+    timeout_seconds: 900
+    on_error: continue
+
+  - id: verify
+    name: "Verify Backup Integrity"
+    depends_on: [media_pull, app_backup]
+    agent: keeper
+    action: verify_backup
+    params:
+      media_dir: "devices/media"
+      backup_dir: "devices/backups"
+    on_error: continue
+
+  - id: write_memory
+    name: "Write Backup Log to Memory"
+    depends_on: [verify]
+    agent: keeper
+    action: write_memory
+    params:
+      file: ".navig/memory/backup-log.json"
+      data:
+        timestamp: "{{now_iso}}"
+        media: "{{steps.media_pull.output}}"
+        apps: "{{steps.app_backup.output}}"
+        verified: "{{steps.verify.output}}"
+
+  - id: report
+    name: "Nightly Backup Report"
+    depends_on: [verify]
+    agent: keeper
+    action: compose_report
+    params:
+      template: "nightly-backup"
+      deliver_to: inbox
+      channel: "#backup"

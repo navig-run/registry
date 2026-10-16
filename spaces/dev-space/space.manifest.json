@@ -1,0 +1,17 @@
+{
+  "space_id": "dev-space",
+  "display_name": "Dev Space",
+  "description": "Code authoring, userscript development, and browser extension engineering hub.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "version": "1.0.0",
+  "created": "2026-03-11",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["development", "scripting", "extensions", "userscripts", "automation"],
+  "status": "active",
+  "agents": ["coder", "debugger", "reviewer", "scripter"],
+  "formations": ["dev-workflow", "review-cycle", "extension-build"]
+}

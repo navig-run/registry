@@ -1,0 +1,32 @@
+id: skill-assessment
+name: Skill Assessment
+version: "1.0.0"
+description: Quarterly review of all skill areas — level, evidence, gap analysis.
+space: learn
+steps:
+  - step: 1
+    name: List All Skills
+    agent: skill-planner
+    command: "@skill-planner list"
+    automated: true
+  - step: 2
+    name: Assess Each Skill
+    agent: skill-planner
+    command: "@skill-planner assess --all"
+    description: For each skill — what's the evidence for current level?
+    automated: true
+  - step: 3
+    name: Gap Analysis
+    agent: skill-planner
+    command: "@skill-planner gap --all"
+    automated: true
+  - step: 4
+    name: Prioritize Skills for Next Quarter
+    manual: true
+    description: Pick 1–2 skills to actively develop next quarter
+  - step: 5
+    name: Create Skill Sprints
+    agent: skill-planner
+    description: Recommend learning items for each priority skill
+    automated: true
+cadence: quarterly

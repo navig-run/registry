@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "space": "studio-space",
+  "updated": "2026-04-05",
+  "operational_goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Index all DAW sessions",
+      "priority": "high",
+      "status": "pending",
+      "description": "Run daw-project-scan across all session directories to build a complete project index. Every session should be cataloged with DAW type, track count, last modified date, and BPM.",
+      "success_criteria": "All DAW projects discovered, indexed in session catalog, and browsable via navig commands.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Establish daily studio routine",
+      "priority": "high",
+      "status": "pending",
+      "description": "Configure the morning-studio workflow to run automatically each morning. This checks for unfinished sessions, overdue releases, and inbox items.",
+      "success_criteria": "Workflow runs on schedule, produces a daily brief, flags blocked items.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Catalog sample library",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Run sample-catalog across all sample directories to build a searchable index. Samples should be tagged with BPM, key, type, and genre.",
+      "success_criteria": "All samples indexed, searchable by BPM/key/type, duplicates flagged.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Define release pipeline",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Configure the release-cycle workflow with distributor-specific requirements. Set up metadata templates and format profiles for each platform.",
+      "success_criteria": "One-command release prep that produces platform-compliant packages with correct metadata.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Loudness compliance templates",
+      "priority": "low",
+      "status": "pending",
+      "description": "Create loudness-check presets for streaming (-14 LUFS), broadcast (-23 LUFS), and club (-6 LUFS) targets.",
+      "success_criteria": "All masters pass loudness check against target standard before release.",
+      "target_date": null
+    }
+  ]
+}

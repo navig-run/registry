@@ -1,0 +1,19 @@
+{
+  "year": "YYYY",
+  "currency": "USD",
+  "categories": [
+    { "category": "housing", "monthly_target": 0 },
+    { "category": "food", "monthly_target": 0 },
+    { "category": "transport", "monthly_target": 0 },
+    { "category": "utilities", "monthly_target": 0 },
+    { "category": "health", "monthly_target": 0 },
+    { "category": "entertainment", "monthly_target": 0 },
+    { "category": "clothing", "monthly_target": 0 },
+    { "category": "education", "monthly_target": 0 },
+    { "category": "savings", "monthly_target": 0 },
+    { "category": "investments", "monthly_target": 0 },
+    { "category": "taxes", "monthly_target": 0 },
+    { "category": "miscellaneous", "monthly_target": 0 }
+  ],
+  "notes": "Copy to budgets/<year>/budget.json and set a monthly target per category."
+}

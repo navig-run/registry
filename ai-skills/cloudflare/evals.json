@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "pick-storage",
+      "prompt": "In a Cloudflare Worker I need to store relational SQL data and also cache user sessions. Which Cloudflare products should I pick for each?",
+      "expect": { "contains": ["D1", "KV"], "excludes": ["DynamoDB"] }
+    },
+    {
+      "id": "route-realtime",
+      "prompt": "Which Cloudflare primitive do I use for a real-time chat room that needs consistent, ordered per-room state at the edge?",
+      "expect": { "contains": ["Durable Objects", "coordination"], "excludes": [] }
+    },
+    {
+      "id": "navig-worker-seam",
+      "prompt": "Where does navig already run Workers on Cloudflare, and how does it deploy them without needing the wrangler binary?",
+      "expect": { "contains": ["services/api", "services/lighthouse", "deck_deploy.py"], "excludes": [] }
+    }
+  ]
+}

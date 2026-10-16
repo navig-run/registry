@@ -1,0 +1,113 @@
+name: deep-audit
+description: |
+  Comprehensive security and health audit. Full port scan, process investigation,
+  GPU health check, and disk clean dry-run across all registered hosts.
+  Outputs a consolidated audit report. Run on-demand or weekly.
+
+schedule:
+  cron: "0 2 * * 0"   # Sundays at 2 AM
+  timezone: "local"
+  enabled: false       # off by default; enable after validating in your environment
+
+on_demand: true
+formation: security-watch
+
+steps:
+  - id: port_audit
+    name: "Full Port Audit — All Hosts"
+    skill: port-audit
+    params:
+      targets: "all_registered"
+      scan_type: "SV"       # service version detection
+      port_range: "1-65535"
+      output_format: json
+    timeout_seconds: 600    # full port scan takes time
+    on_error: continue
+
+  - id: process_investigation
+    name: "Process Investigation — All Hosts"
+    skill: process-investigate
+    params:
+      targets: "all_registered"
+      flags:
+        - high_cpu         # procs consuming > 80% CPU
+        - high_mem         # procs consuming > 75% RAM
+        - network_active   # procs with active external connections
+        - unknown_path     # procs running from temp/unusual paths
+    parallel: true
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: gpu_health_check
+    name: "GPU Health Check"
+    skill: gpu-health
+    params:
+      targets: "all_gpu_hosts"
+      include_errors: true
+      include_fan_speed: true
+    timeout_seconds: 60
+    on_error: continue
+
+  - id: disk_clean_dryrun
+    name: "Disk Clean (Dry Run)"
+    skill: disk-clean
+    params:
+      targets: "all_registered"
+      dry_run: true         # preview only — no actual deletion
+      include_logs: true
+      include_temp: true
+      include_cache: true
+    parallel: true
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: smart_check
+    name: "SMART Disk Health Check"
+    agent: pulse
+    action: smart_full_scan
+    params:
+      targets: "all_registered"
+    timeout_seconds: 300
+    on_error: continue
+
+  - id: auth_review
+    name: "Authentication Log Review"
+    agent: sentinel
+    action: auth_log_review
+    params:
+      hosts: "all_registered"
+      lookback_hours: 168    # past week
+      events:
+        - failed_login
+        - privilege_escalation
+        - new_user_created
+        - sudo_usage
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: flag_risky_ports
+    name: "Flag High-Risk Open Ports"
+    depends_on: [port_audit]
+    agent: sentinel
+    action: flag_risky_ports
+    params:
+      audit: "{{steps.port_audit.output}}"
+      risky_ports: [21, 23, 445, 3389, 5900, 6000, 8080]
+      alert_if_found: true
+
+  - id: compile_report
+    name: "Compile Audit Report"
+    depends_on: [port_audit, process_investigation, gpu_health_check, disk_clean_dryrun, smart_check, auth_review]
+    agent: sentinel
+    action: compile_security_report
+    params:
+      sections:
+        ports: "{{steps.port_audit.output}}"
+        processes: "{{steps.process_investigation.output}}"
+        gpu: "{{steps.gpu_health_check.output}}"
+        disk_clean_preview: "{{steps.disk_clean_dryrun.output}}"
+        smart: "{{steps.smart_check.output}}"
+        auth: "{{steps.auth_review.output}}"
+      output_file: ".navig/wiki/history/audit-{{today}}.md"
+      deliver_to: inbox
+      channel: "#security"

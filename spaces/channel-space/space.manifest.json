@@ -1,0 +1,58 @@
+{
+  "space_id": "channel-space",
+  "display_name": "Channel Space",
+  "description": "YouTube creator command center — video production, SEO, growth analytics, thumbnail testing, and community management.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-04-05",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "tier": "work",
+  "tags": [
+    "youtube",
+    "video",
+    "creator",
+    "content",
+    "seo",
+    "growth",
+    "thumbnails",
+    "analytics"
+  ],
+  "status": "active",
+  "agents": [
+    "art-director",
+    "editor",
+    "growth-analyst",
+    "scriptwriter",
+    "showrunner"
+  ],
+  "formations": [
+    "channel-growth",
+    "community-ops",
+    "content-planning",
+    "thumbnail-lab",
+    "video-production"
+  ],
+  "version": "1.0.0",
+  "license": "MIT",
+  "skills": [
+    "analytics-pull",
+    "competitor-scan",
+    "description-writer",
+    "hook-analyzer",
+    "retention-analysis",
+    "schedule-publish",
+    "seo-audit",
+    "tag-optimizer",
+    "thumbnail-score",
+    "title-generator"
+  ],
+  "workflows": [
+    "content-batch",
+    "morning-channel",
+    "seo-refresh",
+    "thumbnail-test",
+    "video-production",
+    "weekly-review"
+  ]
+}

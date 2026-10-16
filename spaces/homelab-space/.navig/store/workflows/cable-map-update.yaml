@@ -1,0 +1,104 @@
+name: cable-map-update
+description: |
+  Guided interactive workflow for documenting physical cable connections. Invokes
+  the cable-map-wizard prompt, captures per-cable entries interactively, and
+  appends the results to the cable-log wiki entry.
+
+on_demand: true
+interactive: true
+formation: network-ops
+agent_lead: archivist
+
+steps:
+  - id: select_location
+    name: "Select Location to Document"
+    type: interactive_prompt
+    prompt: |
+      Cable Map Update Wizard
+
+      Which physical location are you documenting?
+      Current logged locations: desk, server-rack, network-closet
+
+      Enter the location name (or type a new one):
+    collect:
+      - name: location
+
+  - id: check_existing
+    name: "Check Existing Entries for Location"
+    depends_on: [select_location]
+    agent: archivist
+    action: read_cable_log
+    params:
+      location: "{{steps.select_location.location}}"
+      file: ".navig/wiki/cable-log.md"
+
+  - id: show_existing
+    name: "Show Existing Cables (if any)"
+    depends_on: [check_existing]
+    type: display
+    condition: "{{steps.check_existing.count}} > 0"
+    message: |
+      Found {{steps.check_existing.count}} existing cable entries for "{{steps.select_location.location}}".
+      
+      Existing entries:
+      {{steps.check_existing.formatted}}
+      
+      You will be adding new cables after these. Assign IDs starting from: {{steps.check_existing.next_id}}
+
+  - id: run_cable_wizard
+    name: "Run Cable Documentation Wizard"
+    depends_on: [select_location, check_existing]
+    skill: cable-trace
+    params:
+      location: "{{steps.select_location.location}}"
+      session_date: "{{today}}"
+      start_id: "{{steps.check_existing.next_id}}"
+      interactive: true
+
+  - id: verify_entries
+    name: "Verify Cable Entries"
+    depends_on: [run_cable_wizard]
+    type: interactive_confirm
+    message: |
+      You have documented {{steps.run_cable_wizard.cable_count}} cable(s):
+
+      {{steps.run_cable_wizard.formatted_entries}}
+
+      Append these to cable-log.md? [Y/N]
+
+  - id: write_cable_log
+    name: "Append to Cable Log"
+    depends_on: [verify_entries]
+    condition: "{{steps.verify_entries.confirmed}} == true"
+    agent: archivist
+    action: append_cable_log
+    params:
+      file: ".navig/wiki/cable-log.md"
+      location: "{{steps.select_location.location}}"
+      entries: "{{steps.run_cable_wizard.entries}}"
+      session_date: "{{today}}"
+
+  - id: flag_issues
+    name: "Flag Damaged / Unlabelled Cables"
+    depends_on: [write_cable_log]
+    agent: archivist
+    action: flag_cable_issues
+    params:
+      entries: "{{steps.run_cable_wizard.entries}}"
+      notify_channel: "#maintenance"
+      issues:
+        - condition: damaged
+          message: "Cable {{id}} is damaged — replacement recommended"
+        - condition: no_label
+          message: "Cable {{id}} ({{source}} → {{destination}}) has no physical label"
+
+  - id: confirm_done
+    name: "Confirm Completion"
+    depends_on: [write_cable_log, flag_issues]
+    type: display
+    message: |
+      ✅ Cable map updated for location: {{steps.select_location.location}}
+      Entries written: {{steps.run_cable_wizard.cable_count}}
+      Issues flagged: {{steps.flag_issues.count}}
+
+      View full log: .navig/wiki/cable-log.md

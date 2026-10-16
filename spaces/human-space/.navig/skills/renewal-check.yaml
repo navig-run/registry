@@ -1,0 +1,136 @@
+id: renewal-check
+name: Renewal Check
+version: "2.1.0"
+description: Check upcoming renewals — subscriptions and appointments from spaces/bureau/renewals.csv, and documents (passport, ID, insurance) from the encrypted cabinet (`navig cabinet expiring`). Flags items due within configurable alert window.
+category: bureau
+platform: [windows, linux, macos]
+formation: bureau-ops
+author: navig-run
+
+parameters:
+  - name: days_ahead
+    description: "Alert window in days (default: 30)"
+    required: false
+    default: "30"
+  - name: category
+    description: "Filter by category: id | subscription | insurance | medical | tax | vehicle | housing | all (default: all)"
+    required: false
+    default: all
+
+steps:
+  - name: check-renewals
+    description: Read renewals CSV and flag upcoming due items
+    env:
+      NAVIG_PARAM_DAYS_AHEAD: "{{days_ahead}}"
+      NAVIG_PARAM_CATEGORY: "{{category}}"
+    script: |
+      import os, pathlib, csv, datetime
+      days_raw = os.environ.get("NAVIG_PARAM_DAYS_AHEAD", "") or "30"
+      try:
+          days = int(days_raw)
+      except ValueError:
+          print(f"Invalid 'days_ahead' value: {days_raw!r} (expected an integer)")
+          import sys; sys.exit(1)
+      cat_filter = os.environ.get("NAVIG_PARAM_CATEGORY", "") or "all"
+      p = pathlib.Path("spaces/bureau/renewals.csv")
+      if not p.exists():
+          print("No renewals file found at spaces/bureau/renewals.csv")
+          print("Create one with columns: item,category,due_date,cost,auto_renew,notes")
+          import sys; sys.exit(0)
+      with open(p, newline="", encoding="utf-8") as f:
+          rows = list(csv.DictReader(f))
+      if not rows:
+          print("Renewals file is empty."); import sys; sys.exit(0)
+
+      today = datetime.date.today()
+      cutoff = today + datetime.timedelta(days=days)
+
+      if cat_filter != "all":
+          rows = [r for r in rows if r.get("category", "").lower() == cat_filter.lower()]
+
+      overdue = []
+      upcoming = []
+      ok = []
+      for r in rows:
+          due = r.get("due_date", "").strip()
+          if not due:
+              continue
+          try:
+              due_date = datetime.date.fromisoformat(due)
+          except ValueError:
+              continue
+          if due_date < today:
+              overdue.append((r, due_date))
+          elif due_date <= cutoff:
+              upcoming.append((r, due_date))
+          else:
+              ok.append((r, due_date))
+
+      print(f"═══ RENEWAL CHECK (next {days} days) ═══\n")
+
+      if overdue:
+          print(f"  ❌ OVERDUE ({len(overdue)}):")
+          for r, d in sorted(overdue, key=lambda x: x[1]):
+              delta = (today - d).days
+              cost = f" — {r.get('cost', '')}" if r.get('cost', '').strip() else ""
+              print(f"    {r['item']} [{r.get('category','')}] — {delta} days overdue (was {d}){cost}")
+          print()
+
+      if upcoming:
+          print(f"  ⚠️  DUE SOON ({len(upcoming)}):")
+          for r, d in sorted(upcoming, key=lambda x: x[1]):
+              delta = (d - today).days
+              cost = f" — {r.get('cost', '')}" if r.get('cost', '').strip() else ""
+              auto = " [auto-renew]" if r.get("auto_renew", "").lower() in ("yes", "true", "1") else ""
+              print(f"    {r['item']} [{r.get('category','')}] — in {delta} days ({d}){cost}{auto}")
+          print()
+
+      if not overdue and not upcoming:
+          print(f"  ✅ All clear — no renewals due within {days} days.")
+      print(f"\n  Total tracked: {len(overdue) + len(upcoming) + len(ok)} items")
+    script_windows: |
+      $days = 30
+      if ($env:NAVIG_PARAM_DAYS_AHEAD) {
+          if (-not [int]::TryParse($env:NAVIG_PARAM_DAYS_AHEAD, [ref]$days)) {
+              Write-Host "Invalid 'days_ahead' value: $($env:NAVIG_PARAM_DAYS_AHEAD) (expected an integer)"; exit 1
+          }
+      }
+      $catFilter = $env:NAVIG_PARAM_CATEGORY
+      if (-not $catFilter) { $catFilter = "all" }
+      $p = "spaces\bureau\renewals.csv"
+      if (-not (Test-Path $p)) { Write-Host "No renewals file found. Create spaces/bureau/renewals.csv"; exit 0 }
+      $rows = Import-Csv $p
+      if (-not $rows) { Write-Host "Renewals file is empty."; exit 0 }
+      if ($catFilter -ne "all") { $rows = @($rows | Where-Object { "$($_.category)".ToLower() -eq $catFilter.ToLower() }) }
+      $today = Get-Date
+      $cutoff = $today.AddDays($days)
+      Write-Host "=== RENEWAL CHECK (next $days days) ==="
+      $overdue = @(); $upcoming = @()
+      foreach ($r in $rows) {
+          if (-not $r.due_date) { continue }
+          try { $due = [datetime]::Parse($r.due_date) } catch { continue }
+          if ($due -lt $today) { $overdue += $r }
+          elseif ($due -le $cutoff) { $upcoming += $r }
+      }
+      if ($overdue) { Write-Host "`n  OVERDUE ($($overdue.Count)):"; $overdue | ForEach-Object { Write-Host "    $($_.item) [$($_.category)] — was $($_.due_date)" } }
+      if ($upcoming) { Write-Host "`n  DUE SOON ($($upcoming.Count)):"; $upcoming | ForEach-Object { Write-Host "    $($_.item) [$($_.category)] — $($_.due_date)" } }
+      if (-not $overdue -and -not $upcoming) { Write-Host "`n  All clear — no renewals due within $days days." }
+
+  - name: check-documents
+    description: Documents in the encrypted cabinet that expire within the window
+    env:
+      NAVIG_PARAM_DAYS_AHEAD: "{{days_ahead}}"
+    script: |
+      import os, shutil, subprocess, sys
+      days_raw = os.environ.get("NAVIG_PARAM_DAYS_AHEAD", "") or "30"
+      try:
+          days = int(days_raw)
+      except ValueError:
+          print(f"Invalid 'days_ahead' value: {days_raw!r} (expected an integer)")
+          sys.exit(1)
+      navig = shutil.which("navig")
+      if not navig:
+          print("navig is not on PATH — skipping the document check")
+      else:
+          print(f"\n═══ DOCUMENTS (navig cabinet, next {days} days) ═══\n")
+          subprocess.run([navig, "cabinet", "expiring", "--within", str(days)], check=False)

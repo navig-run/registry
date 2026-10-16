@@ -1,0 +1,54 @@
+name: weekly-ops-review
+version: "2.0.0"
+description: >
+  Weekly operational review: inbox status, active project milestones, financial snapshot,
+  lead pipeline status, overdue invoices, compliance deadlines, and upcoming tasks.
+  Produces a comprehensive brief posted to #ops and #strategic.
+schedule:
+  cron: "0 9 * * MON"
+  timezone: UTC
+  enabled: true
+on_demand: true
+formation: company-ops
+
+steps:
+  - name: inbox-triage
+    description: Check inbox/ for unactioned items, categorize and route
+    skill: triage-inbox
+
+  - name: project-status
+    description: Pull status for all active projects — progress %, blockers, milestones
+    depends_on: inbox-triage
+
+  - name: financial-snapshot
+    description: Quick revenue/expense summary for current month
+    skill: revenue-report
+    params:
+      period: "current-month"
+    depends_on: inbox-triage
+
+  - name: invoice-check
+    description: Flag overdue invoices (>30 days unpaid)
+    depends_on: financial-snapshot
+
+  - name: lead-summary
+    description: Count active leads by priority, flag stale leads (>14 days no action)
+    depends_on: inbox-triage
+
+  - name: compliance-check
+    description: Check for upcoming compliance deadlines within 14 days
+    depends_on: financial-snapshot
+
+  - name: generate-brief
+    description: Compile all findings into weekly ops brief
+    depends_on:
+      - project-status
+      - invoice-check
+      - lead-summary
+      - compliance-check
+
+  - name: notify
+    description: Post brief to #ops and summary to #strategic
+    inbox_channel: "#ops"
+    also_notify: "#strategic"
+    depends_on: generate-brief

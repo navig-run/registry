@@ -1,0 +1,30 @@
+name: Dev
+description: Quick npm and Docker menus for a project folder - install/build/run scripts, and docker pull/run/build/compose.
+version: 1.0.0
+category: dev
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: elevated
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: npm
+    syntax: navig skill run dev npm --target <project-dir>
+    description: npm menu - install, ci, build, dev, start, update, audit fix, plus package.json scripts
+    risk: elevated
+  - name: docker
+    syntax: navig skill run dev docker --target <project-dir>
+    description: Docker menu - pull/run/build/images/ps and compose up/down/logs/build when a compose file is present
+    risk: elevated
+
+agent_hints:
+  when_to_use: >
+    Use for common npm/Docker operations on a project. Trigger on "npm install here",
+    "run the build", "docker pull this image", "compose up".
+  output_format: >
+    Interactive numbered menu in a console window, then the tool's own output.
+  follow_up: >
+    docker pull/run read the image reference from the clipboard if it looks like one.

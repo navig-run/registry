@@ -1,0 +1,37 @@
+{
+  "id": "research-space",
+  "name": "Research",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Discovery-to-data research pipeline — search the web, crawl and extract, build datasets, store them in a database, and synthesize cited findings.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "analyst",
+    "archivist",
+    "crawler",
+    "curator",
+    "scout"
+  ],
+  "formations": [
+    "analysis-lab",
+    "crawl-pipeline",
+    "data-foundry",
+    "discovery-run"
+  ],
+  "skills": [
+    "build-dataset",
+    "crawl-site",
+    "db-query",
+    "track-source",
+    "web-search"
+  ],
+  "workflows": [
+    "daily-discovery-sweep",
+    "weekly-research-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "discovery-run"
+}

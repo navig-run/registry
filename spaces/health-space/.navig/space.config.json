@@ -1,0 +1,9 @@
+{
+  "spaceId": "health-space",
+  "displayName": "Health",
+  "description": "Physical and mental health tracking.",
+  "createdAt": "2026-03-02T00:00:00.000Z",
+  "tier": "personal",
+  "status": "planned",
+  "author": "navig-run"
+}

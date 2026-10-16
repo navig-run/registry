@@ -1,0 +1,44 @@
+name: weekly-simulation-review
+description: |
+  Weekly simulation status. Habit performance, open debug tickets,
+  open probability assessments, and stale agent models.
+
+schedule:
+  cron: "0 8 * * 0"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: debug-loop
+
+steps:
+  - id: habit_report
+    name: "Habit Performance"
+    agent: habit-engine
+    action: generate_weekly_report
+    on_error: continue
+
+  - id: debug_open
+    name: "Open Debug Tickets"
+    agent: debugger
+    action: list_open_tickets
+    params:
+      include_overdue: true
+    on_error: continue
+
+  - id: probability_open
+    name: "Open Probability Items"
+    agent: probability-analyst
+    action: list_open_assessments
+    on_error: continue
+
+  - id: simulation_brief
+    name: "Deliver Simulation Brief"
+    depends_on: [habit_report, debug_open, probability_open]
+    agent: debugger
+    action: generate_weekly_brief
+    params:
+      habits: "{{steps.habit_report.output}}"
+      tickets: "{{steps.debug_open.output}}"
+      probabilities: "{{steps.probability_open.output}}"
+      deliver_to: operator

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "ISS-001",
+    "title": "No health metrics data source connected",
+    "description": "wellness-tracker has no structured data to read. Populate spaces/health/metrics.csv with even minimal tracking.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "wellness-tracker"
+  },
+  {
+    "id": "ISS-002",
+    "title": "No habit log initialized",
+    "description": "habit-coach needs spaces/growth/habits.csv with columns: date,habit,completed,notes. Create manually or run check-habit-streak to get prompted.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "habit-coach"
+  },
+  {
+    "id": "ISS-003",
+    "title": "Bureau directory needs population",
+    "description": "spaces/bureau/ subdirectories created but empty. Add your document records, subscriptions, and renewal dates.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "bureau-manager"
+  },
+  {
+    "id": "ISS-004",
+    "title": "No mood baseline established",
+    "description": "Mood tracking added in v2.0 but needs 30 days of data to establish a meaningful baseline for anomaly detection.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "wellness-tracker"
+  }
+]

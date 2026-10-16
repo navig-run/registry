@@ -1,0 +1,63 @@
+id: run-tests
+name: Run Tests
+version: "1.0.0"
+description: Discover and execute tests (Jest for JS/TS, pytest for Python) across a project.
+category: testing
+platform: [windows, linux, macos]
+formation: dev-workflow
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Root directory or specific test file"
+    default: "."
+  - name: output_format
+    type: enum
+    values: [verbose, minimal, json]
+    default: verbose
+
+steps:
+  - id: detect_framework
+    name: "Detect Test Framework"
+    shell: auto
+    script: |
+      if (Test-Path "package.json") {
+        $pkg = Get-Content "package.json" | ConvertFrom-Json
+        if ($pkg.devDependencies.jest -or $pkg.dependencies.jest) { Write-Output "framework=jest" }
+        elseif ($pkg.devDependencies.vitest) { Write-Output "framework=vitest" }
+      }
+      if ((Test-Path "pytest.ini") -or (Get-ChildItem "test_*.py" -ErrorAction SilentlyContinue)) {
+        Write-Output "framework=pytest"
+      }
+    script_linux: |
+      if [ -f package.json ] && grep -q '"jest"' package.json; then echo "framework=jest"
+      elif find . -name "test_*.py" -maxdepth 3 | grep -q .; then echo "framework=pytest"
+      fi
+
+  - id: run_jest
+    name: "Run Jest"
+    condition: "steps.detect_framework.output.framework == 'jest'"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      TEST_TARGET: "{{params.target}}"
+    script: |
+      npx jest "$env:TEST_TARGET" --verbose
+    script_linux: |
+      npx jest "$TEST_TARGET" --verbose
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: run_pytest
+    name: "Run pytest"
+    condition: "steps.detect_framework.output.framework == 'pytest'"
+    shell: auto
+    env:
+      TEST_TARGET: "{{params.target}}"
+    script: |
+      py -3 -m pytest "$env:TEST_TARGET" -v
+    script_linux: |
+      python3 -m pytest "$TEST_TARGET" -v
+    timeout_seconds: 120
+    on_error: continue

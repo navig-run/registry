@@ -1,0 +1,98 @@
+schema_version: "1.0"
+space: homelab
+updated: "2026-02-26"
+description: >
+  Inbox routing configuration for the homelab space.
+  Messages arriving on each channel are dispatched to the owning agent.
+  Unrouted messages escalate to the space lead.
+
+# ─────────────────────────────────────────────
+# Channel Routes
+# ─────────────────────────────────────────────
+routes:
+  - channel: "#hardware"
+    owner: pulse
+    description: GPU health, CPU thermals, disk S.M.A.R.T., RAM pressure, hardware inventory
+    triggers:
+      - keyword: ["gpu", "temperature", "thermal", "overheat", "vram", "cpu", "ram", "memory pressure", "disk smart", "hardware"]
+      - formation: hardware-patrol
+    response_mode: immediate
+    notify_on: [alert, critical]
+
+  - channel: "#network"
+    owner: atlas
+    description: Network scanning, topology mapping, cable documentation, device discovery
+    triggers:
+      - keyword: ["scan", "network", "topology", "cable", "device", "ip", "mac address", "subnet", "port", "nmap", "arp"]
+      - formation: network-ops
+    response_mode: immediate
+    notify_on: [new_device_detected, topology_change]
+
+  - channel: "#security"
+    owner: sentinel
+    description: Port audits, process anomalies, access log alerts, intrusion detection
+    triggers:
+      - keyword: ["security", "port audit", "suspicious", "intrusion", "anomaly", "malware", "unauthorized", "firewall", "access log"]
+      - formation: security-watch
+    response_mode: immediate
+    notify_on: [security_alert, critical, anomaly_detected]
+
+  - channel: "#maintenance"
+    owner: wrench
+    description: Disk cleanup, log rotation, update checks, routine health sweeps
+    triggers:
+      - keyword: ["disk space", "cleanup", "update", "log rotation", "maintenance", "disk full", "sweep"]
+      - formation: maintenance-crew
+    response_mode: scheduled
+    schedule: "0 6 * * *"  # daily at 06:00
+    notify_on: [warning, critical, task_complete]
+
+  - channel: "#configs"
+    owner: archivist
+    description: Dotfile sync, wiki updates, memory writes, device registry, config management
+    triggers:
+      - keyword: ["config", "dotfile", "sync", "wiki", "registry", "backup", "memory", "document"]
+      - formation: maintenance-crew
+    response_mode: immediate
+    notify_on: [sync_complete, conflict_detected]
+
+  - channel: "#cross-platform"
+    owner: herald
+    description: OS-specific command translation, cross-platform task routing
+    triggers:
+      - keyword: ["translate", "windows command", "bash", "powershell", "cross-platform", "which shell", "run on linux", "run on mac"]
+      - formation: cross-platform-ops
+    response_mode: immediate
+    notify_on: [translation_error, unsupported_platform]
+
+# ─────────────────────────────────────────────
+# Escalation Rules
+# ─────────────────────────────────────────────
+escalation:
+  unrouted_messages:
+    action: escalate_to_space_lead
+    space_lead: operator
+    notify: true
+    log: true
+
+  no_owner_available:
+    action: queue_and_notify
+    max_queue_minutes: 60
+    notify_operator: true
+
+  critical_unacknowledged:
+    severity: critical
+    unacknowledged_minutes: 5
+    action: escalate_to_operator
+    notify: true
+
+# ─────────────────────────────────────────────
+# Global Notification Settings
+# ─────────────────────────────────────────────
+notifications:
+  channels: ["desktop", "navig-inbox"]
+  quiet_hours:
+    start: "23:00"
+    end: "07:00"
+    override_for: ["critical"]
+  log_all_to: ".navig/logs/inbox.log"

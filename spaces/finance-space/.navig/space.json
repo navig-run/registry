@@ -1,0 +1,35 @@
+{
+  "id": "finance-space",
+  "name": "Finance Space",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "active",
+  "description": "Personal finance command layer — budget, cashflow, savings goals, investments, and tax preparation.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "budget-analyst",
+    "investment-tracker",
+    "savings-coach",
+    "tax-planner"
+  ],
+  "formations": [
+    "monthly-review",
+    "savings-strategy",
+    "tax-season"
+  ],
+  "skills": [
+    "budget-variance",
+    "categorize-transaction",
+    "project-cashflow",
+    "tax-estimate"
+  ],
+  "workflows": [
+    "monthly-close",
+    "tax-prep-checklist",
+    "weekly-spending"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "monthly-review"
+}

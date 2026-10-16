@@ -1,0 +1,101 @@
+name: daily-clip
+description: |
+  Daily clip production workflow. Creates one clip from concept to
+  publish-ready state. Runs through trend check, hook writing, editing,
+  caption overlay, and final review.
+
+schedule:
+  cron: "0 9 * * 1-5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: clip-factory
+
+steps:
+  - id: check-trends
+    name: Check trending content
+    agent: trend-scout
+    action: scan-today
+    params:
+      platforms: [tiktok, reels, shorts]
+      limit: 10
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: pick-concept
+    name: Select clip concept
+    agent: clip-director
+    action: select-concept
+    params:
+      source: trends-and-calendar
+    depends_on: [check-trends]
+    on_error: stop
+    timeout_seconds: 60
+
+  - id: write-hook
+    name: Write hook and caption
+    agent: hook-writer
+    action: generate-hook
+    params:
+      variants: 3
+    depends_on: [pick-concept]
+    on_error: stop
+    timeout_seconds: 90
+
+  - id: score-hooks
+    name: Score hook variants
+    skill: hook-score
+    params:
+      count: 3
+    depends_on: [write-hook]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: match-sound
+    name: Match trending sound
+    skill: sound-match
+    params:
+      platform: tiktok
+    depends_on: [pick-concept]
+    on_error: continue
+    timeout_seconds: 90
+    parallel: true
+
+  - id: edit-clip
+    name: Edit and trim clip
+    skill: clip-trim
+    params:
+      max_duration: 60
+    depends_on: [score-hooks, match-sound]
+    on_error: stop
+    timeout_seconds: 180
+
+  - id: add-captions
+    name: Generate and overlay captions
+    skill: caption-generate
+    params:
+      style: bold_centered
+    depends_on: [edit-clip]
+    on_error: stop
+    timeout_seconds: 120
+
+  - id: format-export
+    name: Export for all platforms
+    skill: format-adapt
+    params:
+      platforms: [tiktok, reels, shorts]
+    depends_on: [add-captions]
+    on_error: stop
+    timeout_seconds: 180
+
+  - id: final-review
+    name: Director final review
+    agent: clip-director
+    action: review-clip
+    params:
+      checklist: [hook, caption, duration, audio, format]
+    depends_on: [format-export]
+    on_error: stop
+    timeout_seconds: 60

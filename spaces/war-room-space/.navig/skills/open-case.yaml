@@ -1,0 +1,98 @@
+id: open-case
+name: Open Case
+version: "1.0.0"
+description: >
+  Open a new investigation case with subject, objective, scope, and authorization
+  reference. The case is the spine that turns scattered signals into a defensible
+  intelligence product. Active collection/recon still requires standing authorization.
+category: investigation
+platform: [windows, linux, macos]
+formation: investigation
+author: war-room-space
+
+parameters:
+  - name: name
+    type: string
+    required: true
+    description: "Case name (e.g. 'Case: Shell Co Beneficial Owners')"
+  - name: objective
+    type: string
+    required: true
+    description: "What this case must answer or prove"
+  - name: subject
+    type: string
+    required: true
+    description: "The entity/target under investigation (person, org, domain, infra)"
+  - name: scope
+    type: string
+    required: false
+    default: ""
+    description: "Investigative scope — what is in and out of bounds"
+  - name: authorization
+    type: string
+    required: false
+    default: ""
+    description: >
+      Authorization reference. May be empty for passive/open-source case framing,
+      but active collection, recon, scanning, or any contact with the target
+      REQUIRES a standing authorization recorded here (or in engagements.json).
+  - name: priority
+    type: enum
+    values: [critical, high, medium, low]
+    required: false
+    default: "medium"
+
+steps:
+  - id: open_case
+    name: "Open Case"
+    shell: auto
+    env:
+      NAVIG_PARAM_NAME: "{{params.name}}"
+      NAVIG_PARAM_OBJECTIVE: "{{params.objective}}"
+      NAVIG_PARAM_SUBJECT: "{{params.subject}}"
+      NAVIG_PARAM_SCOPE: "{{params.scope}}"
+      NAVIG_PARAM_AUTHORIZATION: "{{params.authorization}}"
+      NAVIG_PARAM_PRIORITY: "{{params.priority}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      cases_path = ".navig/memory/cases.json"
+      try:
+          with open(cases_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "last_updated": "", "cases": []}
+      data.setdefault("cases", [])
+
+      now = datetime.utcnow().isoformat() + "Z"
+      case = {
+          "id": f"case_{len(data['cases']) + 1:04d}",
+          "name": os.environ.get("NAVIG_PARAM_NAME", ""),
+          "objective": os.environ.get("NAVIG_PARAM_OBJECTIVE", ""),
+          "subject": os.environ.get("NAVIG_PARAM_SUBJECT", ""),
+          "scope": os.environ.get("NAVIG_PARAM_SCOPE", ""),
+          "authorization": os.environ.get("NAVIG_PARAM_AUTHORIZATION", ""),
+          "priority": os.environ.get("NAVIG_PARAM_PRIORITY", ""),
+          "status": "open",
+          "report_ref": None,
+          "created_at": now,
+          "updated_at": now,
+          "closed_at": None
+      }
+      data["cases"].append(case)
+      data["last_updated"] = now[:10]
+      os.makedirs(os.path.dirname(cases_path), exist_ok=True)
+      with open(cases_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      auth = case["authorization"] or "(none — passive/open-source only until authorized)"
+      print(f"Case opened: [{case['id']}] {case['name']} | {case['priority']} | {case['status']}")
+      print(f"Subject: {case['subject']}")
+      print(f"Authorization: {auth}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: open_case

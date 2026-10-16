@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────
+# Skill: DAW Project Scan
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: daw-project-scan
+name: DAW Project Scan
+version: "1.0.0"
+description: |
+  Scan a session directory for known DAW project files
+  (Ableton, FL Studio, Logic, Reaper, Pro Tools, Cubase)
+  and report project status, last modified date, and track count.
+category: analysis
+platform:
+  - windows
+  - linux
+  - macos
+formation: track-production
+author: navig-run
+
+parameters:
+  - name: session_dir
+    type: string
+    description: Path to the session directory to scan.
+    default: null
+  - name: filter
+    type: string
+    description: "Filter: all, incomplete, this_week"
+    default: all
+
+steps:
+  - id: scan
+    name: Scan for DAW projects
+    shell: true
+    script_windows: |
+      echo Scanning {{session_dir}} for DAW projects...
+      echo --- Ableton Live ---
+      dir /b /s "{{session_dir}}\*.als" 2>nul
+      echo --- FL Studio ---
+      dir /b /s "{{session_dir}}\*.flp" 2>nul
+      echo --- Reaper ---
+      dir /b /s "{{session_dir}}\*.rpp" 2>nul
+      echo --- Pro Tools ---
+      dir /b /s "{{session_dir}}\*.ptx" "{{session_dir}}\*.ptf" 2>nul
+      echo --- Cubase ---
+      dir /b /s "{{session_dir}}\*.cpr" 2>nul
+      echo --- Logic Pro ---
+      dir /b /s "{{session_dir}}\*.logicx" 2>nul
+      echo Scan complete.
+    script_linux: |
+      echo "Scanning {{session_dir}} for DAW projects..."
+      echo "--- Ableton Live ---"
+      find "{{session_dir}}" -name "*.als" -type f 2>/dev/null
+      echo "--- FL Studio ---"
+      find "{{session_dir}}" -name "*.flp" -type f 2>/dev/null
+      echo "--- Reaper ---"
+      find "{{session_dir}}" -name "*.rpp" -type f 2>/dev/null
+      echo "--- Pro Tools ---"
+      find "{{session_dir}}" \( -name "*.ptx" -o -name "*.ptf" \) -type f 2>/dev/null
+      echo "--- Cubase ---"
+      find "{{session_dir}}" -name "*.cpr" -type f 2>/dev/null
+      echo "--- Logic Pro ---"
+      find "{{session_dir}}" -name "*.logicx" -type d 2>/dev/null
+      echo "Scan complete."
+    script_macos: |
+      echo "Scanning {{session_dir}} for DAW projects..."
+      echo "--- Ableton Live ---"
+      find "{{session_dir}}" -name "*.als" -type f 2>/dev/null
+      echo "--- FL Studio ---"
+      find "{{session_dir}}" -name "*.flp" -type f 2>/dev/null
+      echo "--- Reaper ---"
+      find "{{session_dir}}" -name "*.rpp" -type f 2>/dev/null
+      echo "--- Pro Tools ---"
+      find "{{session_dir}}" \( -name "*.ptx" -o -name "*.ptf" \) -type f 2>/dev/null
+      echo "--- Cubase ---"
+      find "{{session_dir}}" -name "*.cpr" -type f 2>/dev/null
+      echo "--- Logic Pro ---"
+      find "{{session_dir}}" -name "*.logicx" -type d 2>/dev/null
+      echo "Scan complete."

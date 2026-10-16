@@ -1,0 +1,21 @@
+{
+  "id": "company-space",
+  "space_id": "company-space",
+  "name": "Company Space",
+  "display_name": "Company Space",
+  "version": "2.0.1",
+  "description": "Business operations, financial management, client relations, active projects, and execution. The operational brain of the company.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-02",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["company", "business", "operations", "finance", "clients", "projects"],
+  "status": "active",
+  "agents": ["chief", "ops-manager", "controller", "sales", "project-lead"],
+  "formations": ["company-ops", "revenue-pipeline", "client-lifecycle", "financial-review", "strategic-planning"],
+  "spaces_dir": "spaces",
+  "subspaces": ["ops", "projects"]
+}

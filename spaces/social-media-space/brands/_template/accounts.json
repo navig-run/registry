@@ -1,0 +1,26 @@
+[
+  {
+    "platform": "twitter",
+    "account_id": "@REPLACE_WITH_TWITTER_HANDLE",
+    "display_name": "REPLACE_WITH_DISPLAY_NAME",
+    "profile_url": "https://x.com/REPLACE",
+    "credentials_ref": "vault://social-media/BRAND_SLUG/twitter",
+    "active": false
+  },
+  {
+    "platform": "linkedin",
+    "account_id": "urn:li:organization:REPLACE_WITH_ORG_ID",
+    "display_name": "REPLACE_WITH_DISPLAY_NAME",
+    "profile_url": "https://linkedin.com/company/REPLACE",
+    "credentials_ref": "vault://social-media/BRAND_SLUG/linkedin",
+    "active": false
+  },
+  {
+    "platform": "instagram",
+    "account_id": "@REPLACE_WITH_IG_HANDLE",
+    "display_name": "REPLACE_WITH_DISPLAY_NAME",
+    "profile_url": "https://instagram.com/REPLACE",
+    "credentials_ref": "vault://social-media/BRAND_SLUG/instagram",
+    "active": false
+  }
+]

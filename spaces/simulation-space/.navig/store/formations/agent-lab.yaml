@@ -1,0 +1,33 @@
+id: agent-lab
+name: Agent Lab
+version: "1.0.0"
+description: >
+  Agent modeling formation. Agent Modeler leads behavior model updates
+  and accuracy scoring.
+
+agents:
+  lead: agent-modeler
+  supporting: [debugger]
+
+trigger_conditions:
+  - "update-agent skill invoked"
+  - "#agents inbox activity"
+  - "Agent model update > 60 days stale"
+
+action_scope:
+  - ALLOW: update-agent
+  - ALLOW: write to .navig/memory/agent-map.json
+  - DENY: share agent data externally
+
+skills_used:
+  - update-agent
+
+communication:
+  inbox_channel: "#agents"
+  escalation: debugger
+  notify_on:
+    - model_stale_60d
+
+context_memory:
+  read: [agent-map.json]
+  write: [agent-map.json]

@@ -1,0 +1,12 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+version: "1.0"
+routes:
+  - channel: "#daily"
+    description: "Daily health log entries"
+    default: true
+  - channel: "#activity"
+    description: "Workout and movement logs"
+  - channel: "#mental"
+    description: "Mood, stress, and mental health signals"
+  - channel: "#signals"
+    description: "Notable symptoms or health observations"

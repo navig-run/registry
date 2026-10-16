@@ -1,0 +1,89 @@
+id: log-intel
+name: Log Intelligence
+version: "1.0.0"
+description: >
+  Log an intelligence signal with source, type, threat level, and reliability score.
+  Optionally links to an adversary in the adversary registry.
+category: intelligence
+platform: [windows, linux, macos]
+formation: intel-sweep
+author: war-room-space
+
+parameters:
+  - name: signal
+    type: string
+    required: true
+    description: "The intelligence signal or observation"
+  - name: type
+    type: enum
+    values: [competitor, legal, regulatory, reputational, personnel, technical, other]
+    required: true
+    description: "Signal type"
+  - name: threat_level
+    type: enum
+    values: [low, medium, high, critical]
+    required: true
+  - name: reliability
+    type: string
+    required: false
+    default: "3"
+    description: "Source reliability: 1 (unconfirmed) to 5 (verified)"
+  - name: source
+    type: string
+    required: false
+    default: "operator"
+    description: "Signal source"
+  - name: adversary
+    type: string
+    required: false
+    default: ""
+    description: "Adversary name or ID this signal relates to"
+
+steps:
+  - id: log_signal
+    name: "Log Intelligence Signal"
+    shell: auto
+    env:
+      NAVIG_PARAM_SIGNAL: "{{params.signal}}"
+      NAVIG_PARAM_TYPE: "{{params.type}}"
+      NAVIG_PARAM_THREAT_LEVEL: "{{params.threat_level}}"
+      NAVIG_PARAM_RELIABILITY: "{{params.reliability}}"
+      NAVIG_PARAM_SOURCE: "{{params.source}}"
+      NAVIG_PARAM_ADVERSARY: "{{params.adversary}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      log_path = ".navig/memory/intel-log.json"
+      try:
+          with open(log_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"signals": []}
+
+      signal = {
+          "id": f"sig_{len(data['signals']) + 1:04d}",
+          "signal": os.environ.get("NAVIG_PARAM_SIGNAL", ""),
+          "type": os.environ.get("NAVIG_PARAM_TYPE", ""),
+          "threat_level": os.environ.get("NAVIG_PARAM_THREAT_LEVEL", ""),
+          "reliability": int(os.environ.get("NAVIG_PARAM_RELIABILITY", "")),
+          "source": os.environ.get("NAVIG_PARAM_SOURCE", ""),
+          "adversary": os.environ.get("NAVIG_PARAM_ADVERSARY", ""),
+          "status": "open",
+          "logged_at": datetime.utcnow().isoformat() + "Z",
+          "actioned_at": None
+      }
+      data["signals"].append(signal)
+      os.makedirs(os.path.dirname(log_path), exist_ok=True)
+      with open(log_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      adversary_tag = f" | adversary: {signal['adversary']}" if signal['adversary'] else ""
+      print(f"Signal logged: [{signal['id']}] {signal['threat_level'].upper()} | {signal['type']}{adversary_tag}")
+      print(f"Source: {signal['source']} (reliability: {signal['reliability']}/5)")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: log_signal

@@ -1,0 +1,81 @@
+name: debloat-sweep
+description: |
+  On-demand privacy + debloat pass on a device. Lists removable packages, matches
+  them against the safe debloat catalog, disables vetted bloat (dry-run first),
+  audits dangerous permissions, and logs what was removed for easy restore.
+
+schedule:
+  cron: null
+  timezone: "local"
+  enabled: false
+
+on_demand: true
+formation: privacy-hardening
+
+steps:
+  - id: connect
+    name: "Ensure ADB connectivity"
+    skill: adb-connect
+    params:
+      mode: auto
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: list_packages
+    name: "List Removable Packages"
+    skill: app-debloat
+    depends_on: [connect]
+    agent: scrub
+    params:
+      action: list
+      dry_run: true
+    on_error: continue
+
+  - id: catalog_match
+    name: "Match Against Safe Debloat Catalog"
+    depends_on: [list_packages]
+    agent: scrub
+    action: match_catalog
+    params:
+      packages: "{{steps.list_packages.output}}"
+      catalog: ".navig/wiki/debloat-catalog.md"
+
+  - id: dry_run_disable
+    name: "Preview Disable Actions (dry-run)"
+    depends_on: [catalog_match]
+    skill: app-debloat
+    agent: scrub
+    params:
+      action: disable
+      dry_run: true
+    on_error: continue
+
+  - id: permission_audit
+    name: "Audit Dangerous Permissions"
+    skill: permission-audit
+    depends_on: [connect]
+    params:
+      permission: all
+    on_error: continue
+
+  - id: log
+    name: "Log Debloat Actions for Restore"
+    depends_on: [dry_run_disable, permission_audit]
+    agent: scrub
+    action: write_memory
+    params:
+      file: ".navig/memory/known-issues.json"
+      data:
+        timestamp: "{{now_iso}}"
+        disabled: "{{steps.dry_run_disable.output}}"
+        permissions: "{{steps.permission_audit.output}}"
+
+  - id: report
+    name: "Debloat Report"
+    depends_on: [dry_run_disable, permission_audit]
+    agent: scrub
+    action: compose_report
+    params:
+      template: "debloat-sweep"
+      deliver_to: inbox
+      channel: "#privacy"

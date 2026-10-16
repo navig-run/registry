@@ -1,0 +1,63 @@
+id: episode-schedule
+name: "Episode Schedule"
+version: "1.0.0"
+description: "Schedule episodes for recording and publishing across platforms"
+category: publishing
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: episode_id
+    type: string
+    required: true
+    description: "Episode identifier"
+  - name: publish_date
+    type: string
+    required: true
+    description: "Target publish date (YYYY-MM-DD)"
+  - name: publish_time
+    type: string
+    default: "06:00"
+    description: "Target publish time (HH:MM)"
+  - name: platforms
+    type: string
+    default: "all"
+    description: "Target platforms: all, apple, spotify, youtube, rss"
+
+steps:
+  - id: check-calendar
+    env:
+      NAVIG_PARAM_PUBLISH_DATE: "{{publish_date}}"
+      NAVIG_PARAM_EPISODE_ID: "{{episode_id}}"
+    name: "Check Publishing Calendar"
+    shell: bash
+    script_linux: |
+      echo "Checking calendar for ${NAVIG_PARAM_PUBLISH_DATE}"
+      echo "Episode: ${NAVIG_PARAM_EPISODE_ID}"
+      # Verify no conflicts with existing schedule
+      # Check if date falls on preferred release day
+    script_windows: |
+      Write-Host "Checking calendar for $($env:NAVIG_PARAM_PUBLISH_DATE), Episode: $($env:NAVIG_PARAM_EPISODE_ID)"
+    script_macos: |
+      echo "Checking calendar for ${NAVIG_PARAM_PUBLISH_DATE}, Episode: ${NAVIG_PARAM_EPISODE_ID}"
+
+  - id: schedule-publish
+    env:
+      NAVIG_PARAM_EPISODE_ID: "{{episode_id}}"
+      NAVIG_PARAM_PUBLISH_DATE: "{{publish_date}}"
+      NAVIG_PARAM_PUBLISH_TIME: "{{publish_time}}"
+      NAVIG_PARAM_PLATFORMS: "{{platforms}}"
+    name: "Schedule Publishing"
+    shell: bash
+    script_linux: |
+      echo "Scheduling ${NAVIG_PARAM_EPISODE_ID} for ${NAVIG_PARAM_PUBLISH_DATE} at ${NAVIG_PARAM_PUBLISH_TIME}"
+      echo "Platforms: ${NAVIG_PARAM_PLATFORMS}"
+      # Queue episode for scheduled release
+      # Set up platform-specific publish jobs
+    script_windows: |
+      Write-Host "Scheduling $($env:NAVIG_PARAM_EPISODE_ID) for $($env:NAVIG_PARAM_PUBLISH_DATE) at $($env:NAVIG_PARAM_PUBLISH_TIME)"
+      Write-Host "Platforms: $($env:NAVIG_PARAM_PLATFORMS)"
+    script_macos: |
+      echo "Scheduling ${NAVIG_PARAM_EPISODE_ID} for ${NAVIG_PARAM_PUBLISH_DATE} at ${NAVIG_PARAM_PUBLISH_TIME}"
+      echo "Platforms: ${NAVIG_PARAM_PLATFORMS}"

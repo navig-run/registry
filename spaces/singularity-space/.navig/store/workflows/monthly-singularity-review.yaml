@@ -1,0 +1,46 @@
+name: monthly-singularity-review
+description: |
+  Monthly long-arc review. Self-version delta, destiny log review,
+  top civilization signals, and an oracle synthesis brief.
+
+schedule:
+  cron: "0 9 1 * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: signal-watch
+
+steps:
+  - id: self_delta
+    name: "Self-Version Delta"
+    agent: oracle
+    action: compare_last_two_versions
+    on_error: continue
+
+  - id: destiny_review
+    name: "Destiny Log Review"
+    agent: destiny-keeper
+    action: review_open_entries
+    params:
+      flag_stale_days: 60
+    on_error: continue
+
+  - id: top_signals
+    name: "Top Civilization Signals"
+    agent: signal-tracker
+    action: top_signals_by_strength
+    params:
+      limit: 5
+    on_error: continue
+
+  - id: oracle_synthesis
+    name: "Oracle Synthesis Brief"
+    depends_on: [self_delta, destiny_review, top_signals]
+    agent: oracle
+    action: generate_monthly_synthesis
+    params:
+      self_delta: "{{steps.self_delta.output}}"
+      destiny: "{{steps.destiny_review.output}}"
+      signals: "{{steps.top_signals.output}}"
+      deliver_to: operator

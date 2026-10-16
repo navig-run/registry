@@ -1,0 +1,34 @@
+id: weekly-standup
+name: Weekly Standup
+version: "1.0.0"
+description: Monday ritual. Review all active projects in under 10 minutes.
+space: project
+steps:
+  - step: 1
+    name: Open Blockers
+    agent: blocker-resolver
+    command: "@blocker-resolver open"
+    automated: true
+    note: Resolve any blocker without a next action first
+  - step: 2
+    name: Project Status
+    agent: project-planner
+    command: "@project-planner status"
+    automated: true
+  - step: 3
+    name: Milestone Check
+    agent: milestone-keeper
+    command: "@milestone-keeper overdue"
+    automated: true
+  - step: 4
+    name: Priority Tasks This Week
+    agent: task-tracker
+    command: "@task-tracker week"
+    automated: true
+  - step: 5
+    name: Stale Projects
+    agent: project-planner
+    description: Any project with no update in 14+ days — what's the status?
+    manual: true
+expected_duration: 10 minutes
+cadence: weekly

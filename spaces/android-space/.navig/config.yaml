@@ -1,0 +1,58 @@
+space: android-space
+version: "1.0.0"
+
+# Primary settings
+# The space root is the folder that contains this .navig/ directory
+# (installed spaces live under ~/.navig/spaces/<id>). Relative paths below resolve
+# against it; set an absolute path if you keep device data elsewhere.
+devices_dir: "devices"
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+
+# ADB / device defaults
+# Leave a tool path empty to resolve it from PATH, then from
+# $ANDROID_HOME/platform-tools (or $ANDROID_SDK_ROOT/platform-tools).
+adb_path: ""
+fastboot_path: ""
+default_transport: "tcpip:5555"
+adb_pair_timeout: 30
+wireless_debug_port: 5555
+
+# scrcpy defaults — empty path = resolve scrcpy from PATH
+scrcpy_path: ""
+scrcpy_max_size: 1024
+scrcpy_bit_rate: "8M"
+scrcpy_max_fps: 60
+
+# Backup / pull (relative to the space root unless absolute)
+backup_dir: "devices/backups"
+media_pull_dir: "devices/media"
+apk_dir: "devices/apks"
+
+# Paths
+skills_dir: ".navig/skills/"
+formations_dir: ".navig/store/formations/"
+agents_dir: ".navig/store/agents/"
+workflows_dir: ".navig/store/workflows/"
+prompts_dir: ".navig/store/prompts/"
+wiki_dir: ".navig/wiki/"
+memory_dir: ".navig/memory/"
+
+# Agent defaults
+default_formation: device-bridge
+escalation_agent: operator
+
+# Logging
+log_level: info
+audit_log: ".navig/logs/audit.log"
+
+# Pack / sharing
+pack_format: "navig-space-pack"
+pack_exclude:
+  - ".navig/memory/secrets.json"
+  - ".navig/logs/**"
+  - "devices/**"
+  - "*.apk"
+  - "*.ab"
+  - ".env"

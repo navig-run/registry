@@ -1,0 +1,140 @@
+id: meeting-minutes
+name: Meeting Minutes
+version: "1.0.0"
+description: |
+  Generate structured meeting minutes from notes. Captures attendees, agenda,
+  decisions, action items with owners and deadlines. Saves to meetings/.
+category: operations
+platform: [windows, linux, macos]
+formation: company-ops
+agent: ops-manager
+author: navig-run
+
+parameters:
+  - name: title
+    description: Meeting title
+    required: true
+  - name: date
+    description: "Meeting date (YYYY-MM-DD). Defaults to today."
+    required: false
+  - name: attendees
+    description: Comma-separated list of attendees
+    required: true
+  - name: type
+    description: "Meeting type: internal, client, vendor, planning, retro, standup"
+    required: false
+    default: internal
+  - name: agenda
+    description: Agenda items (one per line or comma-separated)
+    required: false
+  - name: notes
+    description: Raw meeting notes to structure
+    required: true
+  - name: decisions
+    description: Key decisions made (one per line)
+    required: false
+  - name: action_items
+    description: Action items in format 'task | owner | deadline' (one per line)
+    required: false
+
+outputs:
+  - name: minutes_file
+    description: Path to saved meeting minutes
+
+steps:
+  - name: generate-minutes
+    description: Structure meeting notes into formal minutes document
+    env:
+      NAVIG_PARAM_TITLE: "{{ title }}"
+      NAVIG_PARAM_DATE: "{{ date }}"
+      NAVIG_PARAM_ATTENDEES: "{{ attendees }}"
+      NAVIG_PARAM_TYPE: "{{ type }}"
+      NAVIG_PARAM_AGENDA: "{{ agenda }}"
+      NAVIG_PARAM_NOTES: "{{ notes }}"
+      NAVIG_PARAM_DECISIONS: "{{ decisions }}"
+      NAVIG_PARAM_ACTION_ITEMS: "{{ action_items }}"
+    script: |
+      import datetime, os, pathlib, re
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      meetings_dir = pathlib.Path("meetings")
+      meetings_dir.mkdir(parents=True, exist_ok=True)
+
+      date = param("date", datetime.date.today().isoformat())
+      title = param("title")
+      slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:30] or "meeting"
+      filename = f"{date}-{slug}.md"
+
+      attendees = [a.strip() for a in param("attendees").split(",") if a.strip()]
+      meeting_type = param("type", "internal")
+      agenda = param("agenda", "No formal agenda recorded.")
+      notes = param("notes")
+      decisions = param("decisions", "No formal decisions recorded.")
+      action_items = param("action_items")
+      rows = []
+      for line in action_items.splitlines():
+          parts = [p.strip() for p in line.split("|")]
+          if any(parts):
+              parts = (parts + ["—", "—"])[:3]
+              rows.append(f"| {parts[0]} | {parts[1]} | {parts[2]} | open |")
+      actions = "\n".join(rows) or "| (none recorded) | — | — | — |"
+
+      content = f"""---
+      title: "{title}"
+      date: {date}
+      type: {meeting_type}
+      attendees: {attendees}
+      status: final
+      ---
+
+      # {title}
+
+      **Date:** {date}
+      **Type:** {meeting_type}
+      **Attendees:** {', '.join(attendees)}
+
+      ---
+
+      ## Agenda
+
+      {agenda}
+
+      ## Discussion Notes
+
+      {notes}
+
+      ## Decisions
+
+      {decisions}
+
+      ## Action Items
+
+      | Action | Owner | Deadline | Status |
+      |--------|-------|----------|--------|
+      {actions}
+
+      ---
+      _Minutes recorded by NAVIG ops-manager — {date}_
+      """
+
+      filepath = meetings_dir / filename
+      filepath.write_text(content, encoding="utf-8")
+      print(f"Meeting minutes -> {filepath}")
+      print(f"   {title} | {date} | {len(attendees)} attendees")

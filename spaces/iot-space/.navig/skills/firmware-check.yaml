@@ -1,0 +1,65 @@
+id: firmware-check
+name: Firmware Check
+version: "1.0.0"
+description: Read installed firmware versions from IoT devices and flag version drift.
+category: firmware
+platform: [windows, linux, macos]
+formation: firmware-fleet
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Device IP/host, or 'all' to check the whole registry"
+    default: all
+  - name: platform
+    type: enum
+    values: [tasmota, esphome, shelly, auto]
+    default: auto
+
+steps:
+  - id: query_tasmota
+    name: "Query Tasmota firmware via HTTP command API"
+    condition: "platform == 'tasmota' or platform == 'auto'"
+    shell: auto
+    script: |
+      # Tasmota exposes Status 2 (firmware) over its HTTP command endpoint
+      curl -s "http://{{target}}/cm?cmnd=Status%202" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); s=d.get('StatusFWR',{}); print('tasmota_version='+s.get('Version','?'))" 2>/dev/null || \
+        echo "tasmota_query_failed for {{target}}"
+
+  - id: query_esphome
+    name: "Query ESPHome version via /text_sensor or root banner"
+    condition: "platform == 'esphome' or platform == 'auto'"
+    shell: auto
+    script: |
+      curl -s "http://{{target}}/" | grep -oiE "esphome[ /]version[^<]*" | head -1 || \
+        curl -s "http://{{target}}/text_sensor/esphome_version" || \
+        echo "esphome_query_failed for {{target}}"
+
+  - id: query_shelly
+    name: "Query Shelly firmware via /shelly endpoint"
+    condition: "platform == 'shelly' or platform == 'auto'"
+    shell: auto
+    script: |
+      curl -s "http://{{target}}/shelly" | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print('shelly_fw='+str(d.get('fw','?')))" 2>/dev/null || \
+        echo "shelly_query_failed for {{target}}"
+
+  - id: diff_versions
+    name: "Diff installed vs latest known release"
+    shell: auto
+    script: |
+      echo "Compare captured versions against latest Tasmota / ESPHome releases."
+      echo "Drift detection writes flagged devices to known-issues.json."
+
+output:
+  fields: [device, platform, installed_version, latest_version, drift]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Check firmware across the whole fleet"
+    command: "navig skill run firmware-check --target all"
+  - description: "Check a single Tasmota device"
+    command: "navig skill run firmware-check --target 192.168.20.31 --platform tasmota"

@@ -1,0 +1,134 @@
+id: triage-inbox
+name: Triage Inbox
+version: "2.0.0"
+description: |
+  Scan the company inbox/ folder for unactioned items. Categorize by domain,
+  score priority, enforce 48h SLA, route to appropriate channel per routes.yaml.
+category: operations
+platform: [windows, linux, macos]
+formation: company-ops
+agent: ops-manager
+author: navig-run
+
+parameters:
+  - name: inbox
+    description: Path to inbox directory
+    required: false
+    default: .navig/inbox
+  - name: max_age_hours
+    description: Flag items older than this many hours
+    required: false
+    default: "48"
+  - name: routes_file
+    description: Path to channel routing config
+    required: false
+    default: ".navig/inbox/routes.yaml"
+
+outputs:
+  - name: triage_report
+    description: Sorted list with age, category, priority, and routing
+  - name: overdue_count
+    description: Number of items exceeding SLA
+  - name: routing_suggestions
+    description: Suggested channel for each unrouted item
+
+steps:
+  - name: list-and-categorize-inbox
+    description: List items, calculate age, categorize, and suggest routing
+    env:
+      NAVIG_PARAM_INBOX: "{{ inbox }}"
+      NAVIG_PARAM_MAX_AGE_HOURS: "{{ max_age_hours }}"
+      NAVIG_PARAM_ROUTES_FILE: "{{ routes_file }}"
+    script: |
+      import os, pathlib, time
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      inbox = pathlib.Path(param("inbox", ".navig/inbox"))
+      max_age = float(param("max_age_hours", "48"))
+
+      if not inbox.is_dir():
+          print(f"Inbox folder {inbox} does not exist — zero items.")
+          raise SystemExit(0)
+
+      # Category keywords for auto-routing (channel ids match .navig/inbox/routes.example.yaml)
+      CATEGORY_KEYWORDS = {
+          "finance": ["invoice", "expense", "tax", "payment", "receipt", "banking"],
+          "sales": ["lead", "proposal", "client", "contract", "prospect", "quote", "deal"],
+          "projects": ["project", "milestone", "delivery", "sprint", "spec", "adr", "scope"],
+          "strategic": ["vision", "strategy", "okr", "planning", "partnership", "positioning"],
+          "ops": [],  # default fallback
+      }
+      SKIP = {"README.md", "routes.yaml", "routes.example.yaml"}
+
+      items = []
+      overdue = 0
+      for f in sorted(inbox.iterdir()):
+          if f.name.startswith(".") or f.name in SKIP:
+              continue
+          age_h = (time.time() - f.stat().st_mtime) / 3600
+          name_lower = f.name.lower()
+
+          category = "ops"
+          for cat, keywords in CATEGORY_KEYWORDS.items():
+              if any(kw in name_lower for kw in keywords):
+                  category = cat
+                  break
+
+          priority = "normal"
+          if age_h > max_age:
+              priority = "high"
+              overdue += 1
+          elif "urgent" in name_lower or "critical" in name_lower:
+              priority = "high"
+
+          items.append((age_h, f.name, category, priority, f"#{category}"))
+
+      if not items:
+          print("Inbox is empty — zero items.")
+      else:
+          print(f"{len(items)} items in inbox ({overdue} overdue):\n")
+          for age, name, cat, pri, route in sorted(items, key=lambda x: -x[0]):
+              flag = " OVERDUE" if age > max_age else ""
+              print(f"  {age:.1f}h | {pri:6s} | {route:12s} | {name}{flag}")
+
+    script_windows: |
+      $inbox = if ($env:NAVIG_PARAM_INBOX) { $env:NAVIG_PARAM_INBOX } else { ".navig/inbox" }
+      $items = Get-ChildItem $inbox -File -ErrorAction SilentlyContinue |
+               Where-Object { $_.Name -notlike ".*" -and $_.Name -notin @("README.md", "routes.yaml", "routes.example.yaml") } |
+               Sort-Object LastWriteTime
+      if (-not $items) { Write-Host "Inbox is empty — zero items."; exit 0 }
+      $overdue = 0
+      Write-Host ("{0} items in inbox:" -f $items.Count)
+      Write-Host ""
+      foreach ($item in $items) {
+          $ageH = ((Get-Date) - $item.LastWriteTime).TotalHours
+          $flag = ""
+          $pri = "normal"
+          if ($ageH -gt 48) { $flag = " OVERDUE"; $pri = "high"; $overdue++ }
+          $name = $item.Name.ToLower()
+          $cat = "ops"
+          if ($name -match "invoice|expense|tax|payment") { $cat = "finance" }
+          elseif ($name -match "lead|proposal|client|contract|prospect") { $cat = "sales" }
+          elseif ($name -match "project|milestone|delivery|sprint") { $cat = "projects" }
+          elseif ($name -match "vision|strategy|okr|planning") { $cat = "strategic" }
+          Write-Host ("  {0:F1}h | {1,-6} | #{2,-11} | {3}{4}" -f $ageH, $pri, $cat, $item.Name, $flag)
+      }
+      Write-Host ""
+      Write-Host ("{0} overdue (>48h SLA)" -f $overdue)

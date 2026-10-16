@@ -1,0 +1,64 @@
+name: app-update-check
+description: |
+  Weekly check for outdated sideloaded apps. Lists installed third-party packages
+  and their versions, compares against locally staged APKs, and flags apps that have
+  a newer APK available to reinstall. Store-managed apps are noted but not touched.
+
+schedule:
+  cron: "0 9 * * 1"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: app-ops
+
+steps:
+  - id: connect
+    name: "Ensure ADB connectivity"
+    skill: adb-connect
+    params:
+      mode: auto
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: list_installed
+    name: "List Installed Third-Party Apps + Versions"
+    depends_on: [connect]
+    agent: installer
+    action: list_installed_versions
+    params:
+      scope: third_party
+    on_error: continue
+
+  - id: compare_apks
+    name: "Compare Against Staged APKs"
+    depends_on: [list_installed]
+    agent: installer
+    action: compare_apk_versions
+    params:
+      installed: "{{steps.list_installed.output}}"
+      apk_dir: "devices/apks"
+
+  - id: reinstall_updates
+    name: "Reinstall Newer Staged APKs (dry-run)"
+    depends_on: [compare_apks]
+    skill: apk-install
+    agent: installer
+    params:
+      reinstall: true
+      grant_perms: false
+    condition: "{{steps.compare_apks.updates | length}} > 0"
+    on_error: continue
+
+  - id: report
+    name: "App Update Report"
+    depends_on: [compare_apks]
+    agent: installer
+    action: compose_report
+    params:
+      template: "app-update-check"
+      sections:
+        - installed: "{{steps.list_installed.output}}"
+        - updates: "{{steps.compare_apks.updates}}"
+      deliver_to: inbox
+      channel: "#apps"

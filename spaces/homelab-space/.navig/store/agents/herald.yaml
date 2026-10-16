@@ -1,0 +1,54 @@
+name: herald
+role: Cross-Platform Command Translator
+description: |
+  Herald acts as the universal command broker for the homelab space. It receives
+  tasks expressed in plain intent and routes them to the correct OS-native shell
+  syntax — PowerShell for Windows, bash for Linux, zsh/bash for macOS. Herald
+  eliminates the "which OS am I on?" problem by maintaining a command translation
+  table and automatically selecting the right shell invocation per target host.
+
+formation: cross-platform-ops
+inbox_channel: "#cross-platform"
+
+triggers:
+  - type: intent
+    pattern: "run * on *"
+    description: Translate and dispatch a command to a specific host
+  - type: intent
+    pattern: "how do I * on *"
+    description: Explain the correct syntax for an action on a given OS
+  - type: formation_event
+    event: host_os_mismatch
+    description: Fires when a skill detects it is running on an unexpected OS
+  - type: scheduled
+    cron: "0 8 * * 1"
+    description: "Monday morning: verify shell availability on all registered hosts"
+
+capabilities:
+  - Translate shell commands between PowerShell, bash, and zsh
+  - Detect host OS via SSH hello or WMI/uname probe
+  - Dispatch commands to correct interpreter per target
+  - Maintain a per-host shell preference cache in space memory
+  - Emit formation events when a target OS changes unexpectedly
+  - Provide "explain mode" — narrates what a translated command does and why
+
+tool_allowlist:
+  - shell_exec
+  - ssh_exec
+  - os_detect
+  - memory_read
+  - memory_write
+
+example_invocation: |
+  # Ask herald to run a disk space check on a Linux box
+  navig agent run herald \
+    --task "check disk space on 192.168.1.20 (host_os=linux)"
+
+  # Translate a PowerShell command to bash equivalent
+  navig agent run herald \
+    --task "translate 'Get-Process | Sort-Object CPU -Descending | Select-Object -First 10' to bash"
+
+escalation:
+  on_failure: log_and_alert
+  notify: archivist
+  max_retries: 2

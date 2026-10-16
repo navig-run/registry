@@ -1,0 +1,47 @@
+# ─────────────────────────────────────────────
+# Skill: BPM Detection
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: bpm-detect
+name: BPM Detection
+version: "1.0.0"
+description: Analyse an audio file and detect its tempo in beats per minute.
+category: analysis
+platform:
+  - windows
+  - linux
+  - macos
+formation: track-production
+author: navig-run
+
+parameters:
+  - name: input_file
+    type: string
+    description: Path to the audio file to analyse.
+    default: null
+  - name: batch
+    type: boolean
+    description: When true, input_file is treated as a glob pattern.
+    default: false
+
+steps:
+  - id: detect
+    name: Run BPM detection
+    shell: true
+    script_windows: |
+      ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >nul 2>&1
+      if %errorlevel% neq 0 (echo ERROR: Cannot read file & exit /b 1)
+      sox "{{input_file}}" -t raw -r 22050 -e float -c 1 - | ffmpeg -f f32le -ar 22050 -ac 1 -i - -af "atempo=1" -f null - 2>&1 | findstr /i "tempo"
+    script_linux: |
+      if ! ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >/dev/null 2>&1; then
+        echo "ERROR: Cannot read file" && exit 1
+      fi
+      sox "{{input_file}}" -t raw -r 22050 -e float -c 1 - 2>/dev/null | \
+        ffmpeg -f f32le -ar 22050 -ac 1 -i - -af "atempo=1" -f null - 2>&1 | grep -i tempo
+    script_macos: |
+      if ! ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >/dev/null 2>&1; then
+        echo "ERROR: Cannot read file" && exit 1
+      fi
+      sox "{{input_file}}" -t raw -r 22050 -e float -c 1 - 2>/dev/null | \
+        ffmpeg -f f32le -ar 22050 -ac 1 -i - -af "atempo=1" -f null - 2>&1 | grep -i tempo

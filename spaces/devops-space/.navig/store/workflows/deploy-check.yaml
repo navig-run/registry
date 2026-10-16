@@ -1,0 +1,55 @@
+name: deploy-check
+description: >
+  Pre- and post-deployment health gate. Validates the deployment target is healthy
+  before deploying, runs the deployment, validates health after, and triggers
+  rollback automatically on failure.
+
+schedule:
+  cron: ""
+  timezone: "UTC"
+  enabled: false
+
+on_demand: true
+formation: ci-pipeline
+
+params:
+  - name: service
+    description: "Service name to deploy"
+    required: true
+  - name: image
+    description: "Container image tag to deploy"
+    required: true
+  - name: environment
+    description: "Target environment: staging | prod"
+    required: true
+    default: "staging"
+
+steps:
+  - name: pre-deploy-health
+    description: Confirm the environment is healthy before deploying
+    shell: auto
+    script: navig skill run health-probe --service {{service}} --environment {{environment}}
+
+  - name: validate-image
+    description: Validate the container image exists and passes security scan
+    depends_on: pre-deploy-health
+    shell: auto
+    script: navig skill run deploy-validate --image {{image}} --service {{service}}
+
+  - name: deploy
+    description: Apply the deployment with your own tooling (kubectl apply, docker compose up, helm upgrade …)
+    depends_on: validate-image
+    manual: true
+
+  - name: post-deploy-health
+    description: Confirm service is healthy after deploy
+    depends_on: deploy
+    shell: auto
+    script: navig skill run health-probe --service {{service}} --environment {{environment}}
+    on_error: trigger-rollback
+
+  - name: trigger-rollback
+    description: Roll back to previous version on health failure
+    shell: auto
+    script: navig skill run rollback --service {{service}} --environment {{environment}}
+    condition: "post_deploy_health == failed"

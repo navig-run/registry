@@ -1,0 +1,119 @@
+id: map-asset
+name: Map Asset
+version: "1.0.0"
+description: >
+  Record a discovered attack-surface asset (host/domain/ip/service/endpoint) against
+  an AUTHORIZED engagement. THE GATE: this skill refuses to record an asset unless an
+  active engagement matches the given id AND the asset is in scope. Scope is a fence,
+  not a suggestion — out-of-scope is off-limits even if reachable.
+category: recon
+platform: [windows, linux, macos]
+formation: recon-and-map
+author: war-room-space
+
+parameters:
+  - name: asset
+    type: string
+    required: true
+    description: "The asset value (host, domain, ip, service, or endpoint)"
+  - name: engagement
+    type: string
+    required: true
+    description: "Engagement id this asset belongs to (e.g. 'eng_0001') — REQUIRED"
+  - name: kind
+    type: enum
+    values: [domain, subdomain, host, ip, service, endpoint, cloud]
+    required: true
+    description: "Asset kind"
+  - name: exposure
+    type: string
+    required: false
+    default: ""
+    description: "Observed exposure (open ports, service/version, finding hint)"
+  - name: in_scope
+    type: boolean
+    required: false
+    default: true
+    description: "Whether the asset is within the engagement's authorized scope"
+
+steps:
+  - id: map_asset
+    name: "Map Attack-Surface Asset"
+    shell: auto
+    env:
+      NAVIG_PARAM_ENGAGEMENT: "{{params.engagement}}"
+      NAVIG_PARAM_IN_SCOPE: "{{params.in_scope}}"
+      NAVIG_PARAM_ASSET: "{{params.asset}}"
+      NAVIG_PARAM_KIND: "{{params.kind}}"
+      NAVIG_PARAM_EXPOSURE: "{{params.exposure}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, sys
+      from datetime import datetime
+
+      # ---- THE AUTHORIZATION GATE ----------------------------------------
+      # No asset is recorded without a matching ACTIVE engagement and in-scope
+      # status. The gate fails closed: any doubt is a refusal.
+      eng_id = os.environ.get("NAVIG_PARAM_ENGAGEMENT", "").strip()
+      asset_val = os.environ.get("NAVIG_PARAM_ASSET", "")
+      in_scope_raw = os.environ.get("NAVIG_PARAM_IN_SCOPE", "").strip().lower()
+      in_scope = in_scope_raw in ("true", "1", "yes", "y", "")
+
+      eng_path = ".navig/memory/engagements.json"
+      try:
+          with open(eng_path, encoding="utf-8") as f:
+              eng_data = json.load(f)
+      except Exception:
+          eng_data = {"engagements": []}
+
+      active_states = {"authorized", "active"}
+      match = next(
+          (e for e in eng_data.get("engagements", [])
+           if e.get("id") == eng_id and e.get("status") in active_states),
+          None
+      )
+
+      if match is None:
+          print(f"REFUSED (authorization gate): no active engagement matches '{eng_id}'.")
+          print("No recon, scanning, or asset mapping without a standing authorized engagement.")
+          sys.exit(1)
+      if not in_scope:
+          print(f"REFUSED (authorization gate): asset '{asset_val}' is marked OUT OF SCOPE for {eng_id}.")
+          print("Scope is a fence, not a suggestion. Out-of-scope is off-limits even if reachable.")
+          print("Out-of-scope discovery is a stop-and-escalate event — report it, do not map it.")
+          sys.exit(1)
+      # ---- GATE PASSED ---------------------------------------------------
+
+      asset_path = ".navig/memory/assets.json"
+      try:
+          with open(asset_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "last_updated": "", "assets": []}
+      data.setdefault("assets", [])
+
+      now = datetime.utcnow().isoformat() + "Z"
+      asset = {
+          "id": f"asset_{len(data['assets']) + 1:04d}",
+          "asset": os.environ.get("NAVIG_PARAM_ASSET", ""),
+          "kind": os.environ.get("NAVIG_PARAM_KIND", ""),
+          "engagement": eng_id,
+          "exposure": os.environ.get("NAVIG_PARAM_EXPOSURE", ""),
+          "in_scope": in_scope,
+          "status": "discovered",
+          "mapped_at": now
+      }
+      data["assets"].append(asset)
+      data["last_updated"] = now[:10]
+      os.makedirs(os.path.dirname(asset_path), exist_ok=True)
+      with open(asset_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      exp = f" | exposure: {asset['exposure']}" if asset["exposure"] else ""
+      print(f"Asset mapped: [{asset['id']}] {asset['kind']}: {asset['asset']} | {eng_id} | in-scope{exp}")
+      print(f"Authorized by engagement: {match.get('name', eng_id)} (auth ref: {match.get('authorization_ref', 'n/a')})")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: map_asset

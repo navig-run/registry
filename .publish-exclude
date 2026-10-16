@@ -1,0 +1,32 @@
+# Paths (relative to registry/) that are NEVER published to github.com/navig-run/registry.
+# Read by scripts/check-registry.mjs and by the export (scripts/export-registry.mjs).
+# One glob per line; `**` matches across folders. Comments start with '#'.
+
+# The private identifier list the publish gate checks against, and these lists.
+.publish-identifiers
+
+# Retired content — no value to users, and the history is not ours to republish.
+_archive/**
+
+# A real personal media library, not a template (owner decision 2026-10-16).
+spaces/media-space/**
+
+# navig-internal agent tooling copied into spaces; not part of any space.
+spaces/*/.github/**
+spaces/**/.github/**
+
+# Unlicensed third-party persona shipped as a default agent.
+**/tyler-durden*
+**/tyler-durden/**
+
+# Local runtime and editor state.
+**/node_modules/**
+**/__pycache__/**
+**/*.pyc
+**/.pytest_cache/**
+**/.venv/**
+**/.dev/**
+**/*.log
+**/cache/**
+**/.DS_Store
+**/Thumbs.db

@@ -1,0 +1,58 @@
+space: system-space
+version: "1.0.0"
+
+# Primary settings
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+engine: "bin/system.ps1"           # the unified dispatcher all skills call
+
+# Safety policy (THE rules — earned in production; see docs/runbooks/safe-move-and-delete.md)
+dry_run_default: true              # move/rename/dedupe/delete show a plan first
+never_hard_delete: true            # removals go to a recoverable trash, not oblivion
+trash_root: ".trash"               # per-drive recoverable trash at the drive root
+restore_log: ".trash/restore-log.tsv"   # when | item | original | trash | migrated_to | reason | verified
+literal_paths_only: true           # names contain [ ] ( ) « » emoji — always -LiteralPath / null-delimited
+verify_moves_by: file_count_or_bytes     # never trust folder-exists; count files
+same_volume_rename: true           # same-drive move = instant rename (IO.Directory::Move), never slow-copy
+confirm_big_parts: true            # batch big operations; confirm before irreversible deletes
+
+# Long-path policy (>260 chars)
+long_path_prefix: '\\?\'           # required for >260-char paths (delete/copy)
+long_path_delete: 'IO.Directory::Delete  OR  robocopy /MIR (+ /B for ACL-locked)'
+
+# robocopy defaults
+robocopy_flags: "/R:0 /W:0 /MT:16 /NFL /NDL /NP"
+robocopy_sizing: "/L /BYTES"       # list-only fast sizing, no copy
+
+# Conversion defaults (heavy media belongs in a dedicated media space)
+archive_format: "7z"
+doc_convert_via: "pandoc"
+image_convert_via: "magick"
+av_convert_via: "ffmpeg"
+
+# Paths
+bin_dir: "bin/"
+tools_dir: "tools/"
+skills_dir: ".navig/skills/"
+formations_dir: ".navig/store/formations/"
+agents_dir: ".navig/store/agents/"
+workflows_dir: ".navig/store/workflows/"
+prompts_dir: ".navig/store/prompts/"
+wiki_dir: ".navig/wiki/"
+memory_dir: ".navig/memory/"
+
+# Agent defaults
+default_formation: organize-pipeline
+escalation_agent: operator
+
+# Logging
+log_level: info
+audit_log: ".navig/logs/audit.log"
+
+# Pack / sharing
+pack_format: "navig-space-pack"
+pack_exclude:
+  - ".navig/logs/**"
+  - ".trash/**"
+  - ".env"

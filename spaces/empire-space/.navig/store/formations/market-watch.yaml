@@ -1,0 +1,34 @@
+id: market-watch
+name: Market Watch
+version: "1.0.0"
+description: >
+  Formation for all market intelligence operations. Market Analyst leads
+  signal capture, competitor tracking, and intelligence briefs.
+
+agents:
+  lead: market-analyst
+  supporting: [portfolio-commander]
+
+trigger_conditions:
+  - "New message in #intel inbox"
+  - "Weekly intelligence brief workflow"
+  - "Signal pending action > 30 days"
+  - "Manual: activate the market-watch formation"
+
+action_scope:
+  - ALLOW: write to .navig/memory/signals.json
+  - DENY: modify venture or revenue records
+
+workflows_used:
+  - weekly-portfolio-review
+
+communication:
+  inbox_channel: "#intel"
+  escalation: portfolio-commander
+  notify_on:
+    - high_strength_signal_logged
+    - open_signal_pending_30_days
+
+context_memory:
+  read: [signals.json, ventures.json]
+  write: [signals.json]

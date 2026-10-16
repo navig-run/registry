@@ -1,0 +1,30 @@
+# NAVIG Host Configuration - Hetzner VPS
+# File: ~/.navig/hosts/hetzner.yaml
+
+# Host connection details
+name: hetzner
+host: vps.hetzner.cloud
+port: 22
+user: root
+ssh_key: ~/.ssh/hetzner
+
+# Default app when not specified
+default_app: portfolio
+
+# Database root credentials (for host-level database management)
+database:
+  root_user: root
+  root_password: "ENCRYPTED_ROOT_PASSWORD_HERE"
+
+# Host metadata
+metadata:
+  description: "Hetzner VPS - Alternative hosting"
+  location: "Finland"
+  provider: "Hetzner"
+  os: "Ubuntu 22.04"
+  created_at: "2024-01-12T16:00:00Z"
+
+# Note: App configurations have been moved to individual files in library/apps/
+# Available apps on this host:
+#   - portfolio (library/apps/portfolio.yaml)
+#   - blog (library/apps/blog.yaml)

@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────
+# Skill: Sample Catalog
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: sample-catalog
+name: Sample Catalog
+version: "1.0.0"
+description: |
+  Manage the sample library — list new files, catalog them with metadata,
+  and detect/remove duplicates based on audio fingerprints.
+category: library
+platform:
+  - windows
+  - linux
+  - macos
+formation: sample-lab
+author: navig-run
+
+parameters:
+  - name: samples_dir
+    type: string
+    description: Path to the samples directory.
+    default: null
+  - name: action
+    type: string
+    description: "Action: list-new, catalog, deduplicate, report"
+    default: list-new
+  - name: source
+    type: string
+    description: Source directory for catalog action.
+    default: null
+  - name: report_only
+    type: boolean
+    description: When true, only report statistics.
+    default: false
+
+steps:
+  - id: list-new
+    name: List new samples
+    shell: true
+    condition: "params.action == 'list-new'"
+    script_windows: |
+      echo Scanning for new samples in {{samples_dir}}...
+      dir /b /s "{{samples_dir}}\*.wav" "{{samples_dir}}\*.flac" "{{samples_dir}}\*.aiff" "{{samples_dir}}\*.mp3" 2>nul
+      echo Done.
+    script_linux: |
+      echo "Scanning for new samples in {{samples_dir}}..."
+      find "{{samples_dir}}" -type f \( -name "*.wav" -o -name "*.flac" -o -name "*.aiff" -o -name "*.mp3" \) | sort
+      echo "Done."
+    script_macos: |
+      echo "Scanning for new samples in {{samples_dir}}..."
+      find "{{samples_dir}}" -type f \( -name "*.wav" -o -name "*.flac" -o -name "*.aiff" -o -name "*.mp3" \) | sort
+      echo "Done."
+
+  - id: catalog
+    name: Catalog samples into library
+    shell: true
+    condition: "params.action == 'catalog'"
+    script_windows: |
+      echo Cataloging samples from {{source}} into {{samples_dir}}...
+      xcopy /y /s "{{source}}\*" "{{samples_dir}}\library\"
+      echo Catalog complete.
+    script_linux: |
+      echo "Cataloging samples from {{source}} into {{samples_dir}}..."
+      mkdir -p "{{samples_dir}}/library"
+      cp -rn "{{source}}/"* "{{samples_dir}}/library/"
+      echo "Catalog complete."
+    script_macos: |
+      echo "Cataloging samples from {{source}} into {{samples_dir}}..."
+      mkdir -p "{{samples_dir}}/library"
+      cp -rn "{{source}}/"* "{{samples_dir}}/library/"
+      echo "Catalog complete."
+
+  - id: deduplicate
+    name: Find and remove duplicates
+    shell: true
+    condition: "params.action == 'deduplicate'"
+    script_windows: |
+      echo Scanning for duplicate samples in {{samples_dir}}...
+      powershell -Command "Get-ChildItem '{{samples_dir}}' -Recurse -File | Group-Object Length | Where-Object { $_.Count -gt 1 } | ForEach-Object { $_.Group | Select-Object FullName, Length }"
+    script_linux: |
+      echo "Scanning for duplicate samples in {{samples_dir}}..."
+      find "{{samples_dir}}" -type f -exec md5sum {} + | sort | uniq -d -w32
+    script_macos: |
+      echo "Scanning for duplicate samples in {{samples_dir}}..."
+      find "{{samples_dir}}" -type f -exec md5 -r {} + | sort | uniq -d -w32

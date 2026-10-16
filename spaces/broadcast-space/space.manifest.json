@@ -1,0 +1,71 @@
+{
+  "id": "broadcast-space",
+  "space_id": "broadcast-space",
+  "version": "1.0.1",
+  "name": "Broadcast Space",
+  "tagline": "Podcast & Live Streaming Command Center",
+  "description": "Professional space for podcast production, live streaming, guest management, and audio content distribution across all major platforms.",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": [
+    "podcast",
+    "livestream",
+    "audio",
+    "episodes",
+    "rss",
+    "guests",
+    "broadcasting",
+    "shows"
+  ],
+  "icon": "🎙️",
+  "color": "#8B5CF6",
+  "repository": "https://github.com/navig-run/registry",
+  "agents": [
+    "host",
+    "sound-engineer",
+    "show-planner",
+    "publisher",
+    "community-manager"
+  ],
+  "formations": [
+    "episode-production",
+    "guest-booking",
+    "live-session",
+    "content-repurpose",
+    "audience-feedback"
+  ],
+  "skills": [
+    "audio-record",
+    "audio-edit",
+    "noise-reduce",
+    "loudness-normalize",
+    "rss-generate",
+    "show-notes-write",
+    "transcript-generate",
+    "guest-research",
+    "episode-schedule",
+    "clip-extract"
+  ],
+  "workflows": [
+    "episode-production",
+    "guest-pipeline",
+    "live-show",
+    "weekly-planning",
+    "monthly-review",
+    "rss-maintenance"
+  ],
+  "requirements": {
+    "tools": [
+      "ffmpeg",
+      "yt-dlp"
+    ],
+    "optional": [
+      "whisper",
+      "rss-parser"
+    ]
+  },
+  "config_key": null,
+  "primary_action": "Record an episode",
+  "status": "active"
+}

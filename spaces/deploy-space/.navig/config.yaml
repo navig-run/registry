@@ -1,0 +1,8 @@
+space_id: deploy-space
+runtime: navig-space-2
+
+deploy:
+  log_retention_days: 365
+  diff_context_lines: 10
+  alert_on_rollback: true
+  frequency_baseline_days: 30

@@ -1,0 +1,11 @@
+{
+  "name": "finance-space",
+  "version": "1.0.0",
+  "navig": {
+    "space": "finance-space",
+    "runtime": "navig-space-2",
+    "tier": "personal"
+  },
+  "author": "navig-run",
+  "license": "MIT"
+}

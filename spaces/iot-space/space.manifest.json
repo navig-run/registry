@@ -1,0 +1,19 @@
+{
+  "space_id": "iot-space",
+  "display_name": "IoT Space",
+  "description": "Command mesh for every IoT & smart-home device — discovery & fingerprinting, MQTT message bus, firmware/OTA, network segmentation & security, telemetry, and automation.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "version": "1.0.0",
+  "created": "2026-07-10",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["iot", "smart-home", "mqtt", "zigbee", "matter", "automation", "security"],
+  "status": "active",
+  "agents": ["beacon", "broker", "warden", "flux", "automa", "sensor"],
+  "formations": ["discovery-sweep", "mqtt-ops", "security-mesh", "firmware-fleet", "automation-loop"],
+  "packages": ["mosquitto", "esphome"],
+  "subspaces": []
+}

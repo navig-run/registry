@@ -1,0 +1,47 @@
+id: extract-entities
+version: "1.0.0"
+manifest:
+  name: "Extract Entities"
+  description: "Extracts named entities (people, orgs, locations, dates, and custom types) from text"
+  author: navig-run
+  license: MIT
+  category: nlp
+  tags: [nlp, extraction, entities, analysis]
+
+soul_hint: |
+  Be precise. Only extract entities explicitly mentioned in the text.
+  Do not infer or hallucinate entity data. Flag ambiguous cases.
+
+input_schema:
+  text:
+    type: string
+    description: "Text to extract entities from"
+    required: true
+  entity_types:
+    type: array
+    items:
+      type: string
+      enum: [person, organization, location, date, product, technology, event, custom]
+    description: "Which entity types to extract (default: all)"
+    default: [person, organization, location, date]
+
+output_spec:
+  entities:
+    type: array
+    items:
+      type: object
+      properties:
+        text: string
+        type: string
+        confidence: number
+        start: integer
+        end: integer
+  entity_count: integer
+  language_detected: string
+
+triggers:
+  - type: agent_call
+    when: "task.type == 'analysis'"
+  - type: pipeline_step
+
+permissions: []

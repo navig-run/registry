@@ -1,0 +1,25 @@
+{
+  "space_id": "fleet-space",
+  "display_name": "Fleet Space",
+  "description": "Multi-agent autonomous execution fleet — spawn, coordinate, and monitor agent swarms.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "labs",
+  "status": "labs",
+  "tags": [
+    "fleet",
+    "multi-agent",
+    "swarm",
+    "automation",
+    "parallel"
+  ],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "tools",
+    "storage"
+  ]
+}

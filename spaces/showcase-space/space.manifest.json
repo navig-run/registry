@@ -1,0 +1,24 @@
+{
+  "space_id": "showcase-space",
+  "display_name": "Showcase Space",
+  "description": "Browse, demo, and install agents and packs made by the community.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "community",
+  "status": "planned",
+  "tags": [
+    "showcase",
+    "community",
+    "gallery",
+    "install",
+    "agents",
+    "packs"
+  ],
+  "capability_deps": [
+    "agent",
+    "storage"
+  ]
+}

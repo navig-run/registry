@@ -1,0 +1,122 @@
+id: start-engagement
+name: Start Engagement
+version: "1.0.0"
+description: >
+  Open an AUTHORIZED red-team / offensive-security engagement with target, asset list,
+  rules of engagement, dates, and contact. THE GATE: this skill refuses to create an
+  engagement unless a written authorization reference is supplied. No engagement
+  without written authorization — the Prime Directive gates everything.
+category: redteam
+platform: [windows, linux, macos]
+formation: red-team-op
+author: war-room-space
+
+parameters:
+  - name: name
+    type: string
+    required: true
+    description: "Engagement name (e.g. 'Q3 External Pentest: Acme Corp')"
+  - name: target
+    type: string
+    required: true
+    description: "Primary target (org / domain / network)"
+  - name: asset_list
+    type: string
+    required: false
+    default: ""
+    description: "Comma-separated in-scope assets (e.g. 'acme.com,api.acme.com,203.0.113.0/24')"
+  - name: authorization_ref
+    type: string
+    required: true
+    description: >
+      Reference to the SIGNED written authorization (doc id / path / URL).
+      REQUIRED — the engagement is refused if this is empty.
+  - name: roe
+    type: string
+    required: false
+    default: ""
+    description: "Rules of engagement — constraints, allowed techniques, blackout windows"
+  - name: start_date
+    type: string
+    required: false
+    default: ""
+    description: "Engagement window start (YYYY-MM-DD)"
+  - name: end_date
+    type: string
+    required: false
+    default: ""
+    description: "Engagement window end (YYYY-MM-DD)"
+  - name: contact
+    type: string
+    required: false
+    default: ""
+    description: "Authorizing point of contact (name / email)"
+
+steps:
+  - id: start_engagement
+    name: "Start Authorized Engagement"
+    shell: auto
+    env:
+      NAVIG_PARAM_AUTHORIZATION_REF: "{{params.authorization_ref}}"
+      NAVIG_PARAM_ASSET_LIST: "{{params.asset_list}}"
+      NAVIG_PARAM_NAME: "{{params.name}}"
+      NAVIG_PARAM_TARGET: "{{params.target}}"
+      NAVIG_PARAM_ROE: "{{params.roe}}"
+      NAVIG_PARAM_START_DATE: "{{params.start_date}}"
+      NAVIG_PARAM_END_DATE: "{{params.end_date}}"
+      NAVIG_PARAM_CONTACT: "{{params.contact}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, sys
+      from datetime import datetime
+
+      # ---- THE AUTHORIZATION GATE ----------------------------------------
+      # No engagement is created without a written authorization reference.
+      # This is not advisory — it is the gate every operation passes through.
+      auth_ref = os.environ.get("NAVIG_PARAM_AUTHORIZATION_REF", "").strip()
+      if not auth_ref:
+          print("REFUSED (authorization gate): no written authorization reference provided.")
+          print("No engagement without written authorization. Record the signed scope + RoE")
+          print("authorization, then re-run with authorization_ref set.")
+          sys.exit(1)
+      # ---- GATE PASSED ---------------------------------------------------
+
+      eng_path = ".navig/memory/engagements.json"
+      try:
+          with open(eng_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "last_updated": "", "engagements": []}
+      data.setdefault("engagements", [])
+
+      assets = [a.strip() for a in os.environ.get("NAVIG_PARAM_ASSET_LIST", "").split(",") if a.strip()]
+
+      now = datetime.utcnow().isoformat() + "Z"
+      eng = {
+          "id": f"eng_{len(data['engagements']) + 1:04d}",
+          "name": os.environ.get("NAVIG_PARAM_NAME", ""),
+          "target": os.environ.get("NAVIG_PARAM_TARGET", ""),
+          "asset_list": assets,
+          "authorization_ref": auth_ref,
+          "roe": os.environ.get("NAVIG_PARAM_ROE", ""),
+          "start_date": os.environ.get("NAVIG_PARAM_START_DATE", ""),
+          "end_date": os.environ.get("NAVIG_PARAM_END_DATE", ""),
+          "contact": os.environ.get("NAVIG_PARAM_CONTACT", ""),
+          "status": "authorized",
+          "created_at": now,
+          "updated_at": now
+      }
+      data["engagements"].append(eng)
+      data["last_updated"] = now[:10]
+      os.makedirs(os.path.dirname(eng_path), exist_ok=True)
+      with open(eng_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      window = f"{eng['start_date'] or '?'} -> {eng['end_date'] or '?'}"
+      print(f"Engagement authorized: [{eng['id']}] {eng['name']} | target: {eng['target']} | {eng['status']}")
+      print(f"Authorization ref: {eng['authorization_ref']} | window: {window} | assets in scope: {len(assets)}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: start_engagement

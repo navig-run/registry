@@ -1,0 +1,28 @@
+# NAVIG Registry .gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/settings.json
+*.swp
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local backups (not for distribution)
+.backup/
+
+# Windows artifacts
+*.lnk
+
+# Personal homelab data — keep only the .example version in VCS
+# If device-registry.json contains real MAC addresses / IPs, exclude it
+spaces/homelab-space/.navig/memory/device-registry.json

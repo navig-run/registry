@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "persona-space",
+  "goals": [
+    {
+      "id": "authentic-agent",
+      "title": "Authentic agent identity",
+      "description": "Agent persona is a genuine reflection of operator's thinking style, not default boilerplate",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

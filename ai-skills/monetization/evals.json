@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "read-plan-first",
+      "prompt": "I want to monetize and price my project — where do you start?",
+      "expect": {
+        "contains": ["BUSINESS-PLAN.md", "MONETIZATION.md"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "unit-economics",
+      "prompt": "Compute the unit economics and set up pricing tiers for this product.",
+      "expect": {
+        "contains": ["CAC", "LTV", "value metric"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "revenue-model",
+      "prompt": "Pick a revenue model for a low-marginal-cost developer tool with a big free funnel.",
+      "expect": {
+        "contains": ["open-core", "take-rate"],
+        "excludes": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+id: summarise-url
+version: "1.0.0"
+manifest:
+  name: "Summarise URL"
+  description: "Fetches a URL and returns a structured summary of its content"
+  author: navig-run
+  license: MIT
+  category: research
+  tags: [web, summarisation, research]
+
+soul_hint: |
+  Keep summaries factual and concise. Preserve key figures and proper nouns.
+  Distinguish between opinions and verified facts.
+
+input_schema:
+  url:
+    type: string
+    format: uri
+    description: "The URL to fetch and summarise"
+    required: true
+  max_length:
+    type: integer
+    description: "Max word count for output summary"
+    default: 300
+
+output_spec:
+  title: string
+  summary: string
+  key_points:
+    type: array
+    items: string
+  source_url: string
+
+triggers:
+  - type: slash_command
+    command: "/summarise"
+  - type: agent_call
+    when: "task.type == 'research'"
+
+permissions:
+  - http_fetch

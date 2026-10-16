@@ -1,0 +1,17 @@
+{
+  "id": "example-space",
+  "name": "Example Space",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "ready",
+  "description": "Fully annotated reference space showing the canonical structure every space gets from navig space init.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "created": "2026-06-22T19:59:36Z"
+}

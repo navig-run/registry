@@ -1,0 +1,30 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+# Schema: channels[] { id, name, agents, priority, keywords, description } + defaults.
+channels:
+  - id: trip-ideas
+    name: "#trip-ideas"
+    description: Rough trip ideas, wishlist destinations, early research
+    agents: [trip-planner]
+    keywords: [trip, travel, visit, go to, destination, vacation, holiday, idea]
+
+  - id: active-trip
+    name: "#active-trip"
+    description: Current or next confirmed trip — updates, questions, changes
+    agents: [itinerary-builder]
+    keywords: [hotel, flight, itinerary, day, schedule, plan, arrive, depart]
+
+  - id: bookings
+    name: "#bookings"
+    description: Bookings against the trip budget — confirmation numbers, costs, booking references
+    agents: [budget-watcher, document-keeper]
+    keywords: [confirmation, booking, reference, receipt, ticket, voucher, check-in]
+
+  - id: documents
+    name: "#documents"
+    description: Travel documents — passport, visa, insurance, health forms
+    agents: [document-keeper]
+    priority: high
+    keywords: [passport, visa, insurance, document, certificate, vaccination]
+
+defaults:
+  unrouted_fallback: itinerary-builder

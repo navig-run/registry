@@ -1,0 +1,36 @@
+{
+  "brand": "REPLACE_WITH_BRAND_SLUG",
+  "display_name": "REPLACE_WITH_BRAND_NAME",
+  "personality": [
+    "TRAIT_1",
+    "TRAIT_2",
+    "TRAIT_3"
+  ],
+  "tone": "professional",
+  "vocabulary": [
+    "PREFERRED_WORD_1",
+    "PREFERRED_WORD_2"
+  ],
+  "avoid": [
+    "cheap",
+    "simple",
+    "just",
+    "basically",
+    "BRAND_SPECIFIC_AVOID_WORD"
+  ],
+  "must_feel": [
+    "confident",
+    "informed"
+  ],
+  "min_body_chars": 150,
+  "content_pillars": [
+    "education",
+    "trust",
+    "product",
+    "community"
+  ],
+  "example_posts": {
+    "linkedin": "EXAMPLE_OF_A_PERFECT_ON_BRAND_LINKEDIN_POST",
+    "twitter": "EXAMPLE_OF_A_PERFECT_ON_BRAND_TWEET"
+  }
+}

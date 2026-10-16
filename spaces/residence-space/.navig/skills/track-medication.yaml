@@ -1,0 +1,109 @@
+id: track-medication
+name: Track Medication
+version: "1.0.0"
+description: >
+  Add or update a medication record in the household pharmacy log.
+  Every medication is scoped to a person and a storage room. Expiry dates
+  are required — the medic agent monitors them automatically.
+category: health
+platform: [windows, linux, macos]
+formation: medical-watch
+author: residence-space
+
+parameters:
+  - name: name
+    type: string
+    required: true
+    description: "Medication name and strength — e.g. 'Ibuprofen 400mg'"
+  - name: person
+    type: string
+    required: true
+    description: "Person this medication is assigned to"
+  - name: expiry
+    type: string
+    required: true
+    description: "Expiry date in YYYY-MM or YYYY-MM-DD format"
+  - name: room
+    type: string
+    required: false
+    default: "bathroom"
+    description: "Storage room"
+  - name: dosage
+    type: string
+    required: false
+    default: ""
+    description: "Dosage instructions — e.g. '1 tablet twice daily with food'"
+  - name: qty
+    type: integer
+    required: false
+    default: 0
+    description: "Current quantity (0 = unknown)"
+  - name: active
+    type: boolean
+    required: false
+    default: true
+    description: "Whether this medication is currently in use"
+
+steps:
+  - id: write_medication
+    name: "Write Medication to Log"
+    shell: auto
+    env:
+      NAVIG_PARAM_NAME: "{{params.name}}"
+      NAVIG_PARAM_PERSON: "{{params.person}}"
+      NAVIG_PARAM_EXPIRY: "{{params.expiry}}"
+      NAVIG_PARAM_ROOM: "{{params.room}}"
+      NAVIG_PARAM_DOSAGE: "{{params.dosage}}"
+      NAVIG_PARAM_QTY: "{{params.qty}}"
+      NAVIG_PARAM_ACTIVE: "{{params.active}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      name = os.environ.get("NAVIG_PARAM_NAME", "")
+      person = os.environ.get("NAVIG_PARAM_PERSON", "")
+      expiry = os.environ.get("NAVIG_PARAM_EXPIRY", "")
+      if not name or not person or not expiry:
+          print("'name', 'person' and 'expiry' are all required.")
+          raise SystemExit(1)
+      qty_raw = os.environ.get("NAVIG_PARAM_QTY", "") or "0"
+      try:
+          qty = int(qty_raw)
+      except ValueError:
+          print(f"Invalid 'qty' value: {qty_raw!r} (expected an integer)")
+          raise SystemExit(1)
+      active = (os.environ.get("NAVIG_PARAM_ACTIVE", "") or "true").strip().lower() in ("1", "true", "yes")
+
+      memory_path = ".navig/memory/medication-log.json"
+      try:
+          with open(memory_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          data = {"medications": [], "last_updated": None}
+
+      entry = {
+          "id": f"med_{len(data['medications']) + 1:04d}",
+          "name": name,
+          "person": person,
+          "expiry": expiry,
+          "room": os.environ.get("NAVIG_PARAM_ROOM", "") or "bathroom",
+          "dosage": os.environ.get("NAVIG_PARAM_DOSAGE", ""),
+          "qty": qty,
+          "active": active,
+          "added": datetime.utcnow().isoformat() + "Z",
+          "updated": datetime.utcnow().isoformat() + "Z"
+      }
+      data["medications"].append(entry)
+      data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+      os.makedirs(os.path.dirname(memory_path), exist_ok=True)
+      with open(memory_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Tracked: [{entry['id']}] {entry['name']} for {entry['person']} — expires {entry['expiry']}")
+      print("REMINDER: Verify all medication decisions with a qualified healthcare provider.")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_medication

@@ -1,0 +1,51 @@
+name: daily-standup
+description: |
+  Morning dev status check. Surfaces open tasks, failing tests, blocked work,
+  and any new issues logged since the last standup. Delivers a concise summary
+  to the #code inbox.
+
+schedule:
+  cron: "0 9 * * 1-5"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: dev-workflow
+
+steps:
+  - id: check_open_tasks
+    name: "Check Open Tasks"
+    agent: coder
+    action: list_open_tasks
+    params:
+      source: ".navig/plans/DEV_PLAN.md"
+      filter: "High Priority"
+    on_error: continue
+
+  - id: check_known_issues
+    name: "Check Known Issues"
+    agent: debugger
+    action: list_open_issues
+    params:
+      source: ".navig/memory/known-issues.json"
+      severity_min: "warning"
+    on_error: continue
+
+  - id: check_tests
+    name: "Test Suite Status"
+    skill: run-tests
+    params:
+      mode: "status_only"
+      report_failures: true
+    on_error: continue
+
+  - id: standup_report
+    name: "Generate Standup Report"
+    depends_on: [check_open_tasks, check_known_issues, check_tests]
+    agent: coder
+    action: generate_standup_report
+    params:
+      tasks: "{{steps.check_open_tasks.output}}"
+      issues: "{{steps.check_known_issues.output}}"
+      test_status: "{{steps.check_tests.output}}"
+      deliver_to: "#code"

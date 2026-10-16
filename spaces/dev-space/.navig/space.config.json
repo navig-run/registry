@@ -1,0 +1,72 @@
+{
+  "id": "dev-space",
+  "kind": "space",
+  "version": "1.0.0",
+  "display_name": "Dev Space",
+  "description": "Code authoring, userscript development, and browser extension engineering hub.",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "agent": {
+    "default": "coder",
+    "formation": "dev-workflow"
+  },
+  "agents": [
+    {
+      "id": "coder",
+      "name": "Coder",
+      "role": "Code scaffolding, authoring, and implementation",
+      "formation": "dev-workflow"
+    },
+    {
+      "id": "debugger",
+      "name": "Debugger",
+      "role": "Bug investigation, tracing, and resolution",
+      "formation": "dev-workflow"
+    },
+    {
+      "id": "reviewer",
+      "name": "Reviewer",
+      "role": "Code review, quality checks, and refactoring guidance",
+      "formation": "review-cycle"
+    },
+    {
+      "id": "scripter",
+      "name": "Scripter",
+      "role": "Userscript and browser extension specialist",
+      "formation": "extension-build"
+    }
+  ],
+  "formations": [
+    "dev-workflow",
+    "review-cycle",
+    "extension-build"
+  ],
+  "skills": [
+    "code-lint",
+    "run-tests",
+    "scaffold-project",
+    "publish-extension"
+  ],
+  "workflows": [
+    {
+      "id": "daily-standup",
+      "trigger": "daily",
+      "description": "Morning dev status check — open PRs, failing tests, blocked tasks"
+    },
+    {
+      "id": "code-review",
+      "trigger": "on-demand",
+      "description": "Full code review cycle: lint → test → review → report"
+    },
+    {
+      "id": "run-tests",
+      "trigger": "on-demand",
+      "description": "Execute test suite across all registered projects"
+    }
+  ],
+  "meta": {
+    "tags": ["development", "scripting", "extensions", "userscripts", "chrome", "automation"],
+    "platforms": ["Windows", "Linux", "macOS"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "space_id": "studio-space",
+  "name": "Studio Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "description": "Music production command center — from first beat to final master.",
+  "paths": {
+    "docs": "docs/",
+    "ops": ".navig/ops/",
+    "inbox": ".navig/inbox/",
+    "skills": ".navig/skills/",
+    "scripts": "scripts/",
+    "tests": "tests/"
+  },
+  "agents": [
+    "mix-engineer",
+    "producer",
+    "release-manager",
+    "session-planner",
+    "sound-designer"
+  ],
+  "formations": [
+    "collab-session",
+    "mastering-suite",
+    "release-pipeline",
+    "sample-lab",
+    "track-production"
+  ],
+  "skills": [
+    "backup-session",
+    "bpm-detect",
+    "daw-project-scan",
+    "format-convert",
+    "key-detect",
+    "loudness-check",
+    "metadata-tag",
+    "sample-catalog",
+    "stem-export",
+    "upload-distro"
+  ],
+  "meta": {
+    "tags": [
+      "music",
+      "production",
+      "daw",
+      "mixing",
+      "mastering",
+      "releases"
+    ],
+    "platform": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  }
+}

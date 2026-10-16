@@ -1,0 +1,150 @@
+id: lead-qualify
+name: Qualify Lead
+version: "1.0.0"
+description: |
+  Score and qualify an incoming lead against target segments.
+  Produces a qualification score, recommended priority, and suggested next action.
+category: sales
+platform: [windows, linux, macos]
+formation: client-lifecycle
+agent: sales
+author: navig-run
+
+parameters:
+  - name: company
+    description: Lead company or individual name
+    required: true
+  - name: contact
+    description: Contact name
+    required: false
+  - name: email
+    description: Contact email
+    required: false
+  - name: source
+    description: "Lead source: inbound, referral, outbound, website, social, event"
+    required: false
+    default: inbound
+  - name: segment
+    description: Target segment from configured segment list
+    required: false
+  - name: budget
+    description: Estimated budget
+    required: false
+  - name: services_needed
+    description: Comma-separated service lines needed
+    required: false
+  - name: timeline
+    description: "Project timeline: immediate, 1-month, 3-months, 6-months, exploratory"
+    required: false
+    default: exploratory
+  - name: description
+    description: Brief description of the need
+    required: true
+
+outputs:
+  - name: lead_file
+    description: Path to saved lead YAML
+  - name: qualification_score
+    description: Score 1-10 based on fit, budget, timeline, and strategic value
+  - name: recommended_action
+    description: Suggested next step
+
+steps:
+  - name: qualify-and-save
+    description: Score lead, determine priority, save to leads/
+    env:
+      NAVIG_PARAM_COMPANY: "{{ company }}"
+      NAVIG_PARAM_CONTACT: "{{ contact }}"
+      NAVIG_PARAM_EMAIL: "{{ email }}"
+      NAVIG_PARAM_SOURCE: "{{ source }}"
+      NAVIG_PARAM_SEGMENT: "{{ segment }}"
+      NAVIG_PARAM_BUDGET: "{{ budget }}"
+      NAVIG_PARAM_SERVICES_NEEDED: "{{ services_needed }}"
+      NAVIG_PARAM_TIMELINE: "{{ timeline }}"
+      NAVIG_PARAM_DESCRIPTION: "{{ description }}"
+    script: |
+      import datetime, os, pathlib, re, yaml
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      leads_dir = pathlib.Path("leads")
+      leads_dir.mkdir(parents=True, exist_ok=True)
+
+      score = 5  # base score
+
+      timeline = param("timeline", "exploratory")
+      if timeline == "immediate": score += 2
+      elif timeline == "1-month": score += 1.5
+      elif timeline == "3-months": score += 1
+
+      budget = param("budget")
+      if budget:
+          try:
+              b = float(budget)
+              if b >= 5000: score += 2
+              elif b >= 2000: score += 1
+              elif b >= 500: score += 0.5
+          except ValueError:
+              pass
+
+      source = param("source", "inbound")
+      if source == "referral": score += 1
+      elif source == "inbound": score += 0.5
+
+      score = min(10, max(1, round(score)))
+
+      if score >= 8: priority = "high"
+      elif score >= 5: priority = "medium"
+      else: priority = "low"
+
+      if priority == "high": action = "Schedule discovery call within 48h"
+      elif priority == "medium": action = "Send service overview and follow up in 1 week"
+      else: action = "Add to nurture list, follow up in 1 month"
+
+      company = param("company")
+      today = datetime.date.today().isoformat()
+      slug = re.sub(r"[^a-z0-9]+", "-", company.lower()).strip("-")[:30] or "lead"
+      lead_id = f"LEAD-{today}-{slug}"
+      services = param("services_needed")
+
+      record = {
+          "lead_id": lead_id,
+          "date": today,
+          "company": company,
+          "contact": param("contact") or None,
+          "email": param("email") or None,
+          "source": source,
+          "segment": param("segment", "unclassified"),
+          "budget": budget or "unknown",
+          "services_needed": [s.strip() for s in services.split(",") if s.strip()],
+          "timeline": timeline,
+          "description": param("description"),
+          "qualification_score": score,
+          "priority": priority,
+          "recommended_action": action,
+          "status": "new",
+      }
+
+      filepath = leads_dir / f"{lead_id}.yaml"
+      with open(filepath, "w", encoding="utf-8") as f:
+          yaml.dump(record, f, default_flow_style=False, allow_unicode=True)
+
+      print(f"Lead qualified: {lead_id}")
+      print(f"   Score: {score}/10 | Priority: {priority}")
+      print(f"   -> {action}")

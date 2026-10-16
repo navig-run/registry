@@ -1,0 +1,23 @@
+{
+  "id": "ops",
+  "space_id": "ops",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Operations",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "parent": "company-space",
+  "version": "1.0.0",
+  "created_at": "2026-03-02",
+  "description": "Day-to-day operational tasks, runbooks, SOPs, incident response, and recurring workflows.",
+  "paths": {
+    "docs": "docs",
+    "ops": "ops",
+    "inbox": "inbox",
+    "out": "out"
+  },
+  "meta": {
+    "tags": ["ops", "runbooks", "sop", "incidents", "workflows"]
+  }
+}

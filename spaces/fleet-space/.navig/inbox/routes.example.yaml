@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#missions"
+    description: "New fleet mission requests"
+    default: true
+  - channel: "#results"
+    description: "Completed fleet outputs and integrated results"
+  - channel: "#status"
+    description: "Real-time status updates from active fleet agents"

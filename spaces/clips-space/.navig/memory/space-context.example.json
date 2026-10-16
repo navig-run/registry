@@ -1,0 +1,33 @@
+{
+  "space": "clips-space",
+  "context": {
+    "domain": "short-form-video",
+    "platforms": [
+      "tiktok",
+      "reels",
+      "shorts"
+    ],
+    "content_defaults": {
+      "aspect_ratio": "9:16",
+      "max_duration": 60,
+      "resolution": "1080x1920",
+      "format": "mp4"
+    },
+    "posting_defaults": {
+      "platforms": [
+        "tiktok",
+        "reels",
+        "shorts"
+      ],
+      "visibility": "public"
+    }
+  },
+  "active_workflows": [
+    "daily-clip",
+    "batch-week",
+    "repurpose-pipeline",
+    "trend-alert",
+    "weekly-analytics"
+  ],
+  "last_updated": null
+}

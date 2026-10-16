@@ -1,0 +1,49 @@
+id: red-team-op
+name: Red Team Op
+version: "1.0.0"
+description: >
+  Authorized ethical-hacking formation: scope+RoE → recon → plan (ATT&CK) →
+  execute-in-scope → evidence → report → remediate. Red Team Lead leads and owns the
+  engagement and the lab; Recon Operator supports surface mapping. GATED by
+  legal-counsel: no active step runs until the authorization gate is green.
+
+agents:
+  lead: red-team-lead
+  supporting: [recon-operator]
+
+trigger_conditions:
+  - "Authorized engagement with green legal-counsel gate"
+  - "Authorized engagement opened in engagements.json"
+  - "Engagement report or remediation due"
+  - "Manual: activate the red-team-op formation"
+
+action_scope:
+  - DENY: any active step until legal-counsel authorization green (authorization gate)
+  - DENY: any action against out-of-scope or unauthorized assets even if reachable
+  - DENY: any step outside the recorded rules of engagement
+  - DENY: dangerous tooling, exploit dev, or malware handling outside the isolated lab
+  - ALLOW: start-engagement
+  - ALLOW: map-asset
+  - ALLOW: log-finding
+  - ALLOW: in-scope offensive steps within rules of engagement (gate green)
+  - ALLOW: write to .navig/memory/engagements.json
+  - ALLOW: write to .navig/memory/operations.json
+  - ALLOW: write to .navig/memory/findings.json
+
+skills_used:
+  - start-engagement
+  - map-asset
+  - log-finding
+
+communication:
+  inbox_channel: "#redteam"
+  escalation: operator
+  notify_on:
+    - authorization_gate_pending
+    - out_of_scope_asset_detected
+    - engagement_opened
+    - finding_requires_disclosure
+
+context_memory:
+  read: [engagements.json, assets.json, findings.json, operations.json]
+  write: [engagements.json, operations.json, findings.json]

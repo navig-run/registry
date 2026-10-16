@@ -1,0 +1,158 @@
+id: generate-invoice
+name: Generate Invoice
+version: "1.0.0"
+description: |
+  Generate a compliant invoice with sequential PREFIX-YYYY-NNN numbering (prefix from finance.invoicing.prefix).
+  Includes all mandatory fields and tax exemption mentions as configured.
+category: finance
+platform: [windows, linux, macos]
+formation: revenue-pipeline
+agent: controller
+author: navig-run
+
+parameters:
+  - name: client_name
+    description: Client company or individual name
+    required: true
+  - name: client_address
+    description: Client billing address
+    required: false
+  - name: amount
+    description: Total amount (before tax)
+    required: true
+  - name: description
+    description: Service description
+    required: true
+  - name: service_line
+    description: Service category from configured service lines
+    required: false
+    default: general
+  - name: payment_terms_days
+    description: Payment deadline in days
+    required: false
+    default: "30"
+  - name: output_dir
+    description: Directory to save invoice
+    required: false
+    default: finance/invoices
+
+outputs:
+  - name: invoice_file
+    description: Path to generated invoice markdown file
+  - name: invoice_number
+    description: Assigned sequential invoice number
+
+steps:
+  - name: generate-invoice-file
+    description: |
+      Determine next sequential number, generate markdown invoice with all
+      required fields, save to finance/invoices/
+    env:
+      NAVIG_PARAM_CLIENT_NAME: "{{ client_name }}"
+      NAVIG_PARAM_CLIENT_ADDRESS: "{{ client_address }}"
+      NAVIG_PARAM_AMOUNT: "{{ amount }}"
+      NAVIG_PARAM_DESCRIPTION: "{{ description }}"
+      NAVIG_PARAM_SERVICE_LINE: "{{ service_line }}"
+      NAVIG_PARAM_PAYMENT_TERMS_DAYS: "{{ payment_terms_days }}"
+      NAVIG_PARAM_OUTPUT_DIR: "{{ output_dir }}"
+    script: |
+      import datetime, os, pathlib, re
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      def next_number(folder, prefix, year, ext):
+          """Next sequential number for PREFIX-YYYY-NNN files (no gaps, no reuse)."""
+          nums = []
+          for f in folder.glob(f"{prefix}-{year}-*{ext}"):
+              m = re.fullmatch(re.escape(prefix) + r"-\d{4}-(\d{3})", f.stem)
+              if m:
+                  nums.append(int(m.group(1)))
+          return max(nums, default=0) + 1
+
+      company_name = setting("company.name", "COMPANY_NAME", "[Company name]")
+      owner_name = setting("company.owner", "COMPANY_OWNER", "[Owner]")
+      company_type = setting("company.type", "COMPANY_TYPE", "[Entity type]")
+      company_id = setting("company.id", "COMPANY_ID", "[Company ID]")
+      company_address = setting("company.address", "COMPANY_ADDRESS", "[Address]")
+      company_email = setting("company.email", "COMPANY_EMAIL", "[Email]")
+      CURRENCY = setting("finance.currency", "COMPANY_CURRENCY", "USD")
+      tax_note = setting("finance.tax_exemption_note", "COMPANY_TAX_NOTE", "[Configure the tax rule for your jurisdiction]")
+
+      client_name = param("client_name")
+      client_address = param("client_address", "Address: [TO FILL]")
+      amount = param("amount")
+      description = param("description")
+      service_line = param("service_line", "general")
+      terms = int(param("payment_terms_days") or setting("finance.invoicing.payment_terms_days", "COMPANY_PAYMENT_TERMS_DAYS", "30"))
+      PREFIX = setting("finance.invoicing.prefix", "COMPANY_INVOICE_PREFIX", "INV")
+
+      output_dir = pathlib.Path(param("output_dir", "finance/invoices"))
+      output_dir.mkdir(parents=True, exist_ok=True)
+
+      today = datetime.date.today()
+      invoice_id = f"{PREFIX}-{today.year}-{next_number(output_dir, PREFIX, today.year, '.md'):03d}"
+      due_date = (today + datetime.timedelta(days=terms)).isoformat()
+
+      content = f"""---
+      invoice_id: {invoice_id}
+      date: {today.isoformat()}
+      due_date: {due_date}
+      status: draft
+      client: "{client_name}"
+      amount: {amount}
+      currency: {CURRENCY}
+      service_line: {service_line}
+      ---
+
+      # INVOICE {invoice_id}
+
+      **From:**
+      {company_name} — {owner_name}
+      {company_type}
+      ID: {company_id}
+      {company_address}
+      Email: {company_email}
+
+      **To:**
+      {client_name}
+      {client_address}
+
+      ---
+
+      | Description | Amount |
+      |------------|--------|
+      | {description} | {amount} {CURRENCY} |
+
+      ---
+
+      **Total:** {amount} {CURRENCY}
+      **Tax:** {tax_note}
+
+      ---
+
+      **Payment due:** {due_date} ({terms} days)
+      **Payment method:** Bank transfer
+
+      ---
+      _Invoice generated by NAVIG_
+      """
+
+      filepath = output_dir / f"{invoice_id}.md"
+      filepath.write_text(content, encoding="utf-8")
+      print(f"Invoice {invoice_id} generated -> {filepath}")

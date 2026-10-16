@@ -1,0 +1,61 @@
+{
+  "id": "android-space",
+  "kind": "space",
+  "name": "Android Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Command hub for every Android device you own or manage — ADB bridge, app & APK ops, fleet inventory, debloat/privacy hardening, screen mirroring, and backup/restore.",
+  "crossplatform": true,
+  "agent": {
+    "default": "bridge",
+    "formation": "device-bridge"
+  },
+  "agents": [
+    {"id": "pixel",     "role": "Device cartographer / fleet inventory", "formation": "fleet-patrol"},
+    {"id": "bridge",    "role": "ADB bridge operator",                   "formation": "device-bridge"},
+    {"id": "installer", "role": "App & APK operator",                    "formation": "app-ops"},
+    {"id": "scrub",     "role": "Privacy & debloat warden",              "formation": "privacy-hardening"},
+    {"id": "mirror",    "role": "Screen & control operator",             "formation": "device-bridge"},
+    {"id": "keeper",    "role": "Backup & restore archivist",            "formation": "backup-restore"}
+  ],
+  "formations": [
+    {"id": "device-bridge",     "description": "ADB connectivity, pairing, wireless debug, shell routing"},
+    {"id": "app-ops",           "description": "Install/uninstall/sideload/extract APKs, permission management"},
+    {"id": "fleet-patrol",      "description": "Multi-device inventory, battery/storage health, Android-version tracking"},
+    {"id": "privacy-hardening", "description": "Debloat, permission audit, tracker blocking, SafetyNet"},
+    {"id": "backup-restore",    "description": "adb backup, media pull, app-data export, phone migration"}
+  ],
+  "skills": [
+    "adb-connect",
+    "device-inventory",
+    "apk-install",
+    "apk-extract",
+    "app-debloat",
+    "permission-audit",
+    "screen-mirror",
+    "logcat-capture",
+    "battery-report",
+    "file-transfer",
+    "wireless-debug",
+    "app-backup"
+  ],
+  "workflows": [
+    {"id": "morning-device-check", "schedule": "daily"},
+    {"id": "new-device-onboard",   "schedule": "on-demand"},
+    {"id": "debloat-sweep",        "schedule": "on-demand"},
+    {"id": "nightly-backup",       "schedule": "nightly"},
+    {"id": "app-update-check",     "schedule": "weekly"},
+    {"id": "fleet-audit",          "schedule": "on-demand"}
+  ],
+  "packages": [
+    {"id": "platform-tools", "version": "35.0.2", "bin_windows": "adb", "bin_config_key": "android.adb_path", "env_fallback": "ANDROID_HOME/platform-tools"},
+    {"id": "scrcpy", "version": "2.7", "bin_windows": "scrcpy", "bin_config_key": "android.scrcpy_path"}
+  ],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": ["android", "adb", "mobile", "devices", "fleet", "automation"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

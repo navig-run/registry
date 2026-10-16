@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "build-agent",
+      "prompt": "How do I build a stateful Cloudflare agent with a callable method that updates persistent state, and how do requests get routed to it?",
+      "expect": { "contains": ["@callable", "setState", "routeAgentRequest"], "excludes": [] }
+    },
+    {
+      "id": "schedule-task",
+      "prompt": "How do I schedule a recurring/interval task inside a Cloudflare agent?",
+      "expect": { "contains": ["this.schedule", "scheduleEvery"], "excludes": [] }
+    },
+    {
+      "id": "react-client",
+      "prompt": "What React hook connects a frontend to a Cloudflare agent and keeps its state synced?",
+      "expect": { "contains": ["useAgent", "onStateUpdate"], "excludes": [] }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────
+# Skill: Stem Export
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: stem-export
+name: Stem Export
+version: "1.0.0"
+description: |
+  Export individual stems (tracks/busses) from a session folder
+  in a consistent format for mixing or collaboration.
+category: production
+platform:
+  - windows
+  - linux
+  - macos
+formation: track-production
+author: navig-run
+
+parameters:
+  - name: session_dir
+    type: string
+    description: Path to the session directory containing source audio.
+    default: null
+  - name: format
+    type: string
+    description: Output audio format (wav, flac, aiff).
+    default: wav
+  - name: sample_rate
+    type: integer
+    description: Output sample rate in Hz.
+    default: 44100
+  - name: bit_depth
+    type: integer
+    description: Output bit depth.
+    default: 24
+
+steps:
+  - id: export
+    name: Export stems
+    shell: true
+    script_windows: |
+      if not exist "{{session_dir}}\stems" mkdir "{{session_dir}}\stems"
+      for %%f in ("{{session_dir}}\tracks\*.wav" "{{session_dir}}\tracks\*.flac" "{{session_dir}}\tracks\*.aiff") do (
+        ffmpeg -y -i "%%f" -ar {{sample_rate}} -sample_fmt s{{bit_depth}} "{{session_dir}}\stems\%%~nf.{{format}}"
+      )
+      echo Stems exported to {{session_dir}}\stems
+    script_linux: |
+      mkdir -p "{{session_dir}}/stems"
+      for f in "{{session_dir}}"/tracks/*.{wav,flac,aiff}; do
+        [ -f "$f" ] || continue
+        base=$(basename "$f" | sed 's/\.[^.]*$//')
+        ffmpeg -y -i "$f" -ar {{sample_rate}} -sample_fmt s{{bit_depth}} \
+          "{{session_dir}}/stems/${base}.{{format}}"
+      done
+      echo "Stems exported to {{session_dir}}/stems"
+    script_macos: |
+      mkdir -p "{{session_dir}}/stems"
+      for f in "{{session_dir}}"/tracks/*.{wav,flac,aiff}; do
+        [ -f "$f" ] || continue
+        base=$(basename "$f" | sed 's/\.[^.]*$//')
+        ffmpeg -y -i "$f" -ar {{sample_rate}} -sample_fmt s{{bit_depth}} \
+          "{{session_dir}}/stems/${base}.{{format}}"
+      done
+      echo "Stems exported to {{session_dir}}/stems"

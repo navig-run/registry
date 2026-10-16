@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "space": "android",
+  "updated": "2026-07-10",
+  "operational_goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Complete fleet inventory",
+      "priority": "high",
+      "status": "pending",
+      "description": "Enumerate and register every Android device you own or manage. Every device must have a complete entry in device-registry.json including serial, model, Android version, security patch, battery, and storage.",
+      "success_criteria": "All devices visible via 'navig skill run device-inventory', all registered in device-registry.json, all reachable via adb-connect (USB or wireless).",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Establish automated morning device check",
+      "priority": "high",
+      "status": "pending",
+      "description": "Configure the morning-device-check workflow to run automatically at 08:00 daily. Results (fleet status, battery, offline devices) should be written to memory and surfaced in the inbox.",
+      "success_criteria": "Workflow runs on schedule, produces a readable fleet summary, offline devices and battery warnings surface as entries in known-issues.json.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Debloat and harden every device",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Run debloat-sweep against each device using the safe debloat catalog. Disable carrier/OEM bloat reversibly and audit dangerous permissions. Nothing removed outside the vetted catalog.",
+      "success_criteria": "debloat-catalog.md fully populated. Each device has had a permission audit. Over-privileged apps flagged in known-issues.json. All removals reversible.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Configure automated nightly backup",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Establish the nightly-backup workflow to pull media and back up key app data from every device to backup_dir. Verify integrity each run.",
+      "success_criteria": "nightly-backup workflow runs without errors. Media is pulled and verified. A quarterly restore drill succeeds on a spare device.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Verify a full backup restore",
+      "priority": "low",
+      "status": "pending",
+      "description": "Restore one device's backup and media from devices/backups onto a spare or reset device to prove the nightly-backup output is usable.",
+      "success_criteria": "A restore completes with apps, media and settings present; the result is recorded in known-issues.json if anything was missing.",
+      "target_date": null
+    }
+  ]
+}

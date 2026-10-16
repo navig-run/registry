@@ -1,0 +1,27 @@
+{
+  "id": "social-media-space",
+  "space_id": "social-media-space",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Social Media Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "license": "MIT",
+  "version": "1.0.1",
+  "created_at": "2026-03-18",
+  "spaces_dir": "spaces",
+  "description": "Unified command layer for all social media — brands, accounts, content pipelines, scheduling, analytics, and brand voice management. One space, any number of brands.",
+  "paths": {
+    "docs": "docs",
+    "ops": ".navig/ops",
+    "inbox": ".navig/inbox",
+    "brands": "brands",
+    "content": "content",
+    "analytics": "analytics"
+  },
+  "subspaces": [],
+  "meta": {
+    "tags": ["work", "social-media", "content", "brand", "analytics", "scheduling", "multi-brand"]
+  }
+}

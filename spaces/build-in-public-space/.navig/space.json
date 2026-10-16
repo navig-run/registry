@@ -1,0 +1,16 @@
+{
+  "id": "build-in-public-space",
+  "name": "Build in Public Space",
+  "version": "0.1.0",
+  "tier": "community",
+  "status": "planned",
+  "description": "Build-in-public workflow space — stub, purpose not yet authored (overlaps open-space).",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

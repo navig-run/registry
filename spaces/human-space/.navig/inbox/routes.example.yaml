@@ -1,0 +1,33 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+channels:
+  - id: daily
+    name: "#daily"
+    agents: [daily-planner]
+    priority: normal
+    sla: 12h
+  - id: health
+    name: "#health"
+    agents: [wellness-tracker]
+    priority: normal
+    sla: 24h
+  - id: habits
+    name: "#habits"
+    agents: [habit-coach]
+    priority: normal
+    sla: 24h
+  - id: growth
+    name: "#growth"
+    agents: [growth-tracker, daily-planner]
+    priority: normal
+    sla: 48h
+  - id: journal
+    name: "#journal"
+    agents: [daily-planner]
+    priority: low
+    sla: 24h
+  - id: bureau
+    name: "#bureau"
+    agents: [bureau-manager]
+    priority: normal
+    sla: 24h
+    keywords: [renewal, appointment, subscription, document, id, insurance, expiry]

@@ -1,0 +1,31 @@
+name: Download
+description: Download a video/audio (yt-dlp) or an image from the URL on the clipboard into a folder.
+version: 1.0.0
+category: media
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+requires: [yt-dlp]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: video
+    syntax: navig skill run download video --target <dir>
+    description: Download video/audio from the clipboard URL (format menu - mp4/mp3/m4a/playlist)
+    risk: safe
+  - name: image
+    syntax: navig skill run download image --target <dir>
+    description: Download an image from the clipboard URL (extension auto-detected)
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use to download media from a URL the user has copied. Trigger on "download this
+    video", "save this youtube as mp3", "grab this image".
+  output_format: >
+    yt-dlp/IWR progress then an OK with the saved path.
+  follow_up: >
+    The URL is read from the clipboard; ensure the user copied it first.

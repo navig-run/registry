@@ -1,0 +1,317 @@
+id: disk-health
+name: Disk Health
+version: "1.0.0"
+description: >
+  Check physical disk and volume health for any drive letter using native OS APIs.
+  On Windows: uses Get-PhysicalDisk, Get-StorageReliabilityCounter, Get-Volume,
+  WMI, Windows Event Log, and optional smartctl (smartmontools).
+  On Linux: uses lsblk, smartctl -A, and df.
+  Reports HealthStatus, temperature, wear %, latency peaks, free space, dirty bit,
+  and recent disk error events — with configurable warning thresholds.
+category: hardware
+platform: [windows, linux, macos]
+formation: hardware-patrol
+author: navig-run
+
+parameters:
+  - name: drive_letter
+    type: string
+    description: "Drive letter to inspect (Windows: C, D, etc.)"
+    default: "C"
+  - name: linux_device
+    type: string
+    description: "Block device to inspect on Linux (e.g. /dev/sda, /dev/nvme0)"
+    default: "/dev/sda"
+  - name: warn_temp_c
+    type: int
+    description: "Temperature threshold for warning alert (°C)"
+    default: 60
+  - name: warn_free_gb
+    type: int
+    description: "Free space threshold for warning alert (GB)"
+    default: 50
+  - name: warn_wear_pct
+    type: int
+    description: "SSD wear percentage threshold for warning alert"
+    default: 80
+  - name: include_smart
+    type: bool
+    description: "Run smartctl for detailed SMART attributes (requires smartmontools)"
+    default: true
+  - name: event_log_days
+    type: int
+    description: "How many days back to check Windows Event Log for disk errors"
+    default: 7
+
+steps:
+  # ─────────────────────────────────────────────────────
+  # WINDOWS
+  # ─────────────────────────────────────────────────────
+
+  - id: identify_disk_windows
+    name: "Identify physical disk backing the drive letter"
+    platform: windows
+    shell: pwsh
+    script: |
+      $letter = "{{drive_letter}}"
+      try {
+        $partition = Get-Partition -DriveLetter $letter -ErrorAction Stop
+        $disk = $partition | Get-Disk
+        Write-Output "=== DISK IDENTIFICATION ==="
+        Write-Output "Drive Letter : ${letter}:"
+        Write-Output "Disk Number  : $($disk.Number)"
+        Write-Output "Model        : $($disk.FriendlyName)"
+        Write-Output "Serial       : $($disk.SerialNumber)"
+        Write-Output "Bus Type     : $($disk.BusType)"
+        Write-Output "Partition Style: $($disk.PartitionStyle)"
+        Write-Output "Size         : $([math]::Round($disk.Size/1GB,2)) GB"
+        Write-Output ""
+        # Store disk number for subsequent steps
+        $env:NAVIG_DISK_NUM = $disk.Number
+        Write-Output "NAVIG_DISK_NUM=$($disk.Number)"
+      } catch {
+        Write-Error "Could not resolve drive ${letter}: — $_"
+        exit 1
+      }
+
+  - id: physical_health_windows
+    name: "Physical disk health (Get-PhysicalDisk)"
+    platform: windows
+    shell: pwsh
+    script: |
+      $diskNum = (Get-Partition -DriveLetter "{{drive_letter}}").DiskNumber
+      $pd = Get-PhysicalDisk | Where-Object { $_.DeviceId -eq $diskNum }
+
+      if (-not $pd) { Write-Warning "No PhysicalDisk entry for disk $diskNum"; exit 0 }
+
+      $healthOk  = $pd.HealthStatus -eq "Healthy"
+      $statusOk  = $pd.OperationalStatus -eq "OK"
+      $healthIcon = if ($healthOk)  { "[OK]"   } else { "[WARN]" }
+      $statusIcon = if ($statusOk)  { "[OK]"   } else { "[WARN]" }
+
+      Write-Output "=== PHYSICAL DISK HEALTH ==="
+      Write-Output "Model            : $($pd.FriendlyName)"
+      Write-Output "Media Type       : $($pd.MediaType)"
+      Write-Output "Bus Type         : $($pd.BusType)"
+      Write-Output "HealthStatus     : $($pd.HealthStatus) $healthIcon"
+      Write-Output "OperationalStatus: $($pd.OperationalStatus) $statusIcon"
+      Write-Output "Size             : $([math]::Round($pd.Size/1GB,2)) GB"
+      Write-Output ""
+
+      if (-not $healthOk -or -not $statusOk) {
+        Write-Warning "Disk health is NOT nominal — investigate immediately."
+      }
+
+  - id: reliability_counters_windows
+    name: "Storage reliability counters (temperature, wear, latency)"
+    platform: windows
+    shell: pwsh
+    script: |
+      $diskNum = (Get-Partition -DriveLetter "{{drive_letter}}").DiskNumber
+      $pd      = Get-PhysicalDisk | Where-Object { $_.DeviceId -eq $diskNum }
+      $rc      = Get-StorageReliabilityCounter -PhysicalDisk $pd
+
+      $tempWarn = if ($rc.Temperature -and [int]$rc.Temperature -ge {{warn_temp_c}}) { " [WARN: HIGH TEMP]" } else { "" }
+      $wearWarn = if ($rc.Wear        -and [int]$rc.Wear        -ge {{warn_wear_pct}}) { " [WARN: HIGH WEAR]" } else { "" }
+
+      Write-Output "=== RELIABILITY COUNTERS ==="
+      if ($rc.Temperature)    { Write-Output "Temperature      : $($rc.Temperature)°C (max rated: $($rc.TemperatureMax)°C)$tempWarn" }
+      else                     { Write-Output "Temperature      : N/A (not exposed by driver)" }
+      if ($rc.Wear -ne $null) { Write-Output "Wear             : $($rc.Wear)%$wearWarn" }
+      else                     { Write-Output "Wear             : N/A" }
+      if ($rc.PowerOnHours)   { Write-Output "Power-On Hours   : $($rc.PowerOnHours) h" }
+      Write-Output "ReadLatencyMax   : $(if ($rc.ReadLatencyMax)  { "$($rc.ReadLatencyMax) ms" } else { 'N/A' })"
+      Write-Output "WriteLatencyMax  : $(if ($rc.WriteLatencyMax) { "$($rc.WriteLatencyMax) ms" } else { 'N/A' })"
+      Write-Output "FlushLatencyMax  : $(if ($rc.FlushLatencyMax) { "$($rc.FlushLatencyMax) ms" } else { 'N/A' })"
+      if ($rc.ReadErrorsUncorrected -ne $null)  { Write-Output "Read Errors (uncorrected): $($rc.ReadErrorsUncorrected)" }
+      if ($rc.WriteErrorsUncorrected -ne $null) { Write-Output "Write Errors (uncorrected): $($rc.WriteErrorsUncorrected)" }
+      Write-Output ""
+
+  - id: volume_check_windows
+    name: "Volume health, free space, dirty bit"
+    platform: windows
+    shell: pwsh
+    script: |
+      $letter = "{{drive_letter}}"
+      $vol = Get-Volume -DriveLetter $letter -ErrorAction SilentlyContinue
+
+      if (-not $vol) { Write-Warning "Volume ${letter}: not found"; exit 0 }
+
+      $freeGB    = [math]::Round($vol.SizeRemaining/1GB, 2)
+      $sizeGB    = [math]::Round($vol.Size/1GB, 2)
+      $usedPct   = [math]::Round((($vol.Size - $vol.SizeRemaining) / $vol.Size) * 100, 1)
+      $freeWarn  = if ($freeGB -lt {{warn_free_gb}}) { " [WARN: LOW SPACE]" } else { "" }
+      $healthIcon = if ($vol.HealthStatus -eq 'Healthy') { "[OK]" } else { "[WARN]" }
+
+      Write-Output "=== VOLUME ${letter}: ==="
+      Write-Output "FileSystem       : $($vol.FileSystem)"
+      Write-Output "HealthStatus     : $($vol.HealthStatus) $healthIcon"
+      Write-Output "Size             : ${sizeGB} GB"
+      Write-Output "Free             : ${freeGB} GB ($(100 - $usedPct)% free)$freeWarn"
+      Write-Output "Used             : ${usedPct}%"
+
+      # Dirty bit check
+      $dirtyOut = & fsutil dirty query "${letter}:" 2>&1
+      $isDirty  = $dirtyOut -match "is Dirty"
+      $dirtyIcon = if ($isDirty) { "[WARN: DIRTY — chkdsk needed]" } else { "[OK]" }
+      Write-Output "Dirty Bit        : $(if ($isDirty){'DIRTY'}else{'Clean'}) $dirtyIcon"
+      Write-Output ""
+
+  - id: wmi_crosscheck_windows
+    name: "WMI cross-check (Win32_DiskDrive)"
+    platform: windows
+    shell: pwsh
+    script: |
+      $diskNum = (Get-Partition -DriveLetter "{{drive_letter}}").DiskNumber
+      $d = Get-CimInstance Win32_DiskDrive | Where-Object { $_.Index -eq $diskNum }
+
+      if (-not $d) { Write-Warning "No WMI entry for disk $diskNum"; exit 0 }
+
+      $statusIcon = if ($d.Status -eq 'OK') { "[OK]" } else { "[WARN]" }
+      Write-Output "=== WMI CROSS-CHECK ==="
+      Write-Output "Model            : $($d.Model)"
+      Write-Output "Firmware         : $($d.FirmwareRevision)"
+      Write-Output "Serial           : $($d.SerialNumber)"
+      Write-Output "Interface        : $($d.InterfaceType)"
+      Write-Output "WMI Status       : $($d.Status) $statusIcon"
+      Write-Output ""
+
+  - id: event_log_windows
+    name: "Windows Event Log — disk errors (last {{event_log_days}} days)"
+    platform: windows
+    shell: pwsh
+    script: |
+      $since = (Get-Date).AddDays(-{{event_log_days}})
+      $errors = Get-WinEvent -FilterHashtable @{
+        LogName   = 'System'
+        Level     = 1, 2
+        StartTime = $since
+      } -ErrorAction SilentlyContinue |
+        Where-Object { $_.Message -match 'disk|nvme|storage|sector|bad block|I/O error' } |
+        Select-Object TimeCreated, Id, LevelDisplayName, @{N='Msg';E={$_.Message.Substring(0,[Math]::Min(120,$_.Message.Length))}} |
+        Select-Object -First 10
+
+      Write-Output "=== EVENT LOG (last {{event_log_days}} days) ==="
+      if ($errors) {
+        Write-Warning "$($errors.Count) disk-related error(s) found in System log!"
+        $errors | ForEach-Object {
+          Write-Output "[$($_.TimeCreated)] ID:$($_.Id) [$($_.LevelDisplayName)] $($_.Msg)"
+        }
+      } else {
+        Write-Output "No disk errors in System event log — CLEAN [OK]"
+      }
+      Write-Output ""
+
+  - id: smart_check_windows
+    name: "SMART attributes via smartctl (optional)"
+    platform: windows
+    condition: "include_smart == true"
+    shell: pwsh
+    # REQUIRES: smartmontools — install: winget install smartmontools.smartmontools
+    # Windows device path: /dev/pdN where N = disk index (NOT /dev/nvme0 — not supported on Windows)
+    script: |
+      # Resolve smartctl binary — check PATH first, then known install location
+      $smartctl = Get-Command smartctl -ErrorAction SilentlyContinue
+      $smartctlBin = if ($smartctl) { "smartctl" } else {
+        $fallback = "C:\Program Files\smartmontools\bin\smartctl.exe"
+        if (Test-Path $fallback) { $fallback } else { $null }
+      }
+
+      Write-Output "=== SMART CHECK (smartctl) ==="
+      if (-not $smartctlBin) {
+        Write-Output "smartctl NOT found — skipping."
+        Write-Output "Install: winget install smartmontools.smartmontools"
+        Write-Output "After install, add to PATH: C:\Program Files\smartmontools\bin"
+        Write-Output ""
+        exit 0
+      }
+
+      $diskNum = (Get-Partition -DriveLetter "{{drive_letter}}").DiskNumber
+      # Windows uses /dev/pdN notation (NOT /dev/nvme0 — that returns 'No such file')
+      $device  = "/dev/pd$diskNum"
+      Write-Output "Binary : $smartctlBin"
+      Write-Output "Device : $device (Disk $diskNum)"
+      Write-Output ""
+
+      $result = & $smartctlBin -H -A $device 2>&1
+      if ($LASTEXITCODE -gt 1) {
+        Write-Warning "smartctl exited with code $LASTEXITCODE — may need elevation or device is unavailable"
+      }
+      $result
+      Write-Output ""
+
+  # ─────────────────────────────────────────────────────
+  # LINUX
+  # ─────────────────────────────────────────────────────
+
+  - id: disk_health_linux
+    name: "Disk health check (Linux)"
+    platform: linux
+    shell: bash
+    script: |
+      DEVICE="{{linux_device}}"
+      echo "=== DISK: $DEVICE ==="
+      lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE,MODEL,SERIAL "$DEVICE" 2>/dev/null || lsblk "$DEVICE"
+
+      echo ""
+      echo "=== VOLUME FREE SPACE ==="
+      df -h "$DEVICE"* 2>/dev/null | head -5
+
+      echo ""
+      if command -v smartctl >/dev/null 2>&1; then
+        echo "=== SMART HEALTH ==="
+        smartctl -H "$DEVICE" 2>/dev/null
+        echo ""
+        echo "=== SMART KEY ATTRIBUTES ==="
+        smartctl -A "$DEVICE" 2>/dev/null | grep -iE \
+          "Reallocated_Sector|Uncorrectable|Reported_Uncorrect|Wear_Leveling|Temperature|Power_On_Hours|Spin_Retry|Command_Timeout"
+      else
+        echo "smartctl not installed — install: sudo apt install smartmontools"
+      fi
+
+      echo ""
+      echo "=== KERNEL ERRORS (last 50 lines) ==="
+      dmesg | grep -iE "error|failed|ata|nvme|sda|sdb|nvme0|I/O error" | tail -20
+
+  # ─────────────────────────────────────────────────────
+  # macOS
+  # ─────────────────────────────────────────────────────
+
+  - id: disk_health_macos
+    name: "Disk health check (macOS)"
+    platform: macos
+    shell: bash
+    script: |
+      echo "=== DISK UTILITY ==="
+      diskutil list 2>/dev/null | head -30
+
+      echo ""
+      echo "=== VOLUME FREE SPACE ==="
+      df -h 2>/dev/null | grep -v tmpfs | head -10
+
+      echo ""
+      echo "=== macOS SMART STATUS ==="
+      if command -v smartctl >/dev/null 2>&1; then
+        smartctl --scan | awk '{print $1}' | while read dev; do
+          echo "--- $dev ---"
+          smartctl -H "$dev" 2>/dev/null
+        done
+      else
+        echo "Checking via system_profiler (limited SMART info)..."
+        system_profiler SPStorageDataType 2>/dev/null | grep -E "Medium Type|SMART Status|Capacity|Avail"
+      fi
+
+output:
+  store_to: ".navig/memory/disk-health-snapshot.json"
+
+examples:
+  - description: "Check C:\\ drive health (Windows default)"
+    command: "navig skill run disk-health"
+  - description: "Check D:\\ drive with 80°C temp threshold"
+    command: "navig skill run disk-health --drive_letter D --warn_temp_c 80"
+  - description: "Skip SMART check (no smartmontools installed)"
+    command: "navig skill run disk-health --include_smart false"
+  - description: "Linux NVMe health check"
+    command: "navig skill run disk-health --linux_device /dev/nvme0"
+  - description: "Check event log for last 30 days"
+    command: "navig skill run disk-health --event_log_days 30"

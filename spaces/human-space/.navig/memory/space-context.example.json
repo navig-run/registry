@@ -1,0 +1,18 @@
+{
+  "primary_health_metrics": ["sleep_hours", "steps", "weight_kg", "energy_1_10", "mood_1_10", "hrv"],
+  "habit_tracker_tool": null,
+  "habit_design_framework": "atomic-habits",
+  "max_active_habits": 5,
+  "calendar_tool": null,
+  "journaling_format": "markdown",
+  "journal_directory": "spaces/growth/journal/",
+  "learning_log": "spaces/growth/learning.csv",
+  "book_notes_directory": "spaces/growth/books/",
+  "bureau_directory": "spaces/bureau/",
+  "renewal_alert_days": 30,
+  "timezone": "UTC",
+  "sleep_target_hours": 7.5,
+  "steps_target": 8000,
+  "mood_baseline": null,
+  "notes": "Customize with your personal context, timezone, and tool integrations."
+}

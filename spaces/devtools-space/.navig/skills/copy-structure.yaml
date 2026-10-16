@@ -1,0 +1,42 @@
+name: Copy Structure
+description: Copy a folder's tree to the clipboard in several shapes - full tree, folders only, flat file list, tree with sizes, or tree with inline text-file contents.
+version: 1.0.0
+category: files
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: copy-tree
+    syntax: navig skill run copy-structure copy-tree --target <dir>
+    description: Full tree (folders + files) to clipboard
+    risk: safe
+  - name: copy-folders
+    syntax: navig skill run copy-structure copy-folders --target <dir>
+    description: Folders only
+    risk: safe
+  - name: copy-files
+    syntax: navig skill run copy-structure copy-files --target <dir>
+    description: Flat list of all files (relative paths)
+    risk: safe
+  - name: copy-sizes
+    syntax: navig skill run copy-structure copy-sizes --target <dir>
+    description: Full tree annotated with file sizes
+    risk: safe
+  - name: copy-contents
+    syntax: navig skill run copy-structure copy-contents --target <dir>
+    description: Full tree plus inline contents of text files (<=100 KB, binaries skipped)
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use when the user wants a folder's structure as text - to paste into a prompt,
+    a README, or a chat. Trigger on "copy the tree", "show folder structure",
+    "dump this folder with contents".
+  output_format: >
+    A GitHub-style ASCII tree on the clipboard; the console shows line/char counts
+    and a 20-line preview.

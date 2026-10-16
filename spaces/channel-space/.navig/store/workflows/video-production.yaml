@@ -1,0 +1,107 @@
+name: video-production
+description: |
+  End-to-end video production workflow. Takes a video from concept
+  through scripting, filming checklist, editing, thumbnail creation,
+  SEO optimisation, and final upload preparation.
+
+schedule:
+  cron: null
+  timezone: null
+  enabled: false
+
+on_demand: true
+formation: video-production
+
+steps:
+  - id: create-project
+    name: Create video project
+    skill: null
+    agent: showrunner
+    action: create_video_project
+    params:
+      template: standard
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 30
+
+  - id: write-script
+    name: Write video script
+    skill: null
+    agent: scriptwriter
+    action: write_script
+    params:
+      include_hook: true
+      include_cta: true
+    depends_on: [create-project]
+    on_error: retry
+    timeout_seconds: 120
+
+  - id: generate-hook
+    name: Analyse and score hook
+    skill: hook-analyzer
+    params:
+      min_score: 7
+    depends_on: [write-script]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: generate-title
+    name: Generate SEO title options
+    skill: title-generator
+    params:
+      variants: 5
+    depends_on: [write-script]
+    on_error: continue
+    timeout_seconds: 30
+    parallel: true
+
+  - id: write-description
+    name: Write video description
+    skill: description-writer
+    params:
+      include_timestamps: true
+      include_links: true
+    depends_on: [write-script]
+    on_error: continue
+    timeout_seconds: 30
+    parallel: true
+
+  - id: optimise-tags
+    name: Optimise video tags
+    skill: tag-optimizer
+    params:
+      max_tags: 30
+    depends_on: [generate-title]
+    on_error: continue
+    timeout_seconds: 30
+
+  - id: create-thumbnail
+    name: Create thumbnail
+    skill: thumbnail-score
+    params:
+      score_after_create: true
+    depends_on: [generate-title]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: seo-check
+    name: Final SEO audit
+    skill: seo-audit
+    params:
+      check_title: true
+      check_description: true
+      check_tags: true
+    depends_on: [optimise-tags, write-description]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: final-review
+    name: Showrunner final review
+    skill: null
+    agent: showrunner
+    action: final_review
+    params:
+      require_approval: true
+    depends_on: [seo-check, create-thumbnail, generate-hook]
+    on_error: abort
+    timeout_seconds: 30

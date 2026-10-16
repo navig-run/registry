@@ -1,0 +1,41 @@
+name: lead-intake
+version: "1.0.0"
+description: >
+  On-demand workflow triggered when a new lead arrives. Qualifies the lead,
+  scores it, creates a lead record, and routes to appropriate follow-up action.
+schedule:
+  enabled: false
+on_demand: true
+formation: client-lifecycle
+
+steps:
+  - name: qualify-lead
+    description: Score and classify the incoming lead
+    skill: lead-qualify
+
+  - name: check-existing-client
+    description: Search clients/ for existing relationship with this company
+    depends_on: qualify-lead
+
+  - name: route-by-priority
+    description: |
+      High priority (score >= 8): Notify sales immediately, schedule discovery call
+      Medium priority (score 5-7): Send service overview, follow up in 1 week
+      Low priority (score < 5): Add to nurture list
+    depends_on: check-existing-client
+
+  - name: create-client-record
+    description: If new client, create initial record in clients/
+    condition: "not existing_client"
+    depends_on: route-by-priority
+
+  - name: notify-sales
+    description: Post lead details and qualification to #sales
+    inbox_channel: "#sales"
+    depends_on: route-by-priority
+
+  - name: notify-chief-if-high
+    description: Alert chief for high-priority leads (high budget or strategic segment)
+    condition: "priority == 'high'"
+    inbox_channel: "#strategic"
+    depends_on: notify-sales

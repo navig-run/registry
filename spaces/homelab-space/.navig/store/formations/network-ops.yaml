@@ -1,0 +1,52 @@
+id: network-ops
+name: Network Operations
+version: "1.0.0"
+description: >
+  Formation covering all network scanning, topology mapping, cable documentation,
+  and port-level operations. Active when network state is unknown or topology changes.
+
+agents:
+  lead: atlas
+  supporting: [sentinel, archivist]
+
+trigger_conditions:
+  - "New device appears on network (detected by network-scan)"
+  - "Port audit report shows unexpected open services"
+  - "Manual invocation: navig formation run network-ops"
+  - "Weekly scheduled topology review (Sunday 23:00)"
+  - "Device goes offline (ping health check fails)"
+
+action_scope:
+  - ALLOW: network-scan, port-audit, cable-trace, ssh-connect
+  - ALLOW: write to .navig/wiki/network-topology.md
+  - ALLOW: write to .navig/memory/device-registry.json
+  - ALLOW: write to .navig/memory/cable-log.json
+  - DENY: disk operations
+  - DENY: process termination
+
+skills_used:
+  - network-scan
+  - port-audit
+  - cable-trace
+  - ssh-connect
+
+workflows_used:
+  - morning-sweep   # network-scan step
+  - deep-audit      # port-audit step
+
+communication:
+  inbox_channel: "#network"
+  escalation: operator
+  notify_on:
+    - new_device_detected
+    - unexpected_port_open
+    - device_offline
+
+context_memory:
+  read: [device-registry.json, network-topology.md]
+  write: [device-registry.json, network-topology.md, cable-log.json]
+
+example_invocation: |
+  # Trigger full network ops formation manually:
+  navig formation run network-ops
+  # atlas will: scan network → update topology → check for anomalies → report

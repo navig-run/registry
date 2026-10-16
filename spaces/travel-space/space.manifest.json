@@ -1,0 +1,28 @@
+{
+  "space_id": "travel-space",
+  "name": "Travel Space",
+  "version": "1.0.0",
+  "type": "personal",
+  "tier": "personal",
+  "runtime": "navig-space-2",
+  "description": "Plan, track, and document every trip — from daydream to debrief.",
+  "agents": [
+    "trip-planner",
+    "itinerary-builder",
+    "budget-watcher",
+    "document-keeper"
+  ],
+  "formations": [
+    "trip-planning",
+    "active-trip",
+    "post-trip"
+  ],
+  "skills": [],
+  "workflows": [
+    "new-trip",
+    "pre-departure",
+    "trip-debrief"
+  ],
+  "author": "navig-run",
+  "status": "planned"
+}

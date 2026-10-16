@@ -1,0 +1,93 @@
+id: track-source
+name: Track Source
+version: "1.0.0"
+description: >
+  Promote or register a source to be monitored and recrawled on an interval.
+  Tracked sources are the input to the crawl pipeline.
+category: discovery
+platform: [windows, linux, macos]
+formation: discovery-run
+author: research-space
+
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: "Source URL to track"
+  - name: topic
+    type: string
+    required: true
+    description: "Topic this source belongs to"
+  - name: recrawl_days
+    type: string
+    required: false
+    default: "7"
+    description: "How often to recrawl, in days"
+  - name: note
+    type: string
+    required: false
+    default: ""
+    description: "Why this source matters"
+
+steps:
+  - id: track
+    name: "Track Source"
+    shell: auto
+    env:
+      NAVIG_PARAM_URL: "{{params.url}}"
+      NAVIG_PARAM_TOPIC: "{{params.topic}}"
+      NAVIG_PARAM_RECRAWL_DAYS: "{{params.recrawl_days}}"
+      NAVIG_PARAM_NOTE: "{{params.note}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      src_path = ".navig/memory/sources.json"
+      try:
+          with open(src_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "space": "research", "sources": []}
+
+      url = os.environ.get("NAVIG_PARAM_URL", "")
+      topic = os.environ.get("NAVIG_PARAM_TOPIC", "")
+      recrawl_raw = os.environ.get("NAVIG_PARAM_RECRAWL_DAYS", "") or "7"
+      try:
+          recrawl = int(recrawl_raw)
+      except ValueError:
+          print(f"ERROR: invalid recrawl_days {recrawl_raw!r} (expected an integer).")
+          raise SystemExit(1)
+      note = os.environ.get("NAVIG_PARAM_NOTE", "")
+
+      match = next((s for s in data["sources"] if s.get("url") == url), None)
+      if match:
+          match["status"] = "tracked"
+          match["recrawl_days"] = recrawl
+          if note:
+              match["note"] = note
+          action = "updated"
+      else:
+          data["sources"].append({
+              "id": f"src_{len(data['sources']) + 1:04d}",
+              "topic": topic,
+              "title": url,
+              "url": url,
+              "status": "tracked",
+              "recrawl_days": recrawl,
+              "note": note,
+              "last_crawled": None,
+              "found_at": datetime.utcnow().isoformat() + "Z"
+          })
+          action = "tracked"
+
+      os.makedirs(os.path.dirname(src_path), exist_ok=True)
+      with open(src_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Source {action}: {url} [{topic}] — recrawl every {recrawl}d")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: track

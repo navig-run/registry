@@ -1,0 +1,20 @@
+{
+  "id": "hello-app",
+  "name": "Hello App",
+  "version": "1.0.0",
+  "description": "Minimal NAVIG pack — the canonical starting point for pack authors.",
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://github.com/you/hello-app",
+  "entry": "handler.py",
+  "provides": ["commands"],
+  "depends": {
+    "pip": [],
+    "tools": [],
+    "skills": [],
+    "plugins": []
+  },
+  "config_defaults": {
+    "greeting": "Hello"
+  }
+}

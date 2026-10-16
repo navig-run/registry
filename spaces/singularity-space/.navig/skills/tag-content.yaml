@@ -1,0 +1,85 @@
+id: tag-content
+name: Tag Content
+version: "1.0.0"
+description: >
+  Tag an external piece of content (article, paper, video, model release)
+  into the signal stream with domain, relevance, and a brief summary.
+  Routed into civilization-signals or AI journal depending on domain.
+category: content-tracking
+platform: [windows, linux, macos]
+formation: ai-frontier
+author: singularity-space
+
+parameters:
+  - name: title
+    type: string
+    required: true
+    description: "Title of the content"
+  - name: source_url
+    type: string
+    required: false
+    default: ""
+    description: "Source URL"
+  - name: domain
+    type: enum
+    values: [ai, biology, governance, energy, economics, society, technology, climate, other]
+    required: true
+  - name: summary
+    type: string
+    required: true
+    description: "Brief summary of the content and why it matters"
+  - name: relevance
+    type: enum
+    values: [low, medium, high, critical]
+    required: true
+
+steps:
+  - id: tag_and_route
+    name: "Tag Content and Route"
+    shell: auto
+    env:
+      NAVIG_PARAM_TITLE: "{{params.title}}"
+      NAVIG_PARAM_SOURCE_URL: "{{params.source_url}}"
+      NAVIG_PARAM_DOMAIN: "{{params.domain}}"
+      NAVIG_PARAM_SUMMARY: "{{params.summary}}"
+      NAVIG_PARAM_RELEVANCE: "{{params.relevance}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      domain = os.environ.get("NAVIG_PARAM_DOMAIN", "")
+      target_path = ".navig/memory/ai-journal.json" if domain == "ai" else ".navig/memory/civilization-signals.json"
+      key = "entries" if domain == "ai" else "signals"
+
+      try:
+          with open(target_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {key: []}
+
+      prefix = "ai" if domain == "ai" else "civ"
+      entry = {
+          "id": f"{prefix}_{len(data[key]) + 1:04d}",
+          "type": "tagged-content",
+          "title": os.environ.get("NAVIG_PARAM_TITLE", ""),
+          "source_url": os.environ.get("NAVIG_PARAM_SOURCE_URL", ""),
+          "domain": domain,
+          "summary": os.environ.get("NAVIG_PARAM_SUMMARY", ""),
+          "relevance": os.environ.get("NAVIG_PARAM_RELEVANCE", ""),
+          "status": "tagged",
+          "tagged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data[key].append(entry)
+      os.makedirs(os.path.dirname(target_path), exist_ok=True)
+      with open(target_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+
+      dest = "AI journal" if domain == "ai" else "civilization signals"
+      print(f"Tagged: [{entry['id']}] '{entry['title']}' → {dest} | relevance: {entry['relevance']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: tag_and_route

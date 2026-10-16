@@ -1,0 +1,40 @@
+{
+  "space_id": "finance-space",
+  "name": "Finance Space",
+  "version": "1.0.0",
+  "type": "personal",
+  "tier": "personal",
+  "description": "Personal finance command layer — budget, cashflow, savings goals, investments, and tax preparation. One space, full financial clarity.",
+  "paths": {
+    "accounts": "accounts/",
+    "transactions": "transactions/",
+    "budgets": "budgets/",
+    "goals": "goals/",
+    "documents": "documents/",
+    "reports": "reports/"
+  },
+  "agents": [
+    "budget-analyst",
+    "investment-tracker",
+    "tax-planner",
+    "savings-coach"
+  ],
+  "formations": [
+    "monthly-review",
+    "tax-season",
+    "savings-strategy"
+  ],
+  "author": "navig-run",
+  "status": "active",
+  "skills": [
+    "budget-variance",
+    "categorize-transaction",
+    "project-cashflow",
+    "tax-estimate"
+  ],
+  "workflows": [
+    "monthly-close",
+    "tax-prep-checklist",
+    "weekly-spending"
+  ]
+}

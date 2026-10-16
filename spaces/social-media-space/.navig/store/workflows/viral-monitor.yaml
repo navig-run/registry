@@ -1,0 +1,65 @@
+id: viral-monitor
+name: Viral Monitor
+version: "1.0.0"
+description: >
+  On-demand breakout detection workflow. Checks recent post performance,
+  flags anything exceeding 3x the brand/platform baseline, identifies the
+  hook pattern, and briefs post-writer for rapid follow-up content.
+
+formation: viral-radar
+space: social-media-space
+enabled: true
+trigger: on_demand
+
+steps:
+  - id: check-recent-performance
+    name: Scan Recent Performance for Breakouts
+    description: Analyze last 48 hours or up to 7 days of engagement data
+    skill: analyze-engagement
+    params:
+      period: last-7-days
+      threshold: 3x_baseline
+      brands: all
+    output: .navig/ops/breakout-candidates.json
+
+  - id: flag-breakouts
+    name: Flag Breakout Posts
+    description: Identify which posts triggered the threshold and why
+    depends_on: check-recent-performance
+    agent: analytics-watcher
+    inline: |
+      Read .navig/ops/breakout-candidates.json.
+      For each flagged post:
+        - Extract the hook text (first 150 chars of content)
+        - Identify the hook pattern (curiosity gap / pattern interrupt / specificity / emotion / controversy)
+        - Note the platform and pillar
+        - Compute impressions/likes/shares delta vs brand avg
+      Write enriched flags to .navig/ops/viral-report.json.
+      Post alert to #viral channel with: brand, post slug, platform, delta %.
+
+  - id: brief-followup
+    name: Brief Post-Writer for Follow-Up Content
+    description: Generate 2 follow-up content angles based on the viral pattern
+    depends_on: flag-breakouts
+    agent: post-writer
+    inline: |
+      Read .navig/ops/viral-report.json.
+      For each breakout post, generate a follow-up brief:
+        - Angle 1: Deepen the original hook (same emotion, new specific example)
+        - Angle 2: Flip the perspective (counter-argument or "the other side")
+      Write briefs to .navig/plans/briefs/viral-followup-{brand}-{slug}.md.
+      Post to #drafts: "Viral follow-up brief ready for {brand}/{slug} — 2 angles"
+
+  - id: update-hashtags
+    name: Update Hashtag Performance Log
+    description: Record hashtags from viral post into analytics log with engagement rate
+    depends_on: flag-breakouts
+    skill: hashtag-research
+    params:
+      source: .navig/ops/viral-report.json
+      update_log: true
+
+notifications:
+  on_breakout_detected: "#viral"
+  on_brief_ready: "#drafts"
+  on_failure: operator

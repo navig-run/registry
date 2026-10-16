@@ -1,0 +1,48 @@
+id: content-pipeline
+name: Content Pipeline
+version: "1.0.0"
+description: >
+  Governs ongoing content production for digital channels — blogs, newsletters,
+  technical documentation, and social posts. Content Strategist plans; Tech Writer
+  drafts technical content; Editor QAs; pipeline tracks status from brief to publish.
+
+agents:
+  lead: content-strategist
+  supporting:
+    - tech-writer
+    - editor
+
+trigger_conditions:
+  - "Keyword in #content: brief, calendar, publish, audit, brand-voice"
+  - "Keyword in #docs: guide, api, sop, changelog"
+  - "Manual: @content-pipeline"
+
+action_scope:
+  - content-strategy/
+  - technical-writing/
+
+skills_used:
+  - word-count
+  - grammar-check
+  - readability-score
+  - export-pdf
+
+workflows_used:
+  - editorial-review
+  - publish-checklist
+
+communication:
+  inbox_channel: "#content"
+  escalation: operator
+  notify_on:
+    - brief_approved
+    - draft_ready
+    - published
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/space-context.json
+
+example_invocation: "@content-pipeline audit --channels blog,newsletter --period 2026-Q1"

@@ -1,0 +1,28 @@
+{
+  "name": "broadcast-space",
+  "version": "1.0.1",
+  "private": true,
+  "description": "Podcast & Live Streaming Command Center — professional audio content production, distribution, and growth",
+  "keywords": [
+    "navig",
+    "space",
+    "podcast",
+    "livestream",
+    "audio",
+    "episodes",
+    "rss",
+    "broadcasting"
+  ],
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": "https://github.com/navig-run/registry",
+  "scripts": {
+    "doctor": "navig space doctor",
+    "record": "navig flow run episode-production",
+    "guest": "navig flow run guest-pipeline",
+    "live": "navig flow run live-show",
+    "plan": "navig flow run weekly-planning",
+    "review": "navig flow run monthly-review",
+    "rss": "navig flow run rss-maintenance"
+  }
+}

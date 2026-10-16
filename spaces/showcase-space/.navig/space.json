@@ -1,0 +1,20 @@
+{
+  "id": "showcase-space",
+  "name": "Showcase Space",
+  "version": "1.0.0",
+  "tier": "community",
+  "status": "planned",
+  "description": "Browse, demo, and install agents and packs made by the community.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "agent",
+    "storage"
+  ]
+}

@@ -1,0 +1,40 @@
+id: signal-watch
+name: Signal Watch
+version: "1.0.0"
+description: >
+  Default formation. Ongoing monitoring of civilization signals and self-state.
+  Oracle leads with Signal Tracker for signal capture and AI Researcher for AI domain.
+
+agents:
+  lead: oracle
+  supporting: [signal-tracker, ai-researcher]
+
+trigger_conditions:
+  - "Weekly signal sweep workflow"
+  - "#singularity or #signals inbox activity"
+  - "High-strength signal with no destiny link > 30 days"
+
+action_scope:
+  - ALLOW: rate-signal
+  - ALLOW: tag-content
+  - ALLOW: write to .navig/memory/civilization-signals.json
+  - ALLOW: write to .navig/memory/ai-journal.json
+  - DENY: delete any self-version entry
+
+skills_used:
+  - rate-signal
+  - tag-content
+
+workflows_used:
+  - weekly-signal-sweep
+
+communication:
+  inbox_channel: "#singularity"
+  escalation: operator
+  notify_on:
+    - high_strength_signal_logged
+    - ai_capability_jump_detected
+
+context_memory:
+  read: [civilization-signals.json, ai-journal.json, self-versions.json]
+  write: [civilization-signals.json, ai-journal.json]

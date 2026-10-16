@@ -1,0 +1,30 @@
+{
+  "id": "learn-space",
+  "name": "Learn Space",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "Track every course, book, and skill — build continuously, retain deliberately. Agents, formations and workflows ship; packaged skills (insight capture, quizzes, gap analysis, spaced repetition) are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "book-synthesizer",
+    "course-tracker",
+    "review-scheduler",
+    "skill-planner"
+  ],
+  "formations": [
+    "active-learning",
+    "skill-sprint",
+    "weekly-review"
+  ],
+  "skills": [],
+  "workflows": [
+    "skill-assessment",
+    "start-course",
+    "weekly-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "active-learning"
+}

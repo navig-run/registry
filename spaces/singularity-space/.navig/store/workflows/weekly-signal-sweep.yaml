@@ -1,0 +1,37 @@
+name: weekly-signal-sweep
+description: |
+  Weekly sweep of active civilization signals and AI frontier developments.
+  Surfaces unlinked high-relevance signals and new AI journal entries.
+
+schedule:
+  cron: "0 8 * * 0"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: signal-watch
+
+steps:
+  - id: signal_sweep
+    name: "Civilization Signal Sweep"
+    agent: signal-tracker
+    action: sweep_active_signals
+    params:
+      min_relevance: medium
+    on_error: continue
+
+  - id: ai_digest
+    name: "AI Frontier Digest"
+    agent: ai-researcher
+    action: generate_frontier_digest
+    on_error: continue
+
+  - id: signal_brief
+    name: "Deliver Signal Brief"
+    depends_on: [signal_sweep, ai_digest]
+    agent: oracle
+    action: generate_signal_brief
+    params:
+      signals: "{{steps.signal_sweep.output}}"
+      ai: "{{steps.ai_digest.output}}"
+      deliver_to: "#singularity"

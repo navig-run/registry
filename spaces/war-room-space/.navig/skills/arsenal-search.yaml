@@ -1,0 +1,76 @@
+id: arsenal-search
+name: Arsenal Search
+version: "1.0.0"
+description: >
+  Search the arsenal registry for available weapons by category, status, or keyword.
+  Returns a filtered, formatted list for operator review.
+category: arsenal
+platform: [windows, linux, macos]
+formation: narrative-war
+author: war-room-space
+
+parameters:
+  - name: category
+    type: string
+    required: false
+    default: "all"
+    description: "Arsenal category: legal, verbal, marketing, forensic, cyber, all"
+  - name: query
+    type: string
+    required: false
+    default: ""
+    description: "Keyword to match against arsenal item names and descriptions"
+  - name: status
+    type: string
+    required: false
+    default: "ready"
+    description: "Filter by status: ready, staged, deployed, archived, all"
+
+steps:
+  - id: search_arsenal
+    name: "Search Arsenal"
+    shell: auto
+    env:
+      NAVIG_PARAM_CATEGORY: "{{params.category}}"
+      NAVIG_PARAM_QUERY: "{{params.query}}"
+      NAVIG_PARAM_STATUS: "{{params.status}}"
+    script: |
+      python3 - <<'EOF'
+      import os
+      import json
+
+      arsenal_path = ".navig/memory/arsenal-registry.json"
+      category_filter = os.environ.get("NAVIG_PARAM_CATEGORY", "").lower()
+      query = os.environ.get("NAVIG_PARAM_QUERY", "").lower()
+      status_filter = os.environ.get("NAVIG_PARAM_STATUS", "").lower()
+
+      try:
+          with open(arsenal_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          print("Arsenal registry empty. Add arsenal items first.")
+          raise SystemExit(0)
+
+      items = data.get("items", [])
+      if category_filter != "all":
+          items = [i for i in items if i.get("category", "").lower() == category_filter]
+      if status_filter != "all":
+          items = [i for i in items if i.get("status", "").lower() == status_filter]
+      if query:
+          items = [i for i in items if query in i.get("name", "").lower() or query in i.get("description", "").lower()]
+
+      if not items:
+          print(f"No arsenal items found. Category: {category_filter}, Status: {status_filter}, Query: '{query}'")
+          raise SystemExit(0)
+
+      print(f"Arsenal Search Results ({len(items)} items)\n")
+      print(f"{'ID':<10} {'Category':<12} {'Name':<30} {'Status':<10}")
+      print("-" * 66)
+      for item in items:
+          print(f"{item.get('id',''):<10} {item.get('category',''):<12} {item.get('name',''):<30} {item.get('status',''):<10}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: search_arsenal

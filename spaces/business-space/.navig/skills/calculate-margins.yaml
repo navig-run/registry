@@ -1,0 +1,49 @@
+id: calculate-margins
+name: Calculate Margins
+version: "1.0.0"
+description: Compute gross margin, net margin, and landed cost for one or more SKUs, optionally broken down by channel.
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+author: navig-run
+
+parameters:
+  - name: sku
+    description: "SKU identifier (can be 'all' for aggregate)"
+    required: false
+    default: all
+  - name: channel
+    description: "Selling channel: amazon | ebay | etsy | all"
+    required: false
+    default: all
+  - name: period
+    description: "Period for cost data: last-month | last-quarter | ytd"
+    required: false
+    default: last-month
+  - name: mode
+    description: "Output mode: margin | cashflow | summary"
+    required: false
+    default: margin
+
+steps:
+  - name: load-cost-data
+    description: Load COGS and fee data from finance-ops/
+    script: |
+      import os, glob, csv, sys
+      data_dir = os.path.join("finance-ops", "data")
+      files = glob.glob(os.path.join(data_dir, "*.csv"))
+      if not files:
+          print("WARNING: No cost data CSVs found in finance-ops/data/")
+          sys.exit(0)
+      print(f"Found {len(files)} data file(s): {', '.join(os.path.basename(f) for f in files)}")
+    script_windows: |
+      $files = Get-ChildItem "finance-ops\data\*.csv" -ErrorAction SilentlyContinue
+      if (-not $files) { Write-Warning "No cost data CSVs found in finance-ops\data\"; exit 0 }
+      Write-Host "Found $($files.Count) data file(s): $($files.Name -join ', ')"
+
+  - name: compute-margin
+    description: Print margin summary
+    script: |
+      # Placeholder — replace with real margin calculations against loaded data
+      print("Margin calculation requires cost data in finance-ops/data/. See finance-ops/README.md.")
+    depends_on: load-cost-data

@@ -1,0 +1,66 @@
+id: loudness-normalize
+name: "Loudness Normalize"
+version: "1.0.0"
+description: "Normalize audio loudness to broadcast standards (-16 LUFS for podcast)"
+category: mastering
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: input_path
+    type: string
+    required: true
+    description: "Input audio file path"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output audio file path"
+  - name: target_lufs
+    type: number
+    default: -16
+    description: "Target loudness in LUFS (-16 podcast, -14 YouTube)"
+  - name: true_peak
+    type: number
+    default: -1.5
+    description: "Maximum true peak in dBTP"
+
+steps:
+  - id: measure-loudness
+    env:
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+    name: "Measure Current Loudness"
+    shell: bash
+    script_linux: |
+      ffmpeg -i "${NAVIG_PARAM_INPUT_PATH}" -af "loudnorm=print_format=json" -f null /dev/null 2>&1 | tail -20
+    script_windows: |
+      ffmpeg -i "$($env:NAVIG_PARAM_INPUT_PATH)" -af "loudnorm=print_format=json" -f null NUL 2>&1 | Select-Object -Last 20
+    script_macos: |
+      ffmpeg -i "${NAVIG_PARAM_INPUT_PATH}" -af "loudnorm=print_format=json" -f null /dev/null 2>&1 | tail -20
+
+  - id: normalize
+    env:
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_TARGET_LUFS: "{{target_lufs}}"
+      NAVIG_PARAM_TRUE_PEAK: "{{true_peak}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Normalize Loudness"
+    shell: bash
+    script_linux: |
+      ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -af "loudnorm=I=${NAVIG_PARAM_TARGET_LUFS}:TP=${NAVIG_PARAM_TRUE_PEAK}:LRA=11" -ar 48000 "${NAVIG_PARAM_OUTPUT_PATH}"
+    script_windows: |
+      ffmpeg -y -i "$($env:NAVIG_PARAM_INPUT_PATH)" -af "loudnorm=I=$($env:NAVIG_PARAM_TARGET_LUFS):TP=$($env:NAVIG_PARAM_TRUE_PEAK):LRA=11" -ar 48000 "$($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_macos: |
+      ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -af "loudnorm=I=${NAVIG_PARAM_TARGET_LUFS}:TP=${NAVIG_PARAM_TRUE_PEAK}:LRA=11" -ar 48000 "${NAVIG_PARAM_OUTPUT_PATH}"
+
+  - id: verify
+    env:
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Verify Normalized Loudness"
+    shell: bash
+    script_linux: |
+      ffmpeg -i "${NAVIG_PARAM_OUTPUT_PATH}" -af "loudnorm=print_format=summary" -f null /dev/null 2>&1 | grep -E "Input Integrated|Input True Peak"
+    script_windows: |
+      ffmpeg -i "$($env:NAVIG_PARAM_OUTPUT_PATH)" -af "loudnorm=print_format=summary" -f null NUL 2>&1 | findstr "Input Integrated Input True"
+    script_macos: |
+      ffmpeg -i "${NAVIG_PARAM_OUTPUT_PATH}" -af "loudnorm=print_format=summary" -f null /dev/null 2>&1 | grep -E "Input Integrated|Input True Peak"

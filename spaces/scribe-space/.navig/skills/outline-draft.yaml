@@ -1,0 +1,70 @@
+id: outline-draft
+name: Outline Draft
+version: "1.0.1"
+description: >
+  Scaffold a new writing project outline from a template. Copies the appropriate
+  outline template into the target sub-workspace folder and opens it for editing.
+category: scaffolding
+platform:
+  - windows
+  - linux
+  - macos
+formation: fiction-workshop
+author: navig-run
+
+parameters:
+  - name: type
+    type: string
+    required: true
+    description: "Project type: book | article | screenplay | essay | guide"
+  - name: slug
+    type: string
+    required: true
+    description: "URL-safe project identifier, e.g. my-novel or ai-ethics-report"
+  - name: title
+    type: string
+    required: false
+    description: Working title for the project
+
+steps:
+  - name: scaffold-outline
+    description: Pick the template for the type, create the project folder, copy the outline in
+    shell: auto
+    env:
+      NAVIG_PARAM_TYPE: "{{type}}"
+      NAVIG_PARAM_SLUG: "{{slug}}"
+      NAVIG_PARAM_TITLE: "{{title}}"
+    script: |
+      python3 - <<'EOF'
+      import os, pathlib, re, sys
+
+      LAYOUT = {
+          "book":       ("book-writing",      "book-writing/outline-template.md"),
+          "article":    ("journalism",        "journalism/story-brief-template.md"),
+          "screenplay": ("screenwriting",     "screenwriting/scene-heading-conventions.md"),
+          "essay":      ("general-writing",   "general-writing/essay-template.md"),
+          "guide":      ("technical-writing", "technical-writing/doc-template.md"),
+      }
+      kind = os.environ.get("NAVIG_PARAM_TYPE", "").strip()
+      slug = os.environ.get("NAVIG_PARAM_SLUG", "").strip()
+      title = os.environ.get("NAVIG_PARAM_TITLE", "").strip()
+      if kind not in LAYOUT:
+          sys.exit(f"Unknown type '{kind}' — use one of: {', '.join(LAYOUT)}")
+      if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+          sys.exit(f"Invalid slug '{slug}' — use lowercase letters, digits and hyphens")
+
+      parent, template = LAYOUT[kind]
+      folder = pathlib.Path(parent) / slug
+      folder.mkdir(parents=True, exist_ok=True)
+      dst = folder / "outline.md"
+      if dst.exists():
+          sys.exit(f"{dst} already exists — not overwriting")
+      text = pathlib.Path(template).read_text(encoding="utf-8")
+      if title:
+          if "[Replace with your title]" in text:
+              text = text.replace("[Replace with your title]", title, 1)
+          else:
+              text = text.replace("Working Title", title)
+      dst.write_text(text, encoding="utf-8")
+      print(f"Outline ready: {dst}")
+      EOF

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.1",
+  "space": "scribe",
+  "description": "MCP server configuration for scribe-space — writing tools, grammar/style APIs, and export utilities.",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "languagetool",
+      "type": "http",
+      "provider": "LanguageTool",
+      "description": "Grammar, spelling, and style checking via LanguageTool API.",
+      "config": {
+        "base_url": "https://api.languagetoolplus.com/v2",
+        "auth_env": "LANGUAGETOOL_API_KEY",
+        "timeout_s": 10
+      }
+    },
+    {
+      "id": "readability",
+      "type": "local",
+      "provider": "textstat",
+      "description": "Local readability scoring — Flesch-Kincaid, Gunning Fog, SMOG.",
+      "config": {
+        "skill": "readability-score",
+        "timeout_s": 5
+      }
+    },
+    {
+      "id": "pandoc-export",
+      "type": "local",
+      "provider": "pandoc",
+      "description": "Export Markdown documents to PDF, DOCX, EPUB via Pandoc.",
+      "config": {
+        "command": "pandoc",
+        "timeout_s": 30,
+        "formats": ["pdf", "docx", "epub", "html"]
+      }
+    },
+    {
+      "id": "fountain-preview",
+      "type": "local",
+      "provider": "afterwriting",
+      "description": "Render Fountain screenplay files to PDF for review.",
+      "config": {
+        "command": "afterwriting",
+        "timeout_s": 15
+      }
+    },
+    {
+      "id": "workspace-fs",
+      "type": "local",
+      "provider": "navig-core",
+      "description": "File system access for reading and writing workspace documents.",
+      "config": {
+        "root": ".",
+        "allowed_extensions": [".md", ".fountain", ".txt", ".csv", ".json", ".yaml"]
+      }
+    }
+  ]
+}

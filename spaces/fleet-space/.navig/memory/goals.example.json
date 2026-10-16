@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "fleet-space",
+  "goals": [
+    {
+      "id": "parallel-throughput",
+      "title": "5x throughput via parallel execution",
+      "description": "Tasks that took 60 min serially complete in 12 min with a 5-agent fleet",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+id: ota-update
+name: OTA Update
+version: "1.0.0"
+description: Push an over-the-air firmware update to a Tasmota or ESPHome device, staged and verified.
+category: firmware
+platform: [windows, linux, macos]
+formation: firmware-fleet
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Device IP/host to update"
+    required: true
+  - name: platform
+    type: enum
+    values: [tasmota, esphome]
+    default: tasmota
+  - name: firmware_url
+    type: string
+    description: "URL to the OTA firmware binary (Tasmota) — ignored for ESPHome"
+    default: ""
+  - name: dry_run
+    type: bool
+    description: "Report the plan without flashing"
+    default: true
+
+steps:
+  - id: preflight
+    name: "Pre-flight — confirm device is online and healthy"
+    shell: auto
+    script: |
+      curl -sf "http://{{target}}/" >/dev/null && echo "device_online=true" || { echo "device_online=false"; exit 2; }
+
+  - id: plan
+    name: "Show OTA plan (dry-run gate)"
+    shell: auto
+    script: |
+      echo "Target:   {{target}}"
+      echo "Platform: {{platform}}"
+      echo "Firmware: {{firmware_url}}"
+      if [ "{{dry_run}}" = "true" ]; then
+        echo "DRY-RUN — no flash performed. Re-run with --dry_run false to apply."
+        exit 0
+      fi
+
+  - id: flash_tasmota
+    name: "Tasmota OTA via Upgrade command"
+    condition: "platform == 'tasmota' and dry_run == 'false'"
+    shell: auto
+    script: |
+      # Point Tasmota at the OTA URL then trigger the upgrade
+      curl -s "http://{{target}}/cm?cmnd=OtaUrl%20{{firmware_url}}"
+      curl -s "http://{{target}}/cm?cmnd=Upgrade%201"
+      echo "Tasmota OTA triggered for {{target}}"
+
+  - id: flash_esphome
+    name: "ESPHome OTA via esphome CLI"
+    condition: "platform == 'esphome' and dry_run == 'false'"
+    shell: auto
+    script: |
+      # Requires the device's .yaml config; esphome compiles + uploads OTA
+      esphome run "{{target}}.yaml" --device "{{target}}" || \
+        echo "esphome OTA failed — check config and network"
+
+  - id: verify
+    name: "Post-flash verification"
+    condition: "dry_run == 'false'"
+    shell: auto
+    script: |
+      sleep 20
+      curl -sf "http://{{target}}/" >/dev/null && echo "post_flash_online=true" || echo "post_flash_online=false — consider rollback"
+
+output:
+  fields: [device, platform, action, result]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Dry-run an OTA plan for a Tasmota plug"
+    command: "navig skill run ota-update --target 192.168.20.31 --platform tasmota --firmware_url http://ota/tasmota.bin.gz"
+  - description: "Apply an ESPHome OTA update"
+    command: "navig skill run ota-update --target sensor-hall --platform esphome --dry_run false"

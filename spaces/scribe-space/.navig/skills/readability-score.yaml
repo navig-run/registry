@@ -1,0 +1,83 @@
+id: readability-score
+name: Readability Score
+version: "1.0.1"
+description: >
+  Compute readability metrics for a text file: Flesch Reading Ease,
+  Flesch-Kincaid Grade Level, and Gunning Fog Index. Prints a summary
+  and a plain-English interpretation.
+category: analysis
+platform:
+  - windows
+  - linux
+  - macos
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: file
+    type: string
+    required: true
+    description: Path to the Markdown or plain-text file to score
+  - name: target_audience
+    type: string
+    required: false
+    default: "general"
+    description: "Audience: general | academic | technical | children"
+
+steps:
+  - name: install-textstat
+    description: Ensure textstat is available
+    shell: auto
+    script: python3 -m pip show textstat >/dev/null 2>&1 || python3 -m pip install textstat -q
+    script_windows: py -3 -m pip show textstat *> $null; if ($LASTEXITCODE -ne 0) { py -3 -m pip install textstat -q }
+
+  - name: score
+    description: Compute readability metrics
+    depends_on: install-textstat
+    shell: auto
+    env:
+      NAVIG_PARAM_FILE: "{{file}}"
+      NAVIG_PARAM_TARGET_AUDIENCE: "{{target_audience}}"
+    script: |
+      python3 - <<'EOF'
+      import os, re
+      import textstat
+
+      path = os.environ["NAVIG_PARAM_FILE"]
+      audience = os.environ.get("NAVIG_PARAM_TARGET_AUDIENCE", "").strip() or "general"
+      with open(path, encoding="utf-8") as f:
+          raw = f.read()
+
+      # Strip Markdown syntax for cleaner scoring
+      text = re.sub(r'[#*_`\[\]()>]', '', raw)
+      text = re.sub(r'\n+', ' ', text).strip()
+
+      fre   = textstat.flesch_reading_ease(text)
+      fkg   = textstat.flesch_kincaid_grade(text)
+      fog   = textstat.gunning_fog(text)
+      words = textstat.lexicon_count(text, removepunct=True)
+      sents = textstat.sentence_count(text)
+
+      def interpret_fre(score):
+          if score >= 90: return "Very easy (5th grade)"
+          if score >= 70: return "Easy (6th-7th grade)"
+          if score >= 60: return "Standard (8th-9th grade)"
+          if score >= 50: return "Fairly difficult (10th-12th grade)"
+          if score >= 30: return "Difficult (college level)"
+          return "Very difficult (professional)"
+
+      print(f"File: {path}")
+      print(f"Words: {words} | Sentences: {sents}")
+      print(f"Flesch Reading Ease:    {fre:.1f}  — {interpret_fre(fre)}")
+      print(f"Flesch-Kincaid Grade:   {fkg:.1f}")
+      print(f"Gunning Fog Index:      {fog:.1f}")
+
+      targets = {
+          "general": (60, 12), "academic": (40, 16),
+          "technical": (50, 14), "children": (80, 6)
+      }
+      t_fre, t_grade = targets.get(audience, (60, 12))
+      status = "✅ On target" if fre >= t_fre else f"⚠️  May be too complex for {audience} audience"
+      print(f"\nTarget audience: {audience} (FRE ≥ {t_fre})")
+      print(f"Status: {status}")
+      EOF

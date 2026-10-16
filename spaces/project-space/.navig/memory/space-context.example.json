@@ -1,0 +1,17 @@
+{
+  "active_projects": [],
+  "paused_projects": [],
+  "completed_projects": [],
+  "archived_projects": [],
+  "total_tasks_completed": 0,
+  "total_blockers_logged": 0,
+  "total_blockers_resolved": 0,
+  "open_blockers": [],
+  "standup_streak": 0,
+  "last_standup_date": null,
+  "settings": {
+    "max_active_projects": 7,
+    "blocker_escalation_after_days": 3,
+    "stale_project_warning_days": 14
+  }
+}

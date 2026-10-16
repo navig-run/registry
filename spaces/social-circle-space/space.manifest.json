@@ -1,0 +1,26 @@
+{
+  "space_id": "social-circle-space",
+  "display_name": "Social Circle Space",
+  "description": "Your entire human network — mapped, searchable, and deeply personal.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "personal",
+  "status": "planned",
+  "tags": [
+    "social",
+    "contacts",
+    "relationships",
+    "network",
+    "crm",
+    "personal"
+  ],
+  "capability_deps": [
+    "storage",
+    "agent",
+    "memory",
+    "tools"
+  ]
+}

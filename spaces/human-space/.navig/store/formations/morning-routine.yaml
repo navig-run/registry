@@ -1,0 +1,44 @@
+id: morning-routine
+name: Morning Routine
+version: "2.0.0"
+description: Daily morning ritual — mood check, intention setting, priority review, energy assessment, and habit activation.
+
+agents:
+  lead: daily-planner
+  supporting:
+    - habit-coach
+    - wellness-tracker
+
+trigger_conditions:
+  - Morning routine time reached (scheduled)
+  - Manual morning trigger
+
+action_scope:
+  - Mood and energy check-in (log to metrics)
+  - Set top 3 daily priorities
+  - Review active habits for the day
+  - Sleep quality check-in
+  - Produce daily brief with time blocks
+
+skills_used:
+  - log-health-metric
+  - check-habit-streak
+  - log-mood
+
+workflows_used:
+  - daily-planning
+
+communication:
+  inbox_channel: "#daily"
+  escalation: operator
+  notify_on:
+    - habit streak broken
+    - health metric flag
+    - mood below threshold (≤3)
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+  write: []
+
+example_invocation: "@morning-routine run"

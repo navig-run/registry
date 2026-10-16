@@ -1,0 +1,33 @@
+{
+  "name": "homelab-space",
+  "version": "1.2.0",
+  "description": "NAVIG space — cross-platform homelab ops hub",
+  "private": true,
+  "author": "navig-run",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/homelab-space"
+  },
+  "scripts": {
+    "validate":     "navig space doctor --no-interactive",
+    "skills":       "navig skill list",
+    "scan":         "navig skill run network-scan",
+    "disk":         "navig skill run disk-health",
+    "doctor":       "navig space doctor --no-interactive && navig skill list"
+  },
+  "navig": {
+    "type": "space",
+    "min_navig_version": "2.0.0",
+    "skills_dir": ".navig/skills",
+    "entry_workflow": "morning-sweep"
+  },
+  "keywords": [
+    "navig",
+    "space",
+    "homelab",
+    "infrastructure",
+    "devops"
+  ],
+  "license": "MIT"
+}

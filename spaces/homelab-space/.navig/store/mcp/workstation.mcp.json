@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "space": "homelab",
+  "description": "MCP server configuration for the homelab space — defines tool access, agent scoping, and security policy",
+  "updated": "2026-02-26",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Read/write access to space directories and registered host paths",
+      "config": {
+        "allowed_roots": [
+          "{space_root}",
+          "C:\\Users\\{operator}\\dotfiles",
+          "/home/{operator}",
+          "/etc/navig"
+        ],
+        "read_only_roots": [
+          "C:\\Windows\\System32",
+          "/etc",
+          "/sys"
+        ],
+        "max_file_size_mb": 100,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Controlled shell execution on local and registered remote hosts",
+      "config": {
+        "allowed_hosts": ["localhost", "primary-desktop", "linux-server"],
+        "timeout_seconds": 30,
+        "blocked_commands": [
+          "rm -rf /",
+          "format c:",
+          "mkfs",
+          "dd if=/dev/zero",
+          ":(){:|:&};:",
+          "sudo rm -rf"
+        ],
+        "require_confirmation_for": [
+          "sudo",
+          "runas",
+          "del /f",
+          "Remove-Item -Force",
+          "DROP TABLE",
+          "systemctl stop",
+          "firewall"
+        ],
+        "shell_per_os": {
+          "windows": "pwsh",
+          "linux": "bash",
+          "macos": "zsh"
+        },
+        "max_output_kb": 512
+      }
+    },
+    {
+      "id": "network-tools",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Network scanning and topology tools",
+      "config": {
+        "allowed_scan_ranges": ["192.168.1.0/24", "10.0.0.0/24"],
+        "blocked_ranges": ["0.0.0.0/8", "169.254.0.0/16"],
+        "max_scan_rate_pps": 500,
+        "tools": ["nmap", "arp", "ping", "traceroute", "netstat", "ss", "ip", "ifconfig"],
+        "require_confirmation_for_external": true
+      }
+    },
+    {
+      "id": "hardware-monitor",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Hardware sensor and health monitoring",
+      "config": {
+        "tools": {
+          "windows": ["wmic", "Get-WmiObject", "nvidia-smi", "HWiNFO64-REST"],
+          "linux": ["lm-sensors", "lshw", "dmidecode", "nvidia-smi", "smartctl", "lspci"],
+          "macos": ["system_profiler", "istats", "nvidia-smi", "diskutil", "ioreg"]
+        },
+        "poll_interval_seconds": 60,
+        "alert_thresholds": {
+          "gpu_temp_celsius": 85,
+          "cpu_temp_celsius": 90,
+          "disk_usage_percent": 85,
+          "ram_usage_percent": 90
+        }
+      }
+    }
+  ],
+  "agent_tool_allowlist": {
+    "atlas": ["filesystem", "network-tools", "shell"],
+    "sentinel": ["network-tools", "shell", "filesystem"],
+    "wrench": ["filesystem", "shell", "hardware-monitor"],
+    "herald": ["shell"],
+    "archivist": ["filesystem"],
+    "pulse": ["hardware-monitor", "shell", "filesystem"]
+  },
+  "security_policy": {
+    "require_space_active": true,
+    "log_all_tool_calls": true,
+    "log_path": ".navig/logs/mcp-audit.log",
+    "rate_limits": {
+      "network_scans_per_hour": 10,
+      "shell_commands_per_minute": 60,
+      "file_writes_per_minute": 30
+    },
+    "alert_on": [
+      "blocked_command_attempt",
+      "scan_outside_allowed_range",
+      "file_access_outside_allowed_roots",
+      "rate_limit_exceeded"
+    ]
+  }
+}

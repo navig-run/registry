@@ -1,0 +1,36 @@
+{
+  "space_id": "human-space",
+  "type": "human",
+  "name": "Human Space",
+  "owner": "navig-run",
+  "version": "2.0.0",
+  "created_at": "2026-03-02",
+  "description": "Personal life operating system — health, habits, growth, journal, bureau, and self-knowledge.",
+  "paths": {
+    "docs": "docs",
+    "health": "spaces/health",
+    "growth": "spaces/growth",
+    "bureau": "spaces/bureau"
+  },
+  "subspaces": [],
+  "agents": 5,
+  "formations": 5,
+  "skills": 9,
+  "workflows": 5,
+  "prompts": 8,
+  "meta": {
+    "tags": [
+      "personal",
+      "life-ops",
+      "health",
+      "habits",
+      "growth",
+      "journal",
+      "bureau"
+    ]
+  },
+  "tier": "personal",
+  "status": "active",
+  "author": "navig-run",
+  "spaces_dir": "spaces"
+}

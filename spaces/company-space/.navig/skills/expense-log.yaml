@@ -1,0 +1,133 @@
+id: expense-log
+name: Log Expense
+version: "1.0.0"
+description: |
+  Log a business expense with categorization (21 categories), date, vendor,
+  amount, and payment method. Saves to finance/expenses/ as structured YAML.
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+agent: controller
+author: navig-run
+
+parameters:
+  - name: amount
+    description: Expense amount
+    required: true
+  - name: category
+    description: |
+      One of: domain-hosting, software-licenses, hardware, office-supplies,
+      professional-services, marketing-advertising, travel-transport,
+      meals-entertainment, telecommunications, insurance, training-education,
+      subscriptions-saas, banking-fees, coworking, printing, shipping,
+      subcontracting, networking-events, legal-fees, taxes-contributions, miscellaneous
+    required: true
+  - name: vendor
+    description: Vendor or merchant name
+    required: true
+  - name: description
+    description: Brief description of the expense
+    required: false
+    default: ""
+  - name: date
+    description: "Expense date (YYYY-MM-DD). Defaults to today."
+    required: false
+  - name: payment_method
+    description: "Payment method: card, transfer, cash, paypal"
+    required: false
+    default: card
+  - name: receipt
+    description: Path to receipt file if available
+    required: false
+
+outputs:
+  - name: expense_file
+    description: Path to saved expense YAML
+  - name: expense_id
+    description: Generated expense ID
+
+steps:
+  - name: log-expense
+    description: Validate category, generate ID, save expense record
+    env:
+      NAVIG_PARAM_AMOUNT: "{{ amount }}"
+      NAVIG_PARAM_CATEGORY: "{{ category }}"
+      NAVIG_PARAM_VENDOR: "{{ vendor }}"
+      NAVIG_PARAM_DESCRIPTION: "{{ description }}"
+      NAVIG_PARAM_DATE: "{{ date }}"
+      NAVIG_PARAM_PAYMENT_METHOD: "{{ payment_method }}"
+      NAVIG_PARAM_RECEIPT: "{{ receipt }}"
+    script: |
+      import datetime, os, pathlib, re, yaml
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      def next_number(folder, prefix, year, ext):
+          """Next sequential number for PREFIX-YYYY-NNN files (no gaps, no reuse)."""
+          nums = []
+          for f in folder.glob(f"{prefix}-{year}-*{ext}"):
+              m = re.fullmatch(re.escape(prefix) + r"-\d{4}-(\d{3})", f.stem)
+              if m:
+                  nums.append(int(m.group(1)))
+          return max(nums, default=0) + 1
+
+      VALID_CATEGORIES = [
+          "domain-hosting", "software-licenses", "hardware", "office-supplies",
+          "professional-services", "marketing-advertising", "travel-transport",
+          "meals-entertainment", "telecommunications", "insurance", "training-education",
+          "subscriptions-saas", "banking-fees", "coworking", "printing", "shipping",
+          "subcontracting", "networking-events", "legal-fees", "taxes-contributions",
+          "miscellaneous"
+      ]
+
+      category = param("category")
+      if category not in VALID_CATEGORIES:
+          print(f"Invalid category: {category}")
+          print(f"   Valid: {', '.join(VALID_CATEGORIES)}")
+          raise SystemExit(1)
+
+      PREFIX = setting("finance.expenses.prefix", "COMPANY_EXPENSE_PREFIX", "EXP")
+      CURRENCY = setting("finance.currency", "COMPANY_CURRENCY", "USD")
+
+      output_dir = pathlib.Path("finance/expenses")
+      output_dir.mkdir(parents=True, exist_ok=True)
+
+      year = datetime.date.today().year
+      expense_id = f"{PREFIX}-{year}-{next_number(output_dir, PREFIX, year, '.yaml'):03d}"
+      today = datetime.date.today().isoformat()
+
+      record = {
+          "expense_id": expense_id,
+          "date": param("date", today),
+          "amount": float(param("amount", "0")),
+          "currency": CURRENCY,
+          "category": category,
+          "vendor": param("vendor"),
+          "description": param("description"),
+          "payment_method": param("payment_method", "card"),
+          "receipt": param("receipt") or None,
+          "logged_at": datetime.datetime.now().isoformat(),
+      }
+
+      filepath = output_dir / f"{expense_id}.yaml"
+      with open(filepath, "w", encoding="utf-8") as f:
+          yaml.dump(record, f, default_flow_style=False, allow_unicode=True)
+
+      print(f"Expense {expense_id} logged -> {filepath}")
+      print(f"   {record['amount']} {CURRENCY} | {category} | {record['vendor']}")

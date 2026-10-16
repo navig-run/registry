@@ -1,0 +1,39 @@
+id: tag-optimizer
+name: Tag Optimizer
+version: "1.0.0"
+description: Optimises YouTube video tags for maximum discoverability based on topic, competitors, and search volume.
+category: seo
+platform: [windows, linux, macos]
+formation: channel-growth
+author: navig-run
+
+parameters:
+  - name: title
+    type: string
+    required: true
+    description: Video title for context
+  - name: max_tags
+    type: integer
+    required: false
+    default: 30
+    description: Maximum number of tags to generate
+  - name: output_file
+    type: string
+    required: false
+    default: content/scripts/tags.txt
+    description: Output file for tags
+
+steps:
+  - id: ensure-dir
+    name: Ensure output directory
+    shell: true
+    script_windows: "if not exist \"content\\scripts\" mkdir \"content\\scripts\""
+    script_linux: "mkdir -p content/scripts"
+    script_macos: "mkdir -p content/scripts"
+
+  - id: generate-tags
+    name: Generate optimised tags
+    shell: true
+    script_windows: "echo Title: {{title}} > \"{{output_file}}\" && echo Max tags: {{max_tags}} >> \"{{output_file}}\" && echo --- >> \"{{output_file}}\" && echo [Agent generates {{max_tags}} optimised tags] >> \"{{output_file}}\""
+    script_linux: "echo 'Title: {{title}}' > '{{output_file}}' && echo 'Max tags: {{max_tags}}' >> '{{output_file}}'"
+    script_macos: "echo 'Title: {{title}}' > '{{output_file}}' && echo 'Max tags: {{max_tags}}' >> '{{output_file}}'"

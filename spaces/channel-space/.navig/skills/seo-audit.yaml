@@ -1,0 +1,47 @@
+id: seo-audit
+name: SEO Audit
+version: "1.0.0"
+description: Audits YouTube video metadata (title, description, tags) for SEO effectiveness and provides improvement recommendations.
+category: analytics
+platform: [windows, linux, macos]
+formation: channel-growth
+author: navig-run
+
+parameters:
+  - name: video_url
+    type: string
+    required: false
+    description: YouTube video URL to audit (optional, audits library if omitted)
+  - name: scope
+    type: string
+    required: false
+    default: recent
+    description: "Scope: recent, all, or specific video ID"
+  - name: output_dir
+    type: string
+    required: false
+    default: content/analytics
+    description: Directory to save audit report
+
+steps:
+  - id: check-tools
+    name: Verify yt-dlp installed
+    shell: true
+    script_windows: "where yt-dlp >nul 2>&1 && echo OK || echo MISSING"
+    script_linux: "which yt-dlp >/dev/null 2>&1 && echo OK || echo MISSING"
+    script_macos: "which yt-dlp >/dev/null 2>&1 && echo OK || echo MISSING"
+
+  - id: fetch-metadata
+    name: Fetch video metadata
+    shell: true
+    script_windows: "yt-dlp --dump-json --no-download \"{{video_url}}\" > \"{{output_dir}}\\seo-audit.json\""
+    script_linux: "yt-dlp --dump-json --no-download '{{video_url}}' > '{{output_dir}}/seo-audit.json'"
+    script_macos: "yt-dlp --dump-json --no-download '{{video_url}}' > '{{output_dir}}/seo-audit.json'"
+    condition: "video_url is not None"
+
+  - id: analyse-metadata
+    name: Analyse SEO metrics
+    shell: true
+    script_windows: "python -c \"import json,sys; d=json.load(open(r'{{output_dir}}\\seo-audit.json')); print(f'Title: {len(d.get(\\\"title\\\",\\\"\\\"))} chars | Tags: {len(d.get(\\\"tags\\\",[])) } | Desc: {len(d.get(\\\"description\\\",\\\"\\\"))} chars')\""
+    script_linux: "python3 -c \"import json; d=json.load(open('{{output_dir}}/seo-audit.json')); print(f'Title: {len(d.get(\\\"title\\\",\\\"\\\"))} chars | Tags: {len(d.get(\\\"tags\\\",[])) } | Desc: {len(d.get(\\\"description\\\",\\\"\\\"))} chars')\""
+    script_macos: "python3 -c \"import json; d=json.load(open('{{output_dir}}/seo-audit.json')); print(f'Title: {len(d.get(\\\"title\\\",\\\"\\\"))} chars | Tags: {len(d.get(\\\"tags\\\",[])) } | Desc: {len(d.get(\\\"description\\\",\\\"\\\"))} chars')\""

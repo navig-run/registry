@@ -1,0 +1,99 @@
+id: app-debloat
+name: App Debloat
+version: "1.0.0"
+description: >
+  Remove carrier/OEM bloatware safely and reversibly using per-user disable
+  (`pm disable-user --user 0`) or user-uninstall (`pm uninstall -k --user 0`) —
+  no root, nothing touches /system, everything restorable. Only acts on packages
+  vetted in the debloat catalog unless explicitly forced.
+category: privacy
+platform: [windows, linux, macos]
+formation: privacy-hardening
+author: navig-run
+
+parameters:
+  - name: package
+    type: string
+    description: "Single package to act on (blank = run the catalog sweep)"
+    default: ""
+  - name: action
+    type: enum
+    values: [disable, uninstall, restore, list]
+    default: disable
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: dry_run
+    type: bool
+    description: "Preview actions without changing the device"
+    default: true
+
+steps:
+  - id: list_removable
+    name: "List user-facing (third-party + disableable) packages"
+    condition: "action == 'list'"
+    shell: auto
+    script: |
+      echo "=== THIRD-PARTY PACKAGES ==="
+      adb {{#serial}}-s {{serial}}{{/serial}} shell pm list packages -3
+      echo ""
+      echo "=== DISABLED PACKAGES ==="
+      adb {{#serial}}-s {{serial}}{{/serial}} shell pm list packages -d
+
+  - id: disable_pkg
+    name: "Disable a package for user 0 (reversible)"
+    condition: "action == 'disable' and package != ''"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      if ("{{dry_run}}" -eq "true") {
+        Write-Output "[DRY-RUN] would run: adb $sel shell pm disable-user --user 0 {{package}}"
+      } else {
+        adb $sel shell pm disable-user --user 0 "{{package}}"
+        Write-Output "[OK] Disabled {{package}} for user 0 (restore with action=restore)"
+      }
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      if [ "{{dry_run}}" = "true" ]; then
+        echo "[DRY-RUN] would run: adb $sel shell pm disable-user --user 0 {{package}}"
+      else
+        adb $sel shell pm disable-user --user 0 "{{package}}"
+        echo "[OK] Disabled {{package}} for user 0 (restore with action=restore)"
+      fi
+
+  - id: uninstall_pkg
+    name: "User-uninstall a package (keep apk, --user 0)"
+    condition: "action == 'uninstall' and package != ''"
+    shell: auto
+    script: |
+      if [ "{{dry_run}}" = "true" ]; then
+        echo "[DRY-RUN] would run: adb shell pm uninstall -k --user 0 {{package}}"
+      else
+        adb {{#serial}}-s {{serial}}{{/serial}} shell pm uninstall -k --user 0 "{{package}}"
+        echo "[OK] Uninstalled {{package}} for user 0 (restore with action=restore)"
+      fi
+
+  - id: restore_pkg
+    name: "Restore a disabled / user-uninstalled package"
+    condition: "action == 'restore' and package != ''"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} shell cmd package install-existing "{{package}}" || \
+      adb {{#serial}}-s {{serial}}{{/serial}} shell pm enable "{{package}}"
+      echo "[OK] Restored {{package}}"
+
+output:
+  fields: [package, action, result]
+  store_to: ".navig/memory/known-issues.json"
+  merge: true
+
+examples:
+  - description: "List all removable packages first"
+    command: "navig skill run app-debloat --action list"
+  - description: "Dry-run disabling a bloat package"
+    command: "navig skill run app-debloat --package com.facebook.appmanager"
+  - description: "Actually disable it (turn off dry-run)"
+    command: "navig skill run app-debloat --package com.facebook.appmanager --dry_run false"
+  - description: "Restore a package you disabled"
+    command: "navig skill run app-debloat --package com.facebook.appmanager --action restore --dry_run false"

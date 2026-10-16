@@ -1,0 +1,97 @@
+id: logcat-capture
+name: Logcat Capture
+version: "1.0.0"
+description: >
+  Capture and filter device logs with `adb logcat`. Filter by priority, tag, or
+  package PID; dump a snapshot or stream live; and save to a timestamped file for
+  triage. Clears the ring buffer on request.
+category: diagnostics
+platform: [windows, linux, macos]
+formation: device-bridge
+author: navig-run
+
+parameters:
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: priority
+    type: enum
+    values: [V, D, I, W, E, F]
+    default: W
+  - name: filter
+    type: string
+    description: "Tag or free-text grep filter (blank = no filter)"
+    default: ""
+  - name: package
+    type: string
+    description: "Restrict to a package's PID (blank = all)"
+    default: ""
+  - name: mode
+    type: enum
+    values: [dump, stream]
+    default: dump
+  - name: clear_first
+    type: bool
+    description: "Clear the logcat buffer before capturing"
+    default: false
+
+steps:
+  - id: clear
+    name: "Clear logcat buffer (optional)"
+    condition: "clear_first == true"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} logcat -c
+      echo "logcat buffer cleared"
+
+  - id: capture
+    name: "Capture logs"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $ts  = Get-Date -Format "yyyyMMdd-HHmmss"
+      $file = "logcat-$ts.txt"
+      $args = @("*:{{priority}}")
+      if ("{{package}}") {
+        $pid = & adb $sel shell pidof "{{package}}" 2>$null
+        if ($pid) { $args = @("--pid", $pid.Trim(), "*:{{priority}}") }
+      }
+      if ("{{mode}}" -eq "dump") {
+        $out = & adb $sel logcat -d $args
+        if ("{{filter}}") { $out = $out | Select-String "{{filter}}" }
+        $out | Tee-Object -FilePath $file
+        Write-Output "[OK] Saved $file"
+      } else {
+        Write-Output "Streaming (Ctrl+C to stop)..."
+        & adb $sel logcat $args
+      }
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      ts=$(date +%Y%m%d-%H%M%S); file="logcat-$ts.txt"
+      args="*:{{priority}}"
+      if [ -n "{{package}}" ]; then
+        pid=$(adb $sel shell pidof "{{package}}" 2>/dev/null | tr -d '\r')
+        [ -n "$pid" ] && args="--pid $pid *:{{priority}}"
+      fi
+      if [ "{{mode}}" = "dump" ]; then
+        if [ -n "{{filter}}" ]; then
+          adb $sel logcat -d $args | grep -i "{{filter}}" | tee "$file"
+        else
+          adb $sel logcat -d $args | tee "$file"
+        fi
+        echo "[OK] Saved $file"
+      else
+        echo "Streaming (Ctrl+C to stop)..."; adb $sel logcat $args
+      fi
+
+output:
+  fields: [file, lines, priority]
+
+examples:
+  - description: "Dump warnings and above to a file"
+    command: "navig skill run logcat-capture"
+  - description: "Live-stream errors for one app"
+    command: "navig skill run logcat-capture --package com.example.app --priority E --mode stream"
+  - description: "Clear buffer then dump everything matching 'ANR'"
+    command: "navig skill run logcat-capture --clear_first true --priority V --filter ANR"

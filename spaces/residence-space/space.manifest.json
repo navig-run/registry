@@ -1,0 +1,43 @@
+{
+  "space_id": "residence-space",
+  "display_name": "Residence Space",
+  "description": "Personal living space — household inventory, medication tracking, maintenance calendar, and room-based organization for any dwelling.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-12",
+  "updated": "2026-03-12",
+  "author": "navig-run",
+  "tier": "personal",
+  "tags": [
+    "home",
+    "household",
+    "inventory",
+    "maintenance",
+    "medication",
+    "residence"
+  ],
+  "status": "active",
+  "agents": [
+    "housekeeper",
+    "medic",
+    "organizer",
+    "steward"
+  ],
+  "formations": [
+    "household-ops",
+    "maintenance-crew",
+    "medical-watch"
+  ],
+  "owner": "navig-run",
+  "skills": [
+    "check-expiry",
+    "inventory-export",
+    "log-item",
+    "track-medication"
+  ],
+  "workflows": [
+    "medication-expiry-check",
+    "monthly-inventory-audit",
+    "weekly-home-review"
+  ]
+}

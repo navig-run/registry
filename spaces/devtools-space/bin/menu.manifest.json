@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "_comment": "Single source of truth for the Windows right-click menu. install.ps1 builds HKCU verbs from this. command = a devtools.ps1 command; launch = coalesce (windowless multi-select worker) | visible (one window). exec = direct executable instead of the engine. icon (optional, per item) overrides the group icon. classes: '*' files, 'Directory' folders, 'Directory\\Background' folder empty-space (uses %V).",
+  "deployDir": "%LOCALAPPDATA%\\Navig\\devtools",
+  "engine": "devtools.ps1",
+  "launcher": "run-hidden.vbs",
+  "groups": [
+    {
+      "key": "ZCompress",
+      "label": "Compress",
+      "icon": "%ProgramFiles%\\7-Zip\\7zFM.exe,0",
+      "classes": ["*", "Directory"],
+      "items": [
+        { "key": "01_eh",    "label": "Extract Here",            "command": "extract-here",   "launch": "coalesce", "icon": "%SystemRoot%\\system32\\shell32.dll,4" },
+        { "key": "02_ef",    "label": "Extract to Folder",       "command": "extract-folder", "launch": "coalesce", "icon": "%SystemRoot%\\system32\\shell32.dll,267" },
+        { "key": "04_zip",   "label": "Add to .zip",             "command": "zip",            "launch": "coalesce", "icon": "%SystemRoot%\\system32\\zipfldr.dll,0" },
+        { "key": "05_7z",    "label": "Add to .7z",              "command": "7z",             "launch": "coalesce", "icon": "%ProgramFiles%\\7-Zip\\7zFM.exe,0" },
+        { "key": "05b_split","label": "Add to .7z (split 4 GB)", "command": "7z-split",       "launch": "coalesce", "icon": "%ProgramFiles%\\7-Zip\\7zFM.exe,0" },
+        { "key": "06_gui",   "label": "Open in 7-Zip",           "exec": "%ProgramFiles%\\7-Zip\\7zFM.exe", "icon": "%ProgramFiles%\\7-Zip\\7zFM.exe,0" }
+      ]
+    },
+    {
+      "key": "ZCopyStructure",
+      "label": "Copy Structure",
+      "icon": "%SystemRoot%\\system32\\shell32.dll,259",
+      "classes": ["Directory", "Directory\\Background"],
+      "items": [
+        { "key": "01_tree",     "label": "Full Tree",            "command": "copy-tree",     "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,3" },
+        { "key": "02_folders",  "label": "Folders Only",         "command": "copy-folders",  "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,4" },
+        { "key": "03_files",    "label": "File List",            "command": "copy-files",    "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,1" },
+        { "key": "04_sizes",    "label": "Full Tree + Sizes",    "command": "copy-sizes",    "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,272" },
+        { "key": "05_contents", "label": "Full Tree + Contents", "command": "copy-contents", "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,97" }
+      ]
+    },
+    {
+      "key": "ZDevTools",
+      "label": "DevTools",
+      "icon": "%SystemRoot%\\system32\\imageres.dll,109",
+      "classes": ["Directory", "Directory\\Background"],
+      "items": [
+        { "key": "10_clone",  "label": "Clone repos (clipboard)", "command": "clone",      "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,184" },
+        { "key": "11_repo",   "label": "Open repo in browser",    "command": "open-repo",  "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,20" },
+        { "key": "20_video",  "label": "Download video (yt-dlp)", "command": "video",      "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,178" },
+        { "key": "21_image",  "label": "Download image",          "command": "image",      "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,325" },
+        { "key": "30_npm",    "label": "npm tools",               "command": "npm",        "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,21" },
+        { "key": "31_docker", "label": "Docker tools",            "command": "docker",     "launch": "visible", "icon": "%SystemRoot%\\system32\\shell32.dll,21" },
+        { "key": "40_ssh",    "label": "SSH here",                "command": "ssh",        "launch": "visible", "icon": "%SystemRoot%\\system32\\cmd.exe,0" },
+        { "key": "41_upload", "label": "Upload folder",           "command": "upload",     "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,176" },
+        { "key": "42_deploy", "label": "Deploy to server",        "command": "deploy",     "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,175" },
+        { "key": "50_vt",     "label": "Scan with VirusTotal",    "command": "virustotal", "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,1" },
+        { "key": "90_short",  "label": "Shorten URL (clipboard)", "command": "shorten",    "launch": "visible", "icon": "%SystemRoot%\\system32\\imageres.dll,20" }
+      ]
+    },
+    {
+      "key": "ZUnlock",
+      "label": "Unlock File",
+      "icon": "%SystemRoot%\\system32\\shell32.dll,47",
+      "classes": ["*", "Directory"],
+      "command": "unlock",
+      "launch": "visible",
+      "_note": "flat verb (no submenu): finds locking processes via Restart Manager, can kill them, take ownership, clear attributes, and delete"
+    }
+  ]
+}

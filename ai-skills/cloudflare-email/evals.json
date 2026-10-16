@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "send-from-worker",
+      "prompt": "How do I send a transactional email from a Cloudflare Worker without managing API keys?",
+      "expect": { "contains": ["send_email", "EMAIL.send"], "excludes": [] }
+    },
+    {
+      "id": "receive-inbound",
+      "prompt": "How do I receive and parse inbound email in a Worker, and what's the gotcha with the raw message stream?",
+      "expect": { "contains": ["email()", "message.raw", "postal-mime"], "excludes": [] }
+    },
+    {
+      "id": "rest-field-names",
+      "prompt": "I'm sending email through the Cloudflare REST API instead of the binding. How do the from and reply field names differ?",
+      "expect": { "contains": ["reply_to", "address"], "excludes": ["replyTo"] }
+    }
+  ]
+}

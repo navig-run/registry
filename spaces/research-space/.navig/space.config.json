@@ -1,0 +1,59 @@
+{
+  "space_id": "research-space",
+  "type": "work",
+  "name": "Research",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-06-15",
+  "spaces_dir": "spaces",
+  "description": "Discovery-to-data pipeline — search the web, crawl, build datasets, store in a database, synthesize cited findings.",
+  "paths": [
+    "datasets",
+    "crawls",
+    "out"
+  ],
+  "agents": [
+    "scout",
+    "crawler",
+    "curator",
+    "archivist",
+    "analyst"
+  ],
+  "formations": [
+    "discovery-run",
+    "crawl-pipeline",
+    "data-foundry",
+    "analysis-lab"
+  ],
+  "skills": [
+    "web-search",
+    "track-source",
+    "crawl-site",
+    "build-dataset",
+    "db-query"
+  ],
+  "meta": {
+    "tags": [
+      "research",
+      "web-crawling",
+      "scraping",
+      "datasets",
+      "big-data",
+      "databases",
+      "discovery",
+      "synthesis"
+    ],
+    "platform": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  },
+  "author": "navig-run",
+  "tier": "work",
+  "status": "active",
+  "workflows": [
+    "daily-discovery-sweep",
+    "weekly-research-review"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "broadcast-space",
+  "space_id": "broadcast-space",
+  "name": "Broadcast Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "paths": {
+    "docs": ".navig/wiki",
+    "ops": ".navig/ops",
+    "inbox": ".navig/inbox",
+    "skills": ".navig/skills",
+    "tools": ".navig/store/mcp",
+    "episodes": ".navig/episodes",
+    "guests": ".navig/guests",
+    "assets": ".navig/assets",
+    "exports": ".navig/exports"
+  }
+}

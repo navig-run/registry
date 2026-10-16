@@ -1,0 +1,50 @@
+id: audit-listings
+name: Audit Listings
+version: "1.0.0"
+description: Check active product listings for suppressed status, missing fields, and keyword gaps. Outputs a CSV action list.
+category: ecommerce
+platform: [windows, linux, macos]
+formation: ecommerce-ops
+author: navig-run
+
+parameters:
+  - name: platform
+    description: "Platform to audit: amazon | ebay | etsy | all"
+    required: false
+    default: all
+  - name: mode
+    description: "Audit depth: quick (suppressed only) | full (full SEO + fee check)"
+    required: false
+    default: quick
+  - name: output
+    description: Output file path for CSV action list
+    required: false
+    default: "listing-audit-results.csv"
+
+steps:
+  - name: check-config
+    description: Verify platform credentials exist in vault
+    script: |
+      import os
+      platforms = ["amazon", "ebay", "etsy"]
+      missing = []
+      for p in platforms:
+          key = f"NAVIG_VAULT_{p.upper()}_CREDENTIALS"
+          if not os.environ.get(key):
+              missing.append(p)
+      if missing:
+          print(f"INFO: No credentials found for: {', '.join(missing)} — skipping those platforms")
+      else:
+          print("All platform credentials present")
+
+  - name: run-audit
+    description: Placeholder audit — extend with real API calls for each platform
+    script: |
+      import csv, sys
+      output = sys.argv[1] if len(sys.argv) > 1 else "listing-audit-results.csv"
+      with open(output, "w", newline="") as f:
+          w = csv.writer(f)
+          w.writerow(["platform", "sku", "issue", "severity", "action"])
+          w.writerow(["—", "—", "No data source connected", "info", "Connect platform credentials"])
+      print(f"Audit results written to {output}")
+    depends_on: check-config

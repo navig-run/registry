@@ -1,0 +1,54 @@
+id: medical-watch
+name: Medical Watch
+version: "1.0.0"
+description: >
+  Formation activated for all medication-related operations: logging, expiry
+  scanning, stock checking, and per-person summaries. Medic leads — housekeeper
+  is available as context support for room/storage location queries only.
+
+agents:
+  lead: medic
+  supporting: [housekeeper]
+
+trigger_conditions:
+  - "New message in #medical inbox"
+  - "track-medication skill invoked"
+  - "check-expiry skill invoked"
+  - "Daily medication-expiry-check workflow runs"
+  - "Manual: navig formation run medical-watch"
+  - "Medication expiry threshold breached (default: 30 days)"
+
+action_scope:
+  - ALLOW: track-medication, check-expiry
+  - ALLOW: write to .navig/memory/medication-log.json
+  - ALLOW: read from .navig/memory/room-registry.json
+  - DENY: provide medical advice or dosage recommendations
+  - DENY: delete any medication record
+
+skills_used:
+  - track-medication
+  - check-expiry
+
+workflows_used:
+  - medication-expiry-check
+
+communication:
+  inbox_channel: "#medical"
+  escalation: operator
+  notify_on:
+    - medication_expiring_within_30_days
+    - medication_quantity_below_threshold
+    - expired_medication_found
+
+alert_thresholds:
+  expiry_warn_days: 30
+  expiry_critical_days: 7
+  quantity_warn_threshold: 5
+
+context_memory:
+  read: [medication-log.json, room-registry.json]
+  write: [medication-log.json]
+
+example_invocation: |
+  navig formation run medical-watch
+  # medic will: scan all active medications → flag expiring items → deliver alert to #medical

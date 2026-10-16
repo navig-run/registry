@@ -1,0 +1,16 @@
+{
+  "id": "devops-space",
+  "name": "DevOps Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "CI/CD, infrastructure-as-code, SRE ops, and incident response hub.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["pipeline-engineer", "infra-architect", "site-reliability", "incident-commander"],
+  "formations": ["ci-pipeline", "infra-deploy", "incident-response", "sre-ops"],
+  "skills": ["health-probe", "rollback", "alert-triage", "deploy-validate", "cert-check"],
+  "workflows": ["deploy-check", "incident-triage", "weekly-reliability-review"],
+  "packages": [],
+  "subspaces": []
+}

@@ -1,0 +1,25 @@
+{
+  "name": "council-space",
+  "version": "1.0.0",
+  "description": "Assemble a council of agents. Watch them argue. Extract decisions.",
+  "owner": "navig-run",
+  "tier": "labs",
+  "status": "labs",
+  "packages": [],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "memory"
+  ],
+  "config_key": "formations.enabled",
+  "viral_hook": "Screenshot the debate + decision card — it reads like a boardroom argument",
+  "navig_files_used": [
+    "navig/formations/council.py"
+  ],
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

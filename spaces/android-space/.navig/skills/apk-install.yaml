@@ -1,0 +1,90 @@
+id: apk-install
+name: APK Install
+version: "1.0.0"
+description: >
+  Sideload an APK (or split-APK bundle) onto a connected device with `adb install`.
+  Supports reinstall-keeping-data, auto-grant permissions, downgrade, and
+  install-multiple for split bundles. Verifies the package after install.
+category: apps
+platform: [windows, linux, macos]
+formation: app-ops
+author: navig-run
+
+parameters:
+  - name: apk_path
+    type: string
+    description: "Path to the .apk file (or a directory of splits for a bundle)"
+    default: ""
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: reinstall
+    type: bool
+    description: "Keep app data on reinstall (-r)"
+    default: true
+  - name: grant_perms
+    type: bool
+    description: "Auto-grant all runtime permissions (-g)"
+    default: false
+  - name: allow_downgrade
+    type: bool
+    description: "Allow version downgrade (-d)"
+    default: false
+
+steps:
+  - id: preflight
+    name: "Verify APK exists and device is present"
+    shell: auto
+    script_windows: |
+      if (-not (Test-Path "{{apk_path}}")) { Write-Error "APK not found: {{apk_path}}"; exit 1 }
+      adb {{#serial}}-s {{serial}}{{/serial}} get-state 2>$null
+    script_linux: |
+      [ -e "{{apk_path}}" ] || { echo "APK not found: {{apk_path}}"; exit 1; }
+      adb {{#serial}}-s {{serial}}{{/serial}} get-state 2>/dev/null
+
+  - id: install
+    name: "Install the APK"
+    shell: auto
+    script_windows: |
+      $flags = @()
+      if ("{{reinstall}}" -eq "true")       { $flags += "-r" }
+      if ("{{grant_perms}}" -eq "true")      { $flags += "-g" }
+      if ("{{allow_downgrade}}" -eq "true")  { $flags += "-d" }
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      if ((Get-Item "{{apk_path}}").PSIsContainer) {
+        adb $sel install-multiple $flags (Get-ChildItem "{{apk_path}}\*.apk").FullName
+      } else {
+        adb $sel install $flags "{{apk_path}}"
+      }
+    script_linux: |
+      flags=""
+      [ "{{reinstall}}" = "true" ] && flags="$flags -r"
+      [ "{{grant_perms}}" = "true" ] && flags="$flags -g"
+      [ "{{allow_downgrade}}" = "true" ] && flags="$flags -d"
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      if [ -d "{{apk_path}}" ]; then
+        adb $sel install-multiple $flags "{{apk_path}}"/*.apk
+      else
+        adb $sel install $flags "{{apk_path}}"
+      fi
+
+  - id: verify
+    name: "Confirm the package is installed"
+    shell: auto
+    script: |
+      echo "Installed packages matching the APK base name:"
+      adb {{#serial}}-s {{serial}}{{/serial}} shell pm list packages -3 | tail -20
+
+output:
+  fields: [package, version_code, result]
+  store_to: ".navig/memory/known-issues.json"
+  merge: true
+
+examples:
+  - description: "Sideload an APK (reinstall keeping data)"
+    command: "navig skill run apk-install --apk_path ~/Downloads/app-release.apk"
+  - description: "Install a split-APK bundle and grant all permissions"
+    command: "navig skill run apk-install --apk_path ./bundle_dir --grant_perms true"
+  - description: "Install to a specific device, allowing downgrade"
+    command: "navig skill run apk-install --apk_path app.apk --serial 3A091FD --allow_downgrade true"

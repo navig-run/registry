@@ -1,0 +1,18 @@
+channels:
+  - id: pipeline
+    description: "CI/CD pipeline design, failures, and optimisation"
+    agents: [pipeline-engineer]
+  - id: infra
+    description: "Infrastructure provisioning and IaC authoring"
+    agents: [infra-architect]
+  - id: incidents
+    description: "Active incidents and on-call escalations"
+    agents: [incident-commander, site-reliability]
+    priority: high
+  - id: sre
+    description: "Reliability reviews, SLOs, error budgets"
+    agents: [site-reliability]
+  - id: alerts
+    description: "Automated alert routing from monitoring systems"
+    agents: [incident-commander, site-reliability]
+    priority: high

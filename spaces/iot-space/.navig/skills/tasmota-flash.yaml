@@ -1,0 +1,72 @@
+id: tasmota-flash
+name: Tasmota Flash
+version: "1.0.0"
+description: Initial-flash Tasmota (or ESPHome) firmware to an ESP device over serial or OTA.
+category: firmware
+platform: [windows, linux, macos]
+formation: firmware-fleet
+author: navig-run
+
+parameters:
+  - name: port
+    type: string
+    description: "Serial port (COMx on Windows, /dev/ttyUSBx on Linux, /dev/cu.* on macOS)"
+    default: ""
+  - name: firmware
+    type: string
+    description: "Path to the .bin firmware file"
+    required: true
+  - name: baud
+    type: int
+    default: 460800
+  - name: erase
+    type: bool
+    description: "Erase flash before writing (recommended for first flash)"
+    default: true
+
+steps:
+  - id: check_esptool
+    name: "Check esptool availability"
+    shell: auto
+    script_windows: |
+      $c = Get-Command esptool -ErrorAction SilentlyContinue
+      if (-not $c) { $c = Get-Command esptool.py -ErrorAction SilentlyContinue }
+      if ($c) { Write-Output "has_esptool=true" } else { Write-Output "has_esptool=false — pip install esptool" }
+    script_linux: |
+      command -v esptool.py >/dev/null 2>&1 || command -v esptool >/dev/null 2>&1 && echo "has_esptool=true" || echo "has_esptool=false — pip install esptool"
+    script_macos: |
+      command -v esptool.py >/dev/null 2>&1 || command -v esptool >/dev/null 2>&1 && echo "has_esptool=true" || echo "has_esptool=false — pip install esptool"
+
+  - id: detect_port
+    name: "Auto-detect serial port if not provided"
+    condition: "port == ''"
+    shell: auto
+    script_windows: |
+      Get-CimInstance Win32_SerialPort | Select-Object DeviceID, Description | Format-Table -AutoSize
+    script_linux: |
+      ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null || echo "no serial adapter found"
+    script_macos: |
+      ls /dev/cu.usbserial* /dev/cu.SLAB* /dev/cu.wchusbserial* 2>/dev/null || echo "no serial adapter found"
+
+  - id: erase_flash
+    name: "Erase flash (first flash)"
+    condition: "erase == 'true'"
+    shell: auto
+    script: |
+      esptool.py --port {{port}} --baud {{baud}} erase_flash
+
+  - id: write_flash
+    name: "Write firmware to the ESP"
+    shell: auto
+    script: |
+      esptool.py --port {{port}} --baud {{baud}} write_flash 0x0 "{{firmware}}"
+      echo "Flashed {{firmware}} to {{port}} — power-cycle the device, then it will appear on the mesh."
+
+output:
+  fields: [port, firmware, erased, result]
+
+examples:
+  - description: "Flash Tasmota over serial on Linux"
+    command: "navig skill run tasmota-flash --port /dev/ttyUSB0 --firmware ./tasmota.bin"
+  - description: "Flash on Windows COM4 without erasing"
+    command: "navig skill run tasmota-flash --port COM4 --firmware .\\tasmota.bin --erase false"

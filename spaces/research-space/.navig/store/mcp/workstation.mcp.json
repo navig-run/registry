@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "space": "research",
+  "description": "MCP server configuration for research space — filesystem, shell, web fetch, and search.",
+  "updated": "2026-06-15",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/crawls",
+          "{workspace_root}/datasets",
+          "{workspace_root}/out",
+          "{workspace_root}/.navig/memory"
+        ],
+        "max_file_size_mb": 50,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_commands": ["python", "python3", "py", "sqlite3", "duckdb"],
+        "working_dir": "{workspace_root}",
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "fetch",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "respect_robots_txt": true,
+        "default_delay_ms": 1000,
+        "max_concurrency_per_host": 2,
+        "user_agent": "navig-research-bot/1.0 (+contact: operator)"
+      }
+    },
+    {
+      "id": "web-search",
+      "type": "mcp-server",
+      "provider": "navig-pluggable",
+      "config": {
+        "note": "Bind to any search backend (Brave, SerpAPI, Tavily, etc.). Results feed the web-search skill via RESULTS_JSON.",
+        "max_results": 25
+      }
+    }
+  ]
+}

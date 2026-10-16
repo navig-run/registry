@@ -1,0 +1,11 @@
+space_id: bureau-space
+runtime: navig-space-2
+display_name: Bureau
+default_locale: fr
+
+bureau:
+  deadline_alert_days_before: 30
+  document_retention_years: 10
+  dossier_statuses: [en-cours, en-attente, incomplet, cloture, archive]
+  tax_year_start_month: 1
+  auto_reminder: true

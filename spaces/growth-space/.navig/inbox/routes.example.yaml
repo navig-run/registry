@@ -1,0 +1,12 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+version: "1.0"
+routes:
+  - channel: "#habits"
+    description: "Daily habit check-ins and streak updates"
+    default: true
+  - channel: "#learning"
+    description: "Books, courses, skills being practiced"
+  - channel: "#goals"
+    description: "Goal updates, milestones, and outcomes"
+  - channel: "#reflections"
+    description: "Weekly and monthly reflections"

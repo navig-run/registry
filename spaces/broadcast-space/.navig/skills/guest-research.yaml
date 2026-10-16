@@ -1,0 +1,75 @@
+id: guest-research
+name: "Guest Research"
+version: "1.0.0"
+description: "Research potential podcast guests and prepare interview briefs"
+category: research
+platform: [windows, linux, macos]
+formation: guest-booking
+author: "NAVIG Community"
+
+parameters:
+  - name: guest_name
+    type: string
+    required: false
+    description: "Specific guest name to research"
+  - name: topic
+    type: string
+    required: false
+    description: "Topic area for finding guests"
+  - name: count
+    type: integer
+    default: 5
+    description: "Number of guest candidates to return"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output path for research brief"
+  - name: depth
+    type: string
+    default: "standard"
+    description: "Research depth: quick, standard, thorough"
+
+steps:
+  - id: research
+    env:
+      NAVIG_PARAM_GUEST_NAME: "{{guest_name}}"
+      NAVIG_PARAM_TOPIC: "{{topic}}"
+      NAVIG_PARAM_DEPTH: "{{depth}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Research Guest Background"
+    shell: bash
+    script_linux: |
+      echo "Researching guest: ${NAVIG_PARAM_GUEST_NAME}"
+      echo "Topic: ${NAVIG_PARAM_TOPIC}"
+      echo "Depth: ${NAVIG_PARAM_DEPTH}"
+      echo "Output: ${NAVIG_PARAM_OUTPUT_PATH}"
+      # AI-powered research gathering:
+      # - Professional background
+      # - Recent work, publications, talks
+      # - Social media presence
+      # - Previous podcast appearances
+      # - Potential interview angles
+    script_windows: |
+      Write-Host "Researching guest: $($env:NAVIG_PARAM_GUEST_NAME)"
+      Write-Host "Topic: $($env:NAVIG_PARAM_TOPIC), Depth: $($env:NAVIG_PARAM_DEPTH)"
+    script_macos: |
+      echo "Researching guest: ${NAVIG_PARAM_GUEST_NAME}"
+      echo "Topic: ${NAVIG_PARAM_TOPIC}, Depth: ${NAVIG_PARAM_DEPTH}"
+
+  - id: generate-brief
+    env:
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Generate Guest Brief"
+    shell: bash
+    script_linux: |
+      echo "Generating brief to ${NAVIG_PARAM_OUTPUT_PATH}"
+      # Creates structured brief:
+      # - Guest bio
+      # - Key talking points
+      # - Suggested questions (10-15)
+      # - Topics to avoid
+      # - Cross-reference with previous episodes
+    script_windows: |
+      Write-Host "Generating brief to $($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_macos: |
+      echo "Generating brief to ${NAVIG_PARAM_OUTPUT_PATH}"

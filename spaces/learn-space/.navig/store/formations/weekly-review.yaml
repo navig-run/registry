@@ -1,0 +1,9 @@
+id: weekly-review
+name: Weekly Review
+version: "1.0.0"
+description: Weekly synthesis — spaced repetition, progress review, skill update.
+space: learn
+lead: review-scheduler
+supporting: [skill-planner, course-tracker]
+trigger_conditions: [weekly on configured day]
+workflows: [weekly-review]

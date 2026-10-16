@@ -1,0 +1,106 @@
+id: port-audit
+name: Port Audit
+version: "1.0.0"
+description: >
+  Audit open TCP/UDP ports on any target host. Identifies listening services,
+  flags unexpected ports against a known-good baseline, and produces a signed report.
+category: security
+platform: [windows, linux, macos]
+formation: security-watch
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "IP address or hostname to audit"
+    required: true
+  - name: port_range
+    type: string
+    description: "Port range (nmap syntax: '1-1024', '80,443,8080', 'top100')"
+    default: "1-1024"
+  - name: protocol
+    type: enum
+    values: [tcp, udp, both]
+    default: tcp
+  - name: baseline
+    type: string
+    description: "Path to known-good ports JSON (optional)"
+    default: ".navig/memory/port-baseline.json"
+  - name: intensity
+    type: enum
+    values: [fast, normal, thorough]
+    default: normal
+
+steps:
+  - id: validate_target
+    name: "Resolve and validate target"
+    shell: auto
+    script_windows: |
+      try { [System.Net.Dns]::GetHostAddresses("{{target}}") | Select-Object -First 1 -ExpandProperty IPAddressToString }
+      catch { Write-Error "Cannot resolve {{target}}"; exit 1 }
+    script_linux: |
+      host {{target}} 2>/dev/null | awk '/has address/{print $4; exit}' || \
+        { echo "Cannot resolve {{target}}"; exit 1; }
+
+  - id: tcp_scan
+    name: "TCP port scan via nmap"
+    condition: "protocol == 'tcp' or protocol == 'both'"
+    shell: auto
+    script: |
+      nmap -Pn -sV --open \
+        {% if intensity == 'fast' %}-T5 --max-retries 1{% endif %}
+        {% if intensity == 'thorough' %}-T3 -sC{% endif %}
+        -p {{port_range}} {{target}} \
+        -oG /tmp/port-audit-tcp-{{target}}.txt
+      cat /tmp/port-audit-tcp-{{target}}.txt | grep "open"
+    script_windows: |
+      $result = nmap -Pn -sV --open -p {{port_range}} {{target}}
+      $result | Select-String "open"
+
+  - id: udp_scan
+    name: "UDP port scan (requires root/admin)"
+    condition: "protocol == 'udp' or protocol == 'both'"
+    shell: auto
+    script: |
+      sudo nmap -sU --top-ports 20 {{target}} 2>/dev/null | grep "open"
+    script_windows: |
+      Write-Warning "UDP scan on Windows requires nmap + WinPcap/Npcap (run as Admin)"
+      nmap -sU --top-ports 20 {{target}} 2>$null | Select-String "open"
+
+  - id: baseline_diff
+    name: "Compare against known-good baseline"
+    condition: "file_exists(baseline)"
+    shell: auto
+    # Parameters reach the script as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_BASELINE: "{{baseline}}"
+    script: |
+      python3 -c "
+      import json, sys, os
+      baseline = json.load(open(os.environ['NAVIG_PARAM_BASELINE']))
+      current_ports = [line.split('/')[0] for line in sys.stdin if 'open' in line]
+      new_ports = [p for p in current_ports if p not in baseline.get('allowed_ports', [])]
+      if new_ports:
+          print('ALERT: Unexpected open ports:', new_ports)
+          sys.exit(2)
+      else:
+          print('All ports match baseline.')
+      "
+
+  - id: report
+    name: "Write audit report"
+    shell: auto
+    script: |
+      echo "Port audit complete for: {{target}} ({{port_range}} / {{protocol}})"
+      echo "Timestamp: $(date -Iseconds 2>/dev/null || Get-Date -Format o)"
+
+output:
+  fields: [port, protocol, state, service, version]
+  store_to: ".navig/memory/port-audits.json"
+  append: true
+
+examples:
+  - description: "Audit a single host top 1024 ports"
+    command: "navig skill run port-audit --target 192.168.1.10"
+  - description: "Full TCP+UDP audit with thorough intensity"
+    command: "navig skill run port-audit --target my-server.local --protocol both --intensity thorough"

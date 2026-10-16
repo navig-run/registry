@@ -1,0 +1,35 @@
+{
+  "id": "clips-video-tools",
+  "name": "Clips Video Tools",
+  "version": "1.0.0",
+  "description": "Video processing and platform tools for short-form content creation.",
+  "tools": {
+    "ffmpeg": {
+      "description": "Video processing — trimming, format conversion, effects, caption overlay",
+      "install": {
+        "windows": "winget install --id Gyan.FFmpeg",
+        "linux": "sudo apt install ffmpeg",
+        "macos": "brew install ffmpeg"
+      },
+      "verify": "ffmpeg -version"
+    },
+    "yt-dlp": {
+      "description": "Download videos and trending content from TikTok, YouTube, Instagram",
+      "install": {
+        "windows": "winget install --id yt-dlp.yt-dlp",
+        "linux": "pip install yt-dlp",
+        "macos": "brew install yt-dlp"
+      },
+      "verify": "yt-dlp --version"
+    },
+    "imagemagick": {
+      "description": "Image processing for thumbnails, caption overlays, and text rendering",
+      "install": {
+        "windows": "winget install --id ImageMagick.ImageMagick",
+        "linux": "sudo apt install imagemagick",
+        "macos": "brew install imagemagick"
+      },
+      "verify": "magick --version"
+    }
+  }
+}

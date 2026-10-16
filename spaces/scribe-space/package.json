@@ -1,0 +1,27 @@
+{
+  "name": "scribe-space",
+  "version": "1.0.1",
+  "description": "NAVIG space for writers — fiction, journalism, screenwriting, technical docs, and content strategy.",
+  "private": true,
+  "navig": {
+    "space": "scribe-space",
+    "runtime": "navig-space-2",
+    "entry": ".navig/config.yaml"
+  },
+  "keywords": [
+    "navig",
+    "community-space",
+    "writing",
+    "fiction",
+    "journalism",
+    "screenwriting",
+    "content-strategy",
+    "technical-writing"
+  ],
+  "license": "MIT",
+  "engines": {
+    "navig": ">=2.0.0"
+  },
+  "author": "navig-run",
+  "repository": "https://github.com/navig-run/registry"
+}

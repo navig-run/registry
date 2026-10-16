@@ -1,0 +1,21 @@
+{
+  "id": "company-space",
+  "spaceId": "company-space",
+  "displayName": "Company Space",
+  "name": "Company Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "description": "Business operations, financial management, client relations, active projects, and execution.",
+  "defaultPersonaId": "chief",
+  "createdAt": "2026-03-02T00:00:00.000Z",
+  "updatedAt": "2026-10-16T00:00:00.000Z",
+  "widgets": [
+    { "id": "revenue-dashboard", "label": "Revenue Dashboard", "type": "metric" },
+    { "id": "lead-pipeline", "label": "Lead Pipeline", "type": "kanban" },
+    { "id": "invoice-tracker", "label": "Invoice Tracker", "type": "table" },
+    { "id": "deadlines", "label": "Upcoming Deadlines", "type": "timeline" },
+    { "id": "expenses", "label": "Expense Summary", "type": "chart" }
+  ],
+  "crossplatform": true
+}

@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "safe-move",
+      "prompt": "Move my project from one drive to another safely without losing any work.",
+      "expect": {
+        "contains": ["quarantine", "robocopy", "commit count"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "preview-flags",
+      "prompt": "How do I preview a migration, or copy without removing the original?",
+      "expect": {
+        "contains": ["--dry-run", "--no-trash"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "agent-footprint",
+      "prompt": "When I relocate a project, how does its Claude Code session history follow it?",
+      "expect": {
+        "contains": ["session history", "slug"],
+        "excludes": []
+      }
+    }
+  ]
+}

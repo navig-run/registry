@@ -1,0 +1,85 @@
+# ─────────────────────────────────────────────
+# Workflow: Morning Studio Briefing
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: morning-studio
+description: |
+  Daily morning briefing for the studio.
+  Scans unfinished sessions, overdue releases, inbox items,
+  and pending collaborations. Summarises the day ahead.
+
+schedule:
+  cron: "0 8 * * 1-5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: track-production
+
+steps:
+  - id: scan-sessions
+    name: Scan Unfinished Sessions
+    skill: daw-project-scan
+    params:
+      session_dir: "{{config.sessions_dir}}"
+      filter: incomplete
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: check-releases
+    name: Check Overdue Releases
+    agent: release-manager
+    action: check-overdue
+    params:
+      releases_dir: "{{config.releases_dir}}"
+      threshold_days: 7
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: check-inbox
+    name: Process Studio Inbox
+    agent: producer
+    action: process-inbox
+    params:
+      channels:
+        - "#production"
+        - "#mixing"
+        - "#mastering"
+        - "#samples"
+        - "#releases"
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: check-collabs
+    name: Check Pending Collaborations
+    agent: session-planner
+    action: check-pending
+    params:
+      filter: upcoming_7d
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: compile-briefing
+    name: Compile Morning Briefing
+    agent: producer
+    action: compile-briefing
+    params:
+      sessions: "{{steps.scan-sessions.result}}"
+      releases: "{{steps.check-releases.result}}"
+      inbox: "{{steps.check-inbox.result}}"
+      collabs: "{{steps.check-collabs.result}}"
+    depends_on:
+      - scan-sessions
+      - check-releases
+      - check-inbox
+      - check-collabs
+    on_error: abort
+    timeout_seconds: 120

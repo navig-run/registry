@@ -1,0 +1,80 @@
+{
+  "id": "channel-space",
+  "kind": "space",
+  "name": "Channel Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "description": "YouTube creator command center — video production, SEO, growth analytics, thumbnail testing, and community management.",
+  "agent": {
+    "default": "showrunner",
+    "formation": "video-production"
+  },
+  "agents": [
+    {
+      "id": "showrunner",
+      "role": "Creative Director",
+      "formation": "video-production"
+    },
+    {
+      "id": "scriptwriter",
+      "role": "Content Writer",
+      "formation": "content-planning"
+    },
+    {
+      "id": "editor",
+      "role": "Post-Production Lead",
+      "formation": "video-production"
+    },
+    {
+      "id": "growth-analyst",
+      "role": "Data Analyst",
+      "formation": "channel-growth"
+    },
+    {
+      "id": "art-director",
+      "role": "Visual Designer",
+      "formation": "thumbnail-lab"
+    }
+  ],
+  "formations": [
+    "video-production",
+    "channel-growth",
+    "content-planning",
+    "thumbnail-lab",
+    "community-ops"
+  ],
+  "skills": [
+    "seo-audit",
+    "thumbnail-score",
+    "analytics-pull",
+    "title-generator",
+    "description-writer",
+    "tag-optimizer",
+    "schedule-publish",
+    "retention-analysis",
+    "competitor-scan",
+    "hook-analyzer"
+  ],
+  "workflows": [
+    "content-batch",
+    "morning-channel",
+    "seo-refresh",
+    "thumbnail-test",
+    "video-production",
+    "weekly-review"
+  ],
+  "packages": [],
+  "meta": {
+    "crossplatform": true,
+    "primary_action": "navig formation run \"<request>\"",
+    "platform": [
+      "windows",
+      "linux",
+      "macos"
+    ],
+    "author": "navig-run",
+    "license": "MIT"
+  }
+}

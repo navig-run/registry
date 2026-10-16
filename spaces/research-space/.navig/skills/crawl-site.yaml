@@ -1,0 +1,100 @@
+id: crawl-site
+name: Crawl Site
+version: "1.0.0"
+description: >
+  Crawl a tracked source and emit raw structured records to the crawls/ staging
+  area as line-delimited JSON. Honors a bounded page budget and per-host delay.
+  Fetching is delegated to a connected HTTP/browser tool; this skill stages and
+  logs the run.
+category: extraction
+platform: [windows, linux, macos]
+formation: crawl-pipeline
+author: research-space
+
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: "Entry URL of the source to crawl"
+  - name: dataset
+    type: string
+    required: true
+    description: "Target dataset name these records will feed (e.g. 'ev-stations')"
+  - name: max_pages
+    type: string
+    required: false
+    default: "50"
+    description: "Page budget — stop after this many fetched pages"
+  - name: delay_ms
+    type: string
+    required: false
+    default: "1000"
+    description: "Politeness delay between requests, in milliseconds"
+
+steps:
+  - id: stage_crawl
+    name: "Stage Crawl Run"
+    shell: auto
+    env:
+      NAVIG_PARAM_URL: "{{params.url}}"
+      NAVIG_PARAM_DATASET: "{{params.dataset}}"
+      NAVIG_PARAM_MAX_PAGES: "{{params.max_pages}}"
+      NAVIG_PARAM_DELAY_MS: "{{params.delay_ms}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, re
+      from datetime import datetime
+
+      url = os.environ.get("NAVIG_PARAM_URL", "")
+      dataset = os.environ.get("NAVIG_PARAM_DATASET", "")
+      if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", dataset):
+          print(f"ERROR: invalid dataset name {dataset!r} (use letters, digits, '.', '_' or '-').")
+          raise SystemExit(1)
+      try:
+          max_pages = int(os.environ.get("NAVIG_PARAM_MAX_PAGES", "") or "50")
+          delay = int(os.environ.get("NAVIG_PARAM_DELAY_MS", "") or "1000")
+      except ValueError:
+          print("ERROR: max_pages and delay_ms must be integers.")
+          raise SystemExit(1)
+
+      os.makedirs("crawls", exist_ok=True)
+      stamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+      out_path = f"crawls/{dataset}-{stamp}.jsonl"
+
+      # Extracted rows are expected from a connected fetch/browser tool via
+      # ROWS_JSONL (one JSON object per line). When absent, write a run header so
+      # the pipeline has a traceable artifact.
+      rows_raw = os.environ.get("ROWS_JSONL", "")
+      lines = [ln for ln in rows_raw.splitlines() if ln.strip()]
+
+      with open(out_path, "w", encoding="utf-8") as f:
+          header = {"_meta": True, "source": url, "dataset": dataset,
+                    "max_pages": max_pages, "delay_ms": delay,
+                    "crawled_at": datetime.utcnow().isoformat() + "Z",
+                    "rows": len(lines)}
+          f.write(json.dumps(header, ensure_ascii=False) + "\n")
+          for ln in lines:
+              f.write(ln.rstrip("\n") + "\n")
+
+      # Update last_crawled on the source record.
+      src_path = ".navig/memory/sources.json"
+      try:
+          with open(src_path, encoding="utf-8") as f:
+              data = json.load(f)
+          for s in data.get("sources", []):
+              if s.get("url") == url:
+                  s["last_crawled"] = datetime.utcnow().isoformat() + "Z"
+          with open(src_path, "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+      except Exception:
+          pass
+
+      print(f"Crawl staged: {out_path} ({len(lines)} row(s)) from {url}")
+      if not lines:
+          print("No rows piped in — connect a fetch tool and pass ROWS_JSONL.")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: stage_crawl

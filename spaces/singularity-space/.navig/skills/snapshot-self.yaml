@@ -1,0 +1,82 @@
+id: snapshot-self
+name: Snapshot Self
+version: "1.0.0"
+description: >
+  Capture a versioned snapshot of the operator's current state — beliefs,
+  capabilities, priorities, and outlook. Appended to self-versions.json.
+  Previous versions are never deleted.
+category: self-tracking
+platform: [windows, linux, macos]
+formation: signal-watch
+author: singularity-space
+
+parameters:
+  - name: version_label
+    type: string
+    required: false
+    default: ""
+    description: "Optional semantic label for this version (e.g. 'Post-AI pivot', 'Year 3')"
+  - name: beliefs
+    type: string
+    required: true
+    description: "Current core beliefs (what the operator knows to be true right now)"
+  - name: capabilities
+    type: string
+    required: true
+    description: "Current primary capabilities and strengths"
+  - name: priorities
+    type: string
+    required: true
+    description: "Top 3 current priorities or focuses"
+  - name: outlook
+    type: string
+    required: false
+    default: ""
+    description: "Current outlook — 1-2 sentences on how the future looks from this position"
+
+steps:
+  - id: write_snapshot
+    name: "Write Self-Version Snapshot"
+    shell: auto
+    env:
+      NAVIG_PARAM_VERSION_LABEL: "{{params.version_label}}"
+      NAVIG_PARAM_BELIEFS: "{{params.beliefs}}"
+      NAVIG_PARAM_CAPABILITIES: "{{params.capabilities}}"
+      NAVIG_PARAM_PRIORITIES: "{{params.priorities}}"
+      NAVIG_PARAM_OUTLOOK: "{{params.outlook}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      versions_path = ".navig/memory/self-versions.json"
+      try:
+          with open(versions_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"versions": []}
+
+      version_num = len(data["versions"]) + 1
+      label = os.environ.get("NAVIG_PARAM_VERSION_LABEL", "") or f"v{version_num}"
+
+      snapshot = {
+          "version": version_num,
+          "label": label,
+          "timestamp": datetime.utcnow().isoformat() + "Z",
+          "beliefs": os.environ.get("NAVIG_PARAM_BELIEFS", ""),
+          "capabilities": os.environ.get("NAVIG_PARAM_CAPABILITIES", ""),
+          "priorities": os.environ.get("NAVIG_PARAM_PRIORITIES", ""),
+          "outlook": os.environ.get("NAVIG_PARAM_OUTLOOK", "")
+      }
+      data["versions"].append(snapshot)
+      os.makedirs(os.path.dirname(versions_path), exist_ok=True)
+      with open(versions_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Self-version [{version_num}] '{label}' logged — {snapshot['timestamp']}")
+      print(f"Total versions in archive: {len(data['versions'])}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_snapshot

@@ -1,0 +1,49 @@
+name: code-review
+description: |
+  Full code review cycle for a specified file or diff. Runs linting, then
+  reviewer analysis, then produces a structured report with verdict and findings.
+
+schedule: null
+on_demand: true
+formation: review-cycle
+
+steps:
+  - id: lint
+    name: "Run Linter"
+    skill: code-lint
+    params:
+      target: "{{params.target}}"
+      output_format: "json"
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: review
+    name: "Structured Code Review"
+    depends_on: [lint]
+    agent: reviewer
+    action: review_file
+    params:
+      file: "{{params.target}}"
+      lint_results: "{{steps.lint.output}}"
+      focus: "{{params.focus | default('all')}}"
+    timeout_seconds: 120
+
+  - id: report
+    name: "Deliver Review Report"
+    depends_on: [review]
+    agent: reviewer
+    action: deliver_report
+    params:
+      report: "{{steps.review.output}}"
+      deliver_to: "#review"
+      notify_coder: true
+
+params:
+  - name: target
+    type: string
+    description: "File path to review"
+    required: true
+  - name: focus
+    type: enum
+    values: [security, performance, readability, correctness, all]
+    default: all

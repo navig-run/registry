@@ -1,0 +1,45 @@
+id: billing-cycle
+name: Billing Cycle
+version: "1.0.0"
+description: >
+  Formation for all billing operations: invoice creation, payment tracking,
+  and overdue management. Billing Officer leads; Timekeeper provides
+  unbilled time data for invoice generation.
+
+agents:
+  lead: billing-officer
+  supporting: [timekeeper]
+
+trigger_conditions:
+  - "New message in #billing"
+  - "End of month"
+  - "Invoice 14+ days past due date"
+  - "Manual: activate the billing-cycle formation"
+
+action_scope:
+  - ALLOW: create-invoice, track-overdue
+  - ALLOW: write to .navig/memory/invoices.json
+  - ALLOW: write to .navig/memory/space-context.json
+  - DENY: modify time entries or client records
+
+skills_used:
+  - create-invoice
+  - track-overdue
+
+workflows_used:
+  - monthly-billing-run
+
+communication:
+  inbox_channel: "#billing"
+  escalation: operator
+  notify_on:
+    - invoice_overdue_14_days
+    - monthly_outstanding_exceeds_threshold
+
+alert_thresholds:
+  overdue_days: 14
+  outstanding_alert_threshold: 5000
+
+context_memory:
+  read: [invoices.json, time-log.json, clients.json]
+  write: [invoices.json, space-context.json]

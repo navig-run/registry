@@ -1,0 +1,16 @@
+{
+  "id": "chrome-ext-space",
+  "name": "Chrome Extension Space",
+  "version": "0.1.0",
+  "tier": "work",
+  "status": "planned",
+  "description": "Chrome extension reverse engineering, static analysis, security auditing, and development workspace. Ships the extensions-lab analysis template, docs and runbooks; the agents, formations and skills are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

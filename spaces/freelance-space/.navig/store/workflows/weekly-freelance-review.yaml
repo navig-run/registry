@@ -1,0 +1,47 @@
+name: weekly-freelance-review
+description: |
+  Weekly client and billing health check. Surfaces active project status,
+  unbilled hours ready for invoicing, and any invoices approaching their due date.
+
+schedule:
+  cron: "0 9 * * 1"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: client-ops
+
+steps:
+  - id: check_unbilled_time
+    name: "Check Unbilled Time"
+    agent: timekeeper
+    action: report_unbilled
+    params:
+      client: "all"
+    on_error: continue
+
+  - id: check_overdue_invoices
+    name: "Check Overdue Invoices"
+    skill: track-overdue
+    params:
+      threshold_days: 0
+    on_error: continue
+
+  - id: project_health_check
+    name: "Project Health Check"
+    agent: account-manager
+    action: list_active_projects
+    params:
+      include_budget_utilization: true
+    on_error: continue
+
+  - id: weekly_report
+    name: "Deliver Weekly Summary"
+    depends_on: [check_unbilled_time, check_overdue_invoices, project_health_check]
+    agent: account-manager
+    action: generate_weekly_report
+    params:
+      unbilled: "{{steps.check_unbilled_time.output}}"
+      overdue: "{{steps.check_overdue_invoices.output}}"
+      projects: "{{steps.project_health_check.output}}"
+      deliver_to: "#clients"

@@ -1,0 +1,125 @@
+name: nightly-sync
+description: |
+  Nightly configuration and log backup workflow. Syncs dotfiles and configs from
+  all registered hosts to a central backup location, rotates logs, and confirms
+  sync completion in space memory.
+
+schedule:
+  cron: "0 1 * * *"     # 1 AM every night
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: maintenance-crew
+agent_lead: archivist
+
+steps:
+  - id: pre_check
+    name: "Pre-check: Verify Hosts Online"
+    skill: network-scan
+    params:
+      target: "all_registered"
+      quick: true
+      output_format: json
+    timeout_seconds: 60
+
+  - id: sync_dotfiles
+    name: "Sync Dotfiles — Linux & macOS Hosts"
+    depends_on: [pre_check]
+    skill: sync-configs
+    params:
+      source_hosts: "{{steps.pre_check.online_linux_macos}}"
+      destination: "{{space.config.backup_path}}/dotfiles/{{today}}"
+      patterns:
+        - "~/.bashrc"
+        - "~/.zshrc"
+        - "~/.bash_profile"
+        - "~/.profile"
+        - "~/.vimrc"
+        - "~/.tmux.conf"
+        - "~/.gitconfig"
+        - "~/.ssh/config"
+        - "~/.config/nvim/"
+        - "~/.config/alacritty/"
+      dry_run: false
+      delete_old: false
+      compress: true
+    parallel: true
+    timeout_seconds: 300
+    on_error: continue
+
+  - id: sync_powershell_profiles
+    name: "Sync PowerShell Profiles — Windows Hosts"
+    depends_on: [pre_check]
+    skill: sync-configs
+    params:
+      source_hosts: "{{steps.pre_check.online_windows}}"
+      destination: "{{space.config.backup_path}}/powershell-profiles/{{today}}"
+      patterns:
+        - "$env:USERPROFILE/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
+        - "$env:USERPROFILE/.gitconfig"
+        - "$env:APPDATA/Code/User/settings.json"
+        - "$env:APPDATA/Code/User/keybindings.json"
+      dry_run: false
+      compress: true
+    parallel: true
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: sync_navig_configs
+    name: "Sync .navig Space Configs to Backup"
+    depends_on: [pre_check]
+    skill: sync-configs
+    params:
+      source: "{{space.root}}/.navig"
+      destination: "{{space.config.backup_path}}/space-config/{{today}}/.navig"
+      exclude:
+        - "memory/health-snapshots.json"   # too large / volatile
+      dry_run: false
+      compress: true
+    timeout_seconds: 120
+    on_error: warn
+
+  - id: log_rotation
+    name: "Log Rotation on All Hosts"
+    depends_on: [pre_check]
+    agent: wrench
+    action: rotate_logs
+    params:
+      hosts: "{{steps.pre_check.online_hosts}}"
+      paths:
+        linux: ["/var/log/*.log", "/var/log/**/*.log"]
+        macos: ["/var/log/*.log", "~/Library/Logs/**/*.log"]
+        windows: ["$env:WINDIR\\Logs\\**\\*.log"]
+      max_age_days: 30
+      compress: true
+      dry_run: false
+    parallel: true
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: write_sync_record
+    name: "Write Sync Record to Memory"
+    depends_on: [sync_dotfiles, sync_powershell_profiles, sync_navig_configs, log_rotation]
+    agent: archivist
+    action: write_memory
+    params:
+      file: ".navig/memory/sync-history.json"
+      data:
+        timestamp: "{{now_iso}}"
+        hosts_online: "{{steps.pre_check.online_count}}"
+        dotfiles_synced: "{{steps.sync_dotfiles.files_transferred}}"
+        ps_profiles_synced: "{{steps.sync_powershell_profiles.files_transferred}}"
+        space_config_synced: "{{steps.sync_navig_configs.status}}"
+        logs_rotated: "{{steps.log_rotation.files_rotated}}"
+        errors: "{{collect_errors}}"
+
+  - id: alert_on_failure
+    name: "Alert on Sync Failures"
+    depends_on: [write_sync_record]
+    condition: "{{collect_errors | length}} > 0"
+    agent: sentinel
+    action: send_alert
+    params:
+      channel: "#maintenance"
+      message: "Nightly sync completed with {{collect_errors | length}} error(s). Review: {{space.config.backup_path}}/sync-errors-{{today}}.log"

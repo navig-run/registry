@@ -1,0 +1,57 @@
+space: clips-space
+version: "1.0.0"
+
+# Directories
+clips_dir: clips/
+hooks_dir: hooks/
+trends_dir: trends/
+exports_dir: exports/
+
+# Video defaults (short-form)
+video_defaults:
+  aspect_ratio: "9:16"
+  max_duration_seconds: 60
+  resolution: "1080x1920"
+  fps: 30
+  codec: h264
+  format: mp4
+  bitrate: "8M"
+
+# Platform specs
+platforms:
+  tiktok:
+    max_duration: 180
+    preferred_duration: 30
+    aspect: "9:16"
+    max_filesize_mb: 287
+  reels:
+    max_duration: 90
+    preferred_duration: 30
+    aspect: "9:16"
+    max_filesize_mb: 250
+  shorts:
+    max_duration: 60
+    preferred_duration: 30
+    aspect: "9:16"
+    max_filesize_mb: 256
+
+# Caption defaults
+caption_defaults:
+  style: bold_centered
+  font_size: 42
+  font: montserrat
+  color: "#FFFFFF"
+  stroke_color: "#000000"
+  stroke_width: 2
+
+# Posting defaults
+posting_defaults:
+  platforms: [tiktok, reels, shorts]
+  visibility: public
+  schedule_offset_minutes: 30
+
+# Agent defaults
+agent_defaults:
+  log_level: info
+  timeout_seconds: 180
+  max_retries: 2

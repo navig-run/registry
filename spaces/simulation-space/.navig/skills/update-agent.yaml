@@ -1,0 +1,87 @@
+id: update-agent
+name: Update Agent Model
+version: "1.0.0"
+description: >
+  Create or update a behavioral model for a person in the operator's environment.
+  Logs observations and predictions. Tracks model accuracy over time.
+category: agent-modeling
+platform: [windows, linux, macos]
+formation: agent-lab
+author: simulation-space
+
+parameters:
+  - name: agent_name
+    type: string
+    required: true
+    description: "Name or alias of the person being modeled"
+  - name: observation
+    type: string
+    required: true
+    description: "Behavioral observation — what was observed"
+  - name: model_update
+    type: string
+    required: false
+    default: ""
+    description: "How this observation updates the behavioral model"
+  - name: prediction
+    type: string
+    required: false
+    default: ""
+    description: "New prediction about future behavior based on this observation"
+  - name: prediction_by
+    type: string
+    required: false
+    default: ""
+    description: "Date by which the prediction should resolve (YYYY-MM-DD)"
+
+steps:
+  - id: write_agent_update
+    name: "Write Agent Model Update"
+    shell: auto
+    env:
+      NAVIG_PARAM_AGENT_NAME: "{{params.agent_name}}"
+      NAVIG_PARAM_OBSERVATION: "{{params.observation}}"
+      NAVIG_PARAM_MODEL_UPDATE: "{{params.model_update}}"
+      NAVIG_PARAM_PREDICTION: "{{params.prediction}}"
+      NAVIG_PARAM_PREDICTION_BY: "{{params.prediction_by}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      map_path = ".navig/memory/agent-map.json"
+      agent_name = os.environ.get("NAVIG_PARAM_AGENT_NAME", "")
+      prediction = os.environ.get("NAVIG_PARAM_PREDICTION", "")
+
+      try:
+          with open(map_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"agents": []}
+
+      agent = next((a for a in data.get("agents", []) if a.get("name", "").lower() == agent_name.lower()), None)
+      if not agent:
+          agent = {"id": f"agt_{len(data['agents']) + 1:03d}", "name": agent_name, "observations": [], "predictions": [], "accuracy_score": None}
+          data["agents"].append(agent)
+
+      obs = {"observation": os.environ.get("NAVIG_PARAM_OBSERVATION", ""), "model_update": os.environ.get("NAVIG_PARAM_MODEL_UPDATE", ""), "timestamp": datetime.utcnow().isoformat() + "Z"}
+      agent.setdefault("observations", []).append(obs)
+      agent["last_updated"] = datetime.utcnow().isoformat() + "Z"
+
+      if prediction:
+          pred = {"prediction": prediction, "due_by": os.environ.get("NAVIG_PARAM_PREDICTION_BY", ""), "status": "open", "created_at": datetime.utcnow().isoformat() + "Z"}
+          agent.setdefault("predictions", []).append(pred)
+
+      os.makedirs(os.path.dirname(map_path), exist_ok=True)
+      with open(map_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Agent model updated: [{agent['id']}] {agent['name']}")
+      print(f"Observations total: {len(agent.get('observations', []))}")
+      if prediction:
+          print(f"New prediction logged: {prediction}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_agent_update

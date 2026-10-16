@@ -1,0 +1,89 @@
+name: new-device-onboard
+description: |
+  Interactive onboarding for a new Android device. Pairs/connects the device,
+  fingerprints it into the registry, runs a debloat + permission review, sets up
+  wireless debugging, and takes a first baseline backup. Ends with a registration
+  summary written to the wiki.
+
+schedule:
+  cron: null
+  timezone: "local"
+  enabled: false
+
+on_demand: true
+formation: device-bridge
+
+steps:
+  - id: connect
+    name: "Connect / Pair the Device"
+    skill: adb-connect
+    params:
+      mode: auto
+    timeout_seconds: 120
+    on_error: abort
+
+  - id: inventory
+    name: "Fingerprint & Register"
+    skill: device-inventory
+    depends_on: [connect]
+    params:
+      output_format: json
+    on_error: abort
+
+  - id: wireless
+    name: "Enable Wireless Debugging"
+    skill: wireless-debug
+    depends_on: [connect]
+    params:
+      method: tcpip
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: debloat_review
+    name: "Debloat Review (dry-run)"
+    skill: app-debloat
+    depends_on: [inventory]
+    agent: scrub
+    params:
+      action: list
+      dry_run: true
+    on_error: continue
+
+  - id: permission_review
+    name: "Permission Posture Audit"
+    skill: permission-audit
+    depends_on: [inventory]
+    params:
+      permission: all
+    on_error: continue
+
+  - id: baseline_backup
+    name: "Baseline Media Backup"
+    skill: file-transfer
+    depends_on: [inventory]
+    agent: keeper
+    params:
+      direction: media
+      dest: "devices/media"
+    on_error: continue
+    timeout_seconds: 600
+
+  - id: register
+    name: "Write Registry + Wiki Entry"
+    depends_on: [inventory, debloat_review, permission_review]
+    agent: pixel
+    action: write_device_entry
+    params:
+      registry_path: ".navig/memory/device-registry.json"
+      wiki_path: ".navig/wiki/devices.md"
+      inventory: "{{steps.inventory.output}}"
+
+  - id: summary
+    name: "Onboarding Summary"
+    depends_on: [register]
+    agent: pixel
+    action: compose_report
+    params:
+      template: "new-device-onboard"
+      deliver_to: inbox
+      channel: "#fleet"

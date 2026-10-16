@@ -1,0 +1,23 @@
+{
+  "space_id": "broadcast",
+  "known_issues": [
+    {
+      "id": "no-episodes-indexed",
+      "severity": "info",
+      "description": "No episodes have been recorded or indexed yet",
+      "workaround": "Run episode-production workflow to create first episode"
+    },
+    {
+      "id": "no-rss-feed",
+      "severity": "info",
+      "description": "RSS feed not yet generated — no podcast listing",
+      "workaround": "Run rss-maintenance workflow after first episode is published"
+    },
+    {
+      "id": "whisper-optional",
+      "severity": "info",
+      "description": "Whisper (AI transcription) not required but recommended for transcript-generate skill",
+      "workaround": "Install whisper for automatic transcription, or provide manual transcripts"
+    }
+  ]
+}

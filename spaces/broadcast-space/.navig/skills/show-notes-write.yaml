@@ -1,0 +1,63 @@
+id: show-notes-write
+name: "Show Notes Write"
+version: "1.0.0"
+description: "Generate structured show notes from episode transcript or recording"
+category: content
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: transcript_path
+    type: string
+    required: true
+    description: "Path to episode transcript file"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output path for show notes"
+  - name: include_timestamps
+    type: boolean
+    default: true
+    description: "Include timestamp markers in show notes"
+  - name: include_links
+    type: boolean
+    default: true
+    description: "Extract and include mentioned links"
+
+steps:
+  - id: extract-sections
+    env:
+      NAVIG_PARAM_TRANSCRIPT_PATH: "{{transcript_path}}"
+      NAVIG_PARAM_INCLUDE_TIMESTAMPS: "{{include_timestamps}}"
+      NAVIG_PARAM_INCLUDE_LINKS: "{{include_links}}"
+    name: "Extract Key Sections"
+    shell: bash
+    script_linux: |
+      echo "Extracting sections from ${NAVIG_PARAM_TRANSCRIPT_PATH}"
+      echo "Timestamps: ${NAVIG_PARAM_INCLUDE_TIMESTAMPS}"
+      echo "Links: ${NAVIG_PARAM_INCLUDE_LINKS}"
+      # AI-powered section extraction from transcript
+      # Identifies: intro, key topics, quotes, resources, outro
+    script_windows: |
+      Write-Host "Extracting sections from $($env:NAVIG_PARAM_TRANSCRIPT_PATH)"
+    script_macos: |
+      echo "Extracting sections from ${NAVIG_PARAM_TRANSCRIPT_PATH}"
+
+  - id: format-notes
+    env:
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Format Show Notes"
+    shell: bash
+    script_linux: |
+      echo "Formatting show notes to ${NAVIG_PARAM_OUTPUT_PATH}"
+      # Generates markdown show notes with:
+      # - Episode summary
+      # - Key topics with timestamps
+      # - Notable quotes
+      # - Resources and links mentioned
+      # - Guest bio (if applicable)
+    script_windows: |
+      Write-Host "Formatting show notes to $($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_macos: |
+      echo "Formatting show notes to ${NAVIG_PARAM_OUTPUT_PATH}"

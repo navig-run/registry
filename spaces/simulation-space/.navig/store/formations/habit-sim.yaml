@@ -1,0 +1,36 @@
+id: habit-sim
+name: Habit Sim
+version: "1.0.0"
+description: >
+  Habit simulation formation. Habit Engine leads streak tracking, run logging,
+  and failure pattern detection. Debugger bridges on failure root-cause.
+
+agents:
+  lead: habit-engine
+  supporting: [debugger]
+
+trigger_conditions:
+  - "run-habit skill invoked"
+  - "#habits inbox activity"
+  - "Weekly habit report"
+
+action_scope:
+  - ALLOW: run-habit
+  - ALLOW: write to .navig/memory/habits.json
+  - DENY: write to debug-log without explicit failure flag
+
+skills_used:
+  - run-habit
+
+workflows_used:
+  - weekly-simulation-review
+
+communication:
+  inbox_channel: "#habits"
+  escalation: debugger
+  notify_on:
+    - habit_3_consecutive_misses
+
+context_memory:
+  read: [habits.json]
+  write: [habits.json]

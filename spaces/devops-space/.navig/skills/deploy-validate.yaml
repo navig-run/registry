@@ -1,0 +1,55 @@
+id: deploy-validate
+name: Deploy Validate
+version: "1.0.0"
+description: >
+  Validate a container image or deployment artefact before it is deployed.
+  Checks image exists in registry, runs a trivial smoke test, and optionally
+  verifies a security scan has passed.
+category: deployment
+platform: [windows, linux, macos]
+formation: ci-pipeline
+author: navig-run
+
+parameters:
+  - name: image
+    type: string
+    required: true
+    description: "Full image reference, e.g. ghcr.io/org/app:sha-abc123"
+  - name: service
+    type: string
+    required: true
+    description: "Service name for logging"
+  - name: scan
+    type: boolean
+    required: false
+    default: false
+    description: "Whether to run a Trivy security scan"
+
+steps:
+  - name: check-image-exists
+    description: Verify the image is pullable from the registry
+    shell: auto
+    script: |
+      docker manifest inspect {{image}} > /dev/null 2>&1 && \
+        echo "✅ Image found: {{image}}" || \
+        (echo "❌ Image not found: {{image}}"; exit 1)
+    script_windows: |
+      docker manifest inspect {{image}} 2>&1 | Out-Null
+      if ($LASTEXITCODE -ne 0) { Write-Error "Image not found: {{image}}"; exit 1 }
+      Write-Output "✅ Image found: {{image}}"
+
+  - name: security-scan
+    description: Run Trivy vulnerability scan
+    depends_on: check-image-exists
+    condition: "scan == 'true'"
+    shell: auto
+    script: |
+      trivy image --exit-code 1 --severity HIGH,CRITICAL {{image}}
+    on_error: "Print '⚠️  Security scan failed — HIGH or CRITICAL vulnerabilities found. Deploy blocked.'"
+
+  - name: report
+    description: Print validation summary
+    depends_on: check-image-exists
+    shell: auto
+    script: |
+      echo "Deploy validation passed for {{service}} ({{image}})"

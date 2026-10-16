@@ -1,0 +1,21 @@
+name: travel-space
+version: "1.0.0"
+runtime: navig-space-2
+tier: personal
+
+default_formation: trip-planning
+currency: USD
+
+trip_budget_alert_pct: 90
+require_budget_on_new_trip: true
+debrief_window_days: 2   # debrief within 48 hours of returning
+auto_archive_after_months: 6
+
+document_types:
+  - passport
+  - visa
+  - travel-insurance
+  - flight-confirmation
+  - hotel-confirmation
+  - health-declaration
+  - vaccine-certificate

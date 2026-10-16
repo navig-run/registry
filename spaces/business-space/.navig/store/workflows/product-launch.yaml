@@ -1,0 +1,50 @@
+name: product-launch
+description: >
+  End-to-end product launch workflow: margin validation → listing creation →
+  MCP confirms listing live → PPC activation → post-launch review trigger.
+schedule:
+  cron: null
+  enabled: false
+on_demand: true
+formation: launch-pipeline
+
+params:
+  - name: sku
+    description: Product SKU identifier
+    required: true
+  - name: channels
+    description: "Comma-separated channels (e.g. amazon,etsy)"
+    required: true
+  - name: launch_date
+    description: Target launch date YYYY-MM-DD
+    required: true
+  - name: budget
+    description: Launch budget in USD
+    required: true
+
+steps:
+  - name: validate-margin
+    description: Calculate landed cost and net margin; abort if margin < 15%
+    skill: calculate-margins
+    params:
+      sku: "{{sku}}"
+    on_error: abort
+
+  - name: create-listings
+    description: Generate optimised listings for each target channel
+    prompt: product-listing
+    depends_on: validate-margin
+
+  - name: generate-launch-checklist
+    description: Produce full launch checklist for operator review
+    prompt: launch-checklist
+    depends_on: create-listings
+
+  - name: await-approval
+    description: Pause for operator approval before activating PPC
+    type: human-approval
+    depends_on: generate-launch-checklist
+
+  - name: post-launch-review
+    description: Schedule post-launch review at T+7 and T+30 days
+    depends_on: await-approval

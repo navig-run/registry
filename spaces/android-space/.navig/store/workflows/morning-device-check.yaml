@@ -1,0 +1,88 @@
+name: morning-device-check
+description: |
+  Scheduled morning device sweep. Connects to all known devices, refreshes the fleet
+  inventory, checks battery and storage health, and flags any device that has gone
+  offline or crossed a warning threshold. Delivers a consolidated status report to
+  the space inbox.
+
+schedule:
+  cron: "0 8 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: fleet-patrol
+
+steps:
+  - id: connect
+    name: "Ensure ADB connectivity"
+    skill: adb-connect
+    params:
+      mode: auto
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: inventory
+    name: "Refresh Fleet Inventory"
+    skill: device-inventory
+    depends_on: [connect]
+    params:
+      output_format: json
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: check_registry
+    name: "Compare Inventory to Registry"
+    depends_on: [inventory]
+    agent: pixel
+    action: compare_inventory_to_registry
+    params:
+      inventory_result: "{{steps.inventory.output}}"
+      registry_path: ".navig/memory/device-registry.json"
+    on_error: continue
+
+  - id: battery
+    name: "Battery Health Check"
+    skill: battery-report
+    depends_on: [connect]
+    params:
+      warn_temp_c: 40
+      warn_level_pct: 20
+    parallel: true
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: offline_alert
+    name: "Alert on Offline Devices"
+    depends_on: [check_registry]
+    agent: pixel
+    action: alert_offline_devices
+    params:
+      offline_devices: "{{steps.check_registry.offline}}"
+    condition: "{{steps.check_registry.offline | length}} > 0"
+
+  - id: write_memory
+    name: "Write Fleet Snapshot to Memory"
+    depends_on: [inventory, battery]
+    agent: keeper
+    action: write_memory
+    params:
+      file: ".navig/memory/fleet-snapshots.json"
+      data:
+        timestamp: "{{now_iso}}"
+        inventory: "{{steps.inventory.output}}"
+        battery: "{{steps.battery.output}}"
+
+  - id: report
+    name: "Compose & Deliver Morning Device Report"
+    depends_on: [inventory, battery, check_registry]
+    agent: pixel
+    action: compose_report
+    params:
+      template: "morning-device-check"
+      sections:
+        - fleet: "{{steps.inventory.output}}"
+        - battery: "{{steps.battery.output}}"
+        - changes: "{{steps.check_registry.output}}"
+      deliver_to: inbox
+      channel: "#fleet"

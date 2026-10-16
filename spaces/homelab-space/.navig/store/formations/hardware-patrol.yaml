@@ -1,0 +1,60 @@
+id: hardware-patrol
+name: Hardware Patrol
+version: "1.0.0"
+description: >
+  Formation governing GPU/CPU health, disk health, hardware inventory collection,
+  and thermal monitoring. Activates on schedule and on threshold breaches.
+
+agents:
+  lead: pulse
+  supporting: [wrench, archivist]
+
+trigger_conditions:
+  - "GPU temperature exceeds alert threshold (default 85°C)"
+  - "Disk SMART status degrades (reallocated sectors > 0)"
+  - "RAM usage >90% for more than 5 minutes"
+  - "Scheduled morning sweep (07:00 daily)"
+  - "Manual: navig formation run hardware-patrol"
+  - "New hardware added to system"
+
+action_scope:
+  - ALLOW: hardware-inventory, gpu-health, disk-clean (dry_run only by default)
+  - ALLOW: read system sensors, WMI, sysfs
+  - ALLOW: write to .navig/memory/hardware-inventory.json
+  - ALLOW: write to .navig/memory/gpu-health-snapshot.json
+  - ALLOW: trigger alert via inbox channel #hardware
+  - DENY: process termination without operator approval
+  - DENY: format / wipe operations
+
+skills_used:
+  - hardware-inventory
+  - gpu-health
+  - disk-clean
+
+workflows_used:
+  - morning-sweep     # hardware health step
+  - deep-audit        # gpu-health + disk-clean dry-run step
+
+communication:
+  inbox_channel: "#hardware"
+  escalation: operator
+  notify_on:
+    - gpu_temp_exceeded
+    - smart_failure
+    - low_disk_space
+    - hardware_change_detected
+
+thresholds:
+  gpu_temp_alert_c: 85
+  disk_free_warn_pct: 10
+  disk_free_critical_pct: 5
+  ram_usage_warn_pct: 90
+
+context_memory:
+  read: [hardware-inventory.json, goals.json]
+  write: [hardware-inventory.json, gpu-health-snapshot.json]
+
+example_invocation: |
+  # Run hardware patrol on all components:
+  navig formation run hardware-patrol
+  # pulse will: check GPU health → check disk health → update inventory → alert if needed

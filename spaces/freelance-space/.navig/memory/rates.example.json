@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-03-12",
+  "target_rate": 0.0,
+  "currency": "USD",
+  "note": "Set target_rate to your desired hourly rate. Used by calculate-rate skill for gap analysis.",
+  "clients": {}
+}

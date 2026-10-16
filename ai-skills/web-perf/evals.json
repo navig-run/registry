@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "audit-deck-speed",
+      "prompt": "The deck feels slow to load. Audit the page performance and tell me what's hurting it.",
+      "expect": {
+        "contains": ["Core Web Vitals", "LCP", "CLS"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "verify-mcp-server",
+      "prompt": "How do you profile a real page load — what do you check is set up before you can record a trace?",
+      "expect": {
+        "contains": ["chrome-devtools", "MCP", "performance_start_trace"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "improve-lighthouse",
+      "prompt": "How do I improve the Lighthouse score on the marketing site — what usually hurts LCP?",
+      "expect": {
+        "contains": ["Lighthouse", "render-blocking", "LCP"],
+        "excludes": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+id: create-post-draft
+name: Create Post Draft
+version: "1.0.0"
+description: >
+  Generate a platform-optimised post draft for a given brand, respecting
+  character limits, tone conventions, and brand voice. Writes a .md file
+  with full YAML frontmatter to content/drafts/{brand}/.
+category: content
+platform: [windows, linux, macos]
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: brand
+    description: Brand slug (must exist in brands/)
+    required: true
+  - name: platform
+    description: "twitter | instagram | linkedin | tiktok | youtube | threads | bluesky | mastodon"
+    required: true
+  - name: topic
+    description: Post topic or angle
+    required: true
+  - name: pillar
+    description: "Content pillar: education | entertainment | authority | conversion | community"
+    required: false
+    default: education
+  - name: notes
+    description: Additional creative direction
+    required: false
+
+steps:
+  - name: validate-brand
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+    description: Confirm brand folder exists and voice.json is present
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import pathlib, sys
+      brand_dir = pathlib.Path("brands") / brand
+      voice_file = brand_dir / "voice.json"
+      if not brand_dir.exists():
+          print(f"ERROR: Brand '{brand}' not found in brands/. Run: cp -r brands/_template brands/{brand}")
+          sys.exit(1)
+      if not voice_file.exists():
+          print(f"ERROR: brands/{brand}/voice.json missing. Fill in brand voice config first.")
+          sys.exit(1)
+      print(f"Brand '{brand}' validated.")
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $brandDir = "brands\$($env:NAVIG_PARAM_BRAND)"
+      $voiceFile = "$brandDir\voice.json"
+      if (-not (Test-Path $brandDir)) {
+          Write-Error "Brand '$($env:NAVIG_PARAM_BRAND)' not found. Run: cp -r brands/_template brands/$($env:NAVIG_PARAM_BRAND)"
+          exit 1
+      }
+      if (-not (Test-Path $voiceFile)) {
+          Write-Error "brands/$($env:NAVIG_PARAM_BRAND)/voice.json missing."
+          exit 1
+      }
+      Write-Host "Brand '$($env:NAVIG_PARAM_BRAND)' validated."
+
+  - name: load-voice
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+    description: Read brand voice for context injection
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import json, pathlib
+      voice = json.loads(pathlib.Path(f"brands/{brand}/voice.json").read_text())
+      print(f"Voice loaded: {voice.get('personality', 'undefined')}")
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $voice = Get-Content "brands\$($env:NAVIG_PARAM_BRAND)\voice.json" -Raw | ConvertFrom-Json
+      Write-Host "Voice loaded: $($voice.personality)"
+    depends_on: validate-brand
+
+  - name: create-draft
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_TOPIC: "{{topic}}"
+      NAVIG_PARAM_PLATFORM: "{{platform}}"
+      NAVIG_PARAM_PILLAR: "{{pillar}}"
+      NAVIG_PARAM_NOTES: "{{notes}}"
+    description: Create draft file with frontmatter and placeholder body
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      topic = os.environ.get("NAVIG_PARAM_TOPIC", "").strip()
+      platform = os.environ.get("NAVIG_PARAM_PLATFORM", "").strip()
+      pillar = os.environ.get("NAVIG_PARAM_PILLAR", "").strip()
+      notes = os.environ.get("NAVIG_PARAM_NOTES", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import json, pathlib, datetime, re
+      voice = json.loads(pathlib.Path(f"brands/{brand}/voice.json").read_text())
+      date_str = str(datetime.date.today())
+      slug = re.sub(r"[^a-z0-9]+", "-", topic.lower()).strip("-")[:40]
+      limits = {
+          "twitter": 280, "instagram": 2200, "linkedin": 3000,
+          "tiktok": 2200, "youtube": 5000, "threads": 500,
+          "bluesky": 300, "mastodon": 500
+      }
+      limit = limits.get(platform, 2200)
+      drafts_dir = pathlib.Path("content") / "drafts" / brand
+      drafts_dir.mkdir(parents=True, exist_ok=True)
+      fname = f"{date_str}-{slug}.md"
+      content = f"""---
+      brand: {brand}
+      platform: {platform}
+      status: draft
+      pillar: {pillar}
+      topic: {json.dumps(topic, ensure_ascii=False)}
+      char_limit: {limit}
+      hook_score: null
+      voice_score: null
+      scheduled_at: null
+      author: post-writer
+      created: {date_str}
+      notes: {json.dumps(notes, ensure_ascii=False)}
+      ---
+
+      <!-- HOOK (first line — must grab in 0.5 seconds) -->
+
+
+      <!-- BODY (expand with value, insight, or story) -->
+
+
+      <!-- CTA (call to action — what should they do next?) -->
+
+
+      ---
+      <!-- BRAND VOICE REMINDER -->
+      <!-- Personality: {voice.get("personality", "?")} -->
+      <!-- Tone: {voice.get("tone", "?")} -->
+      <!-- Avoid: {", ".join(voice.get("avoid", []))} -->
+      """
+      (drafts_dir / fname).write_text(content)
+      print(f"Draft created: content/drafts/{brand}/{fname}")
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $date = (Get-Date).ToString("yyyy-MM-dd")
+      $slug = ("$($env:NAVIG_PARAM_TOPIC)" -replace "[^a-z0-9\s]","" -replace "\s+", "-").ToLower().Substring(0, [Math]::Min(40, ("$($env:NAVIG_PARAM_TOPIC)" -replace "[^a-z0-9\s]","" -replace "\s+", "-").Length))
+      $draftDir = "content\drafts\$($env:NAVIG_PARAM_BRAND)"
+      New-Item -ItemType Directory -Force $draftDir | Out-Null
+      $fname = "$date-$slug.md"
+      $content = "---`nbrand: $($env:NAVIG_PARAM_BRAND)`nplatform: $($env:NAVIG_PARAM_PLATFORM)`nstatus: draft`npillar: $($env:NAVIG_PARAM_PILLAR)`ntopic: `"$($env:NAVIG_PARAM_TOPIC)`"`nhook_score: null`nvoice_score: null`nscheduled_at: null`nauthor: post-writer`ncreated: $date`n---`n`n<!-- Write hook, body, CTA below -->`n"
+      Set-Content "$draftDir\$fname" $content
+      Write-Host "Draft created: content/drafts/$($env:NAVIG_PARAM_BRAND)/$fname"
+    depends_on: load-voice

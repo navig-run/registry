@@ -1,0 +1,57 @@
+name: thumbnail-test
+description: |
+  Thumbnail A/B testing workflow. Generates thumbnail variants,
+  scores them for CTR potential, and tracks performance once
+  published. Used per-video to optimise click-through rate.
+
+schedule:
+  cron: null
+  timezone: null
+  enabled: false
+
+on_demand: true
+formation: thumbnail-lab
+
+steps:
+  - id: generate-variants
+    name: Generate thumbnail variants
+    skill: null
+    agent: art-director
+    action: generate_variants
+    params:
+      count: 3
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 120
+
+  - id: score-variants
+    name: Score each variant
+    skill: thumbnail-score
+    params:
+      score_all: true
+    depends_on: [generate-variants]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: rank-results
+    name: Rank and select best
+    skill: null
+    agent: art-director
+    action: rank_thumbnails
+    params:
+      select_top: 1
+    depends_on: [score-variants]
+    on_error: abort
+    timeout_seconds: 30
+
+  - id: export-final
+    name: Export final thumbnail
+    skill: null
+    agent: art-director
+    action: export_thumbnail
+    params:
+      format: png
+      size: "1280x720"
+    depends_on: [rank-results]
+    on_error: abort
+    timeout_seconds: 30

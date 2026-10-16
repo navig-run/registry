@@ -1,0 +1,39 @@
+{
+  "id": "audio-tools",
+  "name": "Audio Production Tools",
+  "description": "Audio recording, editing, and processing tools for podcast production",
+  "tools": [
+    {
+      "name": "ffmpeg",
+      "description": "Audio/video processing, format conversion, loudness normalization",
+      "install": {
+        "windows": "winget install Gyan.FFmpeg",
+        "macos": "brew install ffmpeg",
+        "linux": "sudo apt install ffmpeg"
+      },
+      "verify": "ffmpeg -version"
+    },
+    {
+      "name": "whisper",
+      "description": "OpenAI Whisper for AI-powered audio transcription",
+      "install": {
+        "windows": "pip install openai-whisper",
+        "macos": "pip install openai-whisper",
+        "linux": "pip install openai-whisper"
+      },
+      "verify": "whisper --help",
+      "optional": true
+    },
+    {
+      "name": "yt-dlp",
+      "description": "Media download for research and clip extraction",
+      "install": {
+        "windows": "winget install yt-dlp",
+        "macos": "brew install yt-dlp",
+        "linux": "sudo apt install yt-dlp"
+      },
+      "verify": "yt-dlp --version",
+      "optional": true
+    }
+  ]
+}

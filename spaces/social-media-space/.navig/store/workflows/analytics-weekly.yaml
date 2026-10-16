@@ -1,0 +1,57 @@
+id: analytics-weekly
+name: Analytics Weekly Report
+version: "1.0.0"
+description: >
+  Monday morning analytics digest. Runs engagement analysis for all active
+  brands over the past 7 days, formats the report, and posts key insights
+  to #analytics. Feeds into the weekly-content-plan workflow.
+
+formation: analytics-review
+space: social-media-space
+enabled: false
+schedule:
+  cron: "0 8 * * MON"
+  timezone: UTC
+  note: "Runs 1 hour before weekly-content-plan so data is ready"
+
+steps:
+  - id: run-engagement-analysis
+    name: Analyze Past 7 Days Engagement
+    description: Run analyze-engagement for every active brand
+    skill: analyze-engagement
+    params:
+      period: last-7-days
+      brands: all
+    output: .navig/memory/last-week-analytics.json
+
+  - id: hashtag-performance
+    name: Hashtag Performance Summary
+    description: Check which hashtags drove above-average engagement
+    depends_on: run-engagement-analysis
+    skill: hashtag-research
+    params:
+      brands: all
+      rank_by: engagement_rate
+    output: .navig/memory/last-week-hashtags.json
+
+  - id: format-report
+    name: Format and Post Weekly Report
+    description: Compile insights and surface to #analytics
+    depends_on:
+      - run-engagement-analysis
+      - hashtag-performance
+    agent: analytics-watcher
+    inline: |
+      Combine data from .navig/memory/last-week-analytics.json and
+      .navig/memory/last-week-hashtags.json.
+      Produce a formatted report with:
+        - Total impressions, reach, engagement rate per brand
+        - Top performing post per brand (slug + platform + rate)
+        - Top 3 hashtags by engagement_rate per brand
+        - Any anomaly flags (> 30% delta vs prior period)
+        - 2-sentence strategy recommendation
+      Post report to #analytics.
+
+notifications:
+  on_complete: "#analytics"
+  on_failure: operator

@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────
+# Skill: Format Convert
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: format-convert
+name: Format Convert
+version: "1.0.0"
+description: Convert audio between formats with optional resampling and bit-depth changes.
+category: utility
+platform:
+  - windows
+  - linux
+  - macos
+formation: mastering-suite
+author: navig-run
+
+parameters:
+  - name: input_file
+    type: string
+    description: Path to the source audio file.
+    default: null
+  - name: output_format
+    type: string
+    description: Target format (wav, flac, mp3, aiff, ogg).
+    default: wav
+  - name: sample_rate
+    type: integer
+    description: Output sample rate in Hz. Null keeps original.
+    default: null
+  - name: bit_depth
+    type: integer
+    description: Output bit depth. Null keeps original.
+    default: null
+  - name: bitrate
+    type: integer
+    description: Output bitrate in kbps (for lossy formats like mp3).
+    default: 320
+  - name: output_dir
+    type: string
+    description: Directory for the converted file.
+    default: "."
+
+steps:
+  - id: convert
+    name: Convert audio format
+    shell: true
+    script_windows: |
+      if not exist "{{output_dir}}" mkdir "{{output_dir}}"
+      for %%f in ("{{input_file}}") do set "base=%%~nf"
+      ffmpeg -y -i "{{input_file}}" -ar {{sample_rate}} -ab {{bitrate}}k "{{output_dir}}\%base%.{{output_format}}"
+    script_linux: |
+      mkdir -p "{{output_dir}}"
+      base=$(basename "{{input_file}}" | sed 's/\.[^.]*$//')
+      ffmpeg -y -i "{{input_file}}" \
+        ${sample_rate:+-ar {{sample_rate}}} \
+        ${bitrate:+-ab {{bitrate}}k} \
+        "{{output_dir}}/${base}.{{output_format}}"
+    script_macos: |
+      mkdir -p "{{output_dir}}"
+      base=$(basename "{{input_file}}" | sed 's/\.[^.]*$//')
+      ffmpeg -y -i "{{input_file}}" \
+        ${sample_rate:+-ar {{sample_rate}}} \
+        ${bitrate:+-ab {{bitrate}}k} \
+        "{{output_dir}}/${base}.{{output_format}}"

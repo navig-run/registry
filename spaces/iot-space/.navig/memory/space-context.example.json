@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "space": "iot",
+  "updated": "2026-07-10",
+  "purpose": "Unified command mesh for all IoT and smart-home devices — discovery, MQTT bus, firmware/OTA, segmentation & security, telemetry, and automation",
+  "owner": {
+    "handle": "operator",
+    "timezone": "UTC",
+    "primary_OS": "Windows",
+    "primary_shell": "PowerShell"
+  },
+  "device_count": 0,
+  "protocols": ["wifi", "zigbee", "zwave", "matter", "ble"],
+  "platforms": ["Windows", "Linux", "macOS"],
+  "mqtt": {
+    "host": "192.168.1.10",
+    "port": 1883,
+    "tls_port": 8883,
+    "base_topic": "iot",
+    "anonymous": false
+  },
+  "primary_network": {
+    "trusted_subnet": "192.168.1.0/24",
+    "iot_subnet": "192.168.20.0/24",
+    "iot_vlan": 20,
+    "gateway": "192.168.20.1",
+    "dns": ["192.168.1.1", "1.1.1.1"]
+  },
+  "home_assistant": {
+    "url": "http://192.168.1.10:8123"
+  },
+  "active_formations": [
+    "discovery-sweep",
+    "mqtt-ops",
+    "security-mesh",
+    "firmware-fleet",
+    "automation-loop"
+  ],
+  "active_agents": ["beacon", "broker", "warden", "flux", "automa", "sensor"],
+  "skills_installed": [
+    "device-discover",
+    "mqtt-subscribe",
+    "mqtt-publish",
+    "firmware-check",
+    "ota-update",
+    "tasmota-flash",
+    "energy-report",
+    "sensor-telemetry",
+    "vlan-audit",
+    "credential-audit",
+    "ha-entity-sync",
+    "zigbee-scan"
+  ],
+  "notes": "Edit this file after completing initial device onboarding. Update device_count, mqtt.host, primary_network (iot_subnet/vlan), and home_assistant.url to match your environment."
+}

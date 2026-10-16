@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "deterministic-routing",
+      "prompt": "How do I route every request for the same chat room to the same Durable Object instance?",
+      "expect": { "contains": ["getByName", "deterministic"], "excludes": [] }
+    },
+    {
+      "id": "schema-init",
+      "prompt": "Where should I create the SQLite table for a Durable Object, and how do I register the class in wrangler migrations?",
+      "expect": { "contains": ["blockConcurrencyWhile", "new_sqlite_classes"], "excludes": [] }
+    },
+    {
+      "id": "alarms",
+      "prompt": "How do I schedule future work inside a Durable Object, and how many alarms can a single DO have pending?",
+      "expect": { "contains": ["setAlarm", "One alarm per DO"], "excludes": [] }
+    }
+  ]
+}

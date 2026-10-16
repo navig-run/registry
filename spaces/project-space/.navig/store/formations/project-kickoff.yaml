@@ -1,0 +1,9 @@
+id: project-kickoff
+name: Project Kickoff
+version: "1.0.0"
+description: New project initialization — scope, done-state, milestones, first tasks.
+space: project
+lead: project-planner
+supporting: [task-tracker, milestone-keeper]
+trigger_conditions: [new project created]
+workflows: [new-project]

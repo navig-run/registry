@@ -1,0 +1,21 @@
+{
+  "id": "persona-space",
+  "name": "Persona Space",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "planned",
+  "description": "Design exactly how your agent thinks, speaks, and decides.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "agent",
+    "memory",
+    "vault"
+  ]
+}

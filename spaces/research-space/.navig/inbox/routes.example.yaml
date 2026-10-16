@@ -1,0 +1,65 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+schema_version: "1.0"
+space: research
+updated: "2026-06-15"
+description: >
+  Inbox routing for the research space. Drops on each channel are dispatched to
+  the owning agent along the discovery -> crawl -> data -> analysis pipeline.
+  Unrouted messages escalate to the space lead.
+
+routes:
+  - channel: "#discovery"
+    owner: scout
+    description: New topics, questions, and search requests; source candidates to evaluate
+    triggers:
+      - keyword: ["search", "find", "discover", "source", "lead", "topic", "look up", "research"]
+      - formation: discovery-run
+    response_mode: immediate
+    default: true
+    notify_on: [new_high_value_source, topic_stale]
+
+  - channel: "#crawl"
+    owner: crawler
+    description: Sites and lists to crawl, extraction targets, pagination jobs
+    triggers:
+      - keyword: ["crawl", "scrape", "extract", "list", "table", "paginate", "fetch"]
+      - formation: crawl-pipeline
+    response_mode: immediate
+    notify_on: [host_blocked, extraction_schema_changed]
+
+  - channel: "#data"
+    owner: curator
+    description: Dataset builds, normalization, deduplication, database ingestion
+    triggers:
+      - keyword: ["dataset", "normalize", "dedupe", "clean", "ingest", "database", "schema", "load"]
+      - formation: data-foundry
+    response_mode: immediate
+    notify_on: [validation_failures_over_threshold, dataset_promoted]
+
+  - channel: "#analysis"
+    owner: analyst
+    description: Queries against stored data, synthesis requests, findings to verify
+    triggers:
+      - keyword: ["query", "analyze", "synthesize", "finding", "report", "sql", "pattern", "answer"]
+      - formation: analysis-lab
+    response_mode: immediate
+    notify_on: [finding_logged, data_gap_identified]
+
+escalation:
+  unrouted_messages:
+    action: escalate_to_space_lead
+    space_lead: operator
+    notify: true
+    log: true
+  critical_unacknowledged:
+    severity: critical
+    unacknowledged_minutes: 10
+    action: escalate_to_operator
+    notify: true
+
+notifications:
+  channels: ["desktop", "navig-inbox"]
+  quiet_hours:
+    start: "23:00"
+    end: "07:00"
+    override_for: ["critical"]

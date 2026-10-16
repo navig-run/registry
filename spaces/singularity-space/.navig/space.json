@@ -1,0 +1,34 @@
+{
+  "id": "singularity-space",
+  "name": "Singularity",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "active",
+  "description": "Long-horizon self-tracking and civilization signal monitoring — version the self, track AI frontiers, log civilizational shifts, and keep a destiny log.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "ai-researcher",
+    "destiny-keeper",
+    "oracle",
+    "signal-tracker"
+  ],
+  "formations": [
+    "ai-frontier",
+    "destiny-mapping",
+    "signal-watch"
+  ],
+  "skills": [
+    "log-insight",
+    "rate-signal",
+    "snapshot-self",
+    "tag-content"
+  ],
+  "workflows": [
+    "monthly-singularity-review",
+    "weekly-signal-sweep"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "signal-watch"
+}

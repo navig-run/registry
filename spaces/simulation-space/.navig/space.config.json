@@ -1,0 +1,48 @@
+{
+  "space_id": "simulation-space",
+  "type": "work",
+  "name": "Simulation",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "spaces_dir": "spaces",
+  "description": "Personal OS simulator — habits, agent models, probability trees, debug log.",
+  "paths": [
+    "experiments",
+    "models"
+  ],
+  "agents": [
+    "debugger",
+    "habit-engine",
+    "agent-modeler",
+    "probability-analyst"
+  ],
+  "formations": [
+    "debug-loop",
+    "habit-sim",
+    "agent-lab"
+  ],
+  "skills": [
+    "run-habit",
+    "log-debug",
+    "update-agent",
+    "assess-probability"
+  ],
+  "meta": {
+    "tags": [
+      "simulation",
+      "habits",
+      "debug",
+      "probability",
+      "agent-modeling"
+    ],
+    "platform": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  },
+  "author": "navig-run",
+  "tier": "work",
+  "status": "active"
+}

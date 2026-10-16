@@ -1,0 +1,31 @@
+# Block pillar schema (informational — the authoritative JSON Schema ships in
+# navig-core at navig/contracts/schemas/block.schema.json).
+#
+# A block is a folder containing a BLOCK.md whose YAML frontmatter is the machine
+# spec and whose markdown body is the human how-to article (also the SKILL.md
+# body foreign agents read). Run one with `navig apply <id>`.
+
+required:
+  - id            # kebab-case, matches folder name
+  - spec_version  # must be 1
+  - name
+  - version       # semver
+  - category
+  - license
+
+fields:
+  inputs:      "typed variables: string|int|number|boolean|path|enum|secret (+ pattern/values/must_exist/default)"
+  requires:    "tools[], plugins[], permissions[], detect[] (stack-detection hints)"
+  steps:       "ordered; kind = materialize|command|skill|prompt|instruction|block"
+  verify:      "machine success criterion: none|file_exists|command (+ level: self-check|external-check)"
+  outputs:     "captured results (key/type/from)"
+  receipt:     "redact[] extra values; sign (Stage 3)"
+  marketplace: "present only when paid — {pricing_model, included_in_tier, price_cents, currency}"
+
+security_floor:
+  - "command steps use argv[] (shell:false) — never a shell string"
+  - "secrets flow only via secret_env; never interpolated into argv/content"
+  - "effective risk is computed from capabilities, not the self-asserted safety label"
+  - "destructive steps require a named --approve <step-id> (blanket --yes is not enough)"
+  - "materialized writes are confined to the workdir / config dir"
+  - "target must be 'local' during the preview"

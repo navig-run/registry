@@ -1,0 +1,55 @@
+name: weekly-health-review
+version: "2.0.0"
+description: Weekly health summary — mood trends, sleep analysis, body metrics, habit adherence, and anomaly flags.
+schedule:
+  cron: "0 9 * * SUN"
+  timezone: "{{TIMEZONE}}"
+  enabled: true
+on_demand: true
+formation: health-ops
+
+steps:
+  - name: load-metrics
+    description: Load this week's health metrics from spaces/health/
+    skill: log-health-metric
+    params:
+      mode: read
+      period: last-7-days
+
+  - name: sleep-review
+    description: Analyse sleep patterns for the week
+    skill: sleep-analysis
+    params:
+      period: last-7-days
+    depends_on: load-metrics
+
+  - name: body-report
+    description: Generate body metrics summary with trend arrows
+    skill: body-metrics-report
+    params:
+      period: last-7-days
+    depends_on: load-metrics
+
+  - name: mood-trend
+    description: Check mood trend — flag if average ≤ 3 for 3+ days
+    skill: log-mood
+    params:
+      mode: read
+      period: last-7-days
+    depends_on: load-metrics
+
+  - name: habit-review
+    description: Review habit streaks and adherence for the week
+    skill: check-habit-streak
+    params:
+      period: last-7-days
+    depends_on: load-metrics
+
+  - name: generate-summary
+    description: Produce consolidated health summary with all trend indicators
+    depends_on: [sleep-review, body-report, mood-trend, habit-review]
+
+  - name: notify
+    description: Post summary to #health
+    inbox_channel: "#health"
+    depends_on: generate-summary

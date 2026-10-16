@@ -1,0 +1,55 @@
+id: repurpose-lab
+name: Repurpose Lab
+version: "1.0.0"
+description: |
+  Content repurposing formation. Converts long-form video, podcast
+  episodes, or blog posts into multiple short-form clips. Identifies
+  key moments, writes new hooks, and adapts for each platform.
+
+agents:
+  lead: clip-editor
+  supporting:
+    - clip-director
+    - hook-writer
+    - distributor
+
+trigger_conditions:
+  - "repurpose"
+  - "convert to clips"
+  - "long to short"
+  - "extract clips"
+
+action_scope:
+  ALLOW:
+    - Video segment identification
+    - Clip extraction and trimming
+    - Hook rewriting for short-form
+    - Multi-platform adaptation
+  DENY:
+    - Modifying original source content
+    - Account settings changes
+    - Bulk deletion
+
+skills_used:
+  - clip-trim
+  - hook-score
+  - caption-generate
+  - format-adapt
+  - batch-export
+  - hashtag-optimize
+
+workflows_used:
+  - repurpose-pipeline
+
+communication:
+  inbox_channel: "#clips"
+  escalation: clip-director
+  notify_on: [completed, failed]
+
+context_memory:
+  read:
+    - memory/space-context.json
+  write: []
+
+example_invocation: |
+  navig formation run "Cut episodes/ep42.mp4 into 5 short clips"

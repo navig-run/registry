@@ -1,0 +1,98 @@
+id: log-time
+name: Log Time
+version: "1.0.0"
+description: >
+  Record a time entry against a project and client. Supports billable and
+  non-billable classification, task description, and duration in hours or minutes.
+category: time-tracking
+platform: [windows, linux, macos]
+formation: client-ops
+author: freelance-space
+
+parameters:
+  - name: project
+    type: string
+    required: true
+    description: "Project ID or name"
+  - name: client
+    type: string
+    required: true
+    description: "Client ID or name"
+  - name: task
+    type: string
+    required: true
+    description: "Task description"
+  - name: hours
+    type: string
+    required: true
+    description: "Duration — decimal hours (e.g. 2.5) or HH:MM (e.g. 02:30)"
+  - name: billable
+    type: boolean
+    required: false
+    default: true
+    description: "Whether this time is billable"
+  - name: date
+    type: string
+    required: false
+    default: "today"
+    description: "Date of work in YYYY-MM-DD format, or 'today'"
+
+steps:
+  - id: write_time_entry
+    name: "Write Time Entry"
+    shell: auto
+    env:
+      NAVIG_PARAM_HOURS: "{{params.hours}}"
+      NAVIG_PARAM_DATE: "{{params.date}}"
+      NAVIG_PARAM_PROJECT: "{{params.project}}"
+      NAVIG_PARAM_CLIENT: "{{params.client}}"
+      NAVIG_PARAM_TASK: "{{params.task}}"
+      NAVIG_PARAM_BILLABLE: "{{params.billable}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime, date
+
+      memory_path = ".navig/memory/time-log.json"
+      try:
+          with open(memory_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          data = {"entries": [], "last_updated": None}
+
+      hours_str = os.environ.get("NAVIG_PARAM_HOURS", "")
+      if ":" in hours_str:
+          h, m = hours_str.split(":")
+          hours = int(h) + int(m) / 60
+      else:
+          hours = float(hours_str)
+
+      work_date = os.environ.get("NAVIG_PARAM_DATE", "")
+      if work_date == "today":
+          work_date = date.today().isoformat()
+
+      entry = {
+          "id": f"t_{len(data['entries']) + 1:05d}",
+          "project": os.environ.get("NAVIG_PARAM_PROJECT", ""),
+          "client": os.environ.get("NAVIG_PARAM_CLIENT", ""),
+          "task": os.environ.get("NAVIG_PARAM_TASK", ""),
+          "hours": round(hours, 2),
+          "billable": os.environ.get("NAVIG_PARAM_BILLABLE", "true").strip().lower() in ("true", "1", "yes"),
+          "date": work_date,
+          "invoiced": False,
+          "invoice_id": None,
+          "logged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data["entries"].append(entry)
+      data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+      os.makedirs(os.path.dirname(memory_path), exist_ok=True)
+      with open(memory_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      bill_note = "billable" if entry["billable"] else "non-billable"
+      print(f"Logged: [{entry['id']}] {entry['hours']}h on '{entry['task']}' ({bill_note}) — {entry['project']} / {entry['client']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_time_entry

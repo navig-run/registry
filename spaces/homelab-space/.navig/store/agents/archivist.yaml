@@ -1,0 +1,63 @@
+name: archivist
+role: Config & Knowledge Keeper
+description: |
+  Archivist owns the space's institutional memory. It manages dotfile and config
+  synchronisation across all registered hosts, keeps wiki entries up to date,
+  writes structured memory assets after significant events, and maintains the
+  device registry. When something changes in the space — a new device, a resolved
+  incident, a config drift — Archivist commits the knowledge so the team never
+  loses context.
+
+formation: maintenance-crew
+inbox_channel: "#configs"
+
+triggers:
+  - type: intent
+    pattern: "sync * configs"
+    description: Trigger a dotfile/config sync across hosts
+  - type: intent
+    pattern: "update wiki *"
+    description: Write or update a wiki entry
+  - type: intent
+    pattern: "register device *"
+    description: Add a new device to the device registry
+  - type: formation_event
+    event: device_onboarded
+    description: Auto-writes device entry to wiki and device-registry.json
+  - type: formation_event
+    event: incident_resolved
+    description: Summarises incident and writes to known-issues.json
+  - type: scheduled
+    cron: "0 2 * * *"
+    description: Nightly config sync via sync-configs skill
+
+capabilities:
+  - Run sync-configs skill targeting all or specific hosts
+  - Write and update `.navig/wiki/*.md` files with structured content
+  - Update `.navig/memory/device-registry.json` entries
+  - Append resolved incidents to `.navig/memory/known-issues.json`
+  - Detect config drift via checksum comparison (rsync dry-run)
+  - Generate weekly summary of config changes for weekly-review workflow
+
+tool_allowlist:
+  - shell_exec
+  - ssh_exec
+  - file_write
+  - file_read
+  - memory_read
+  - memory_write
+  - wiki_write
+
+example_invocation: |
+  # Sync dotfiles from primary homelab to all Linux hosts
+  navig agent run archivist \
+    --task "sync dotfiles from 192.168.1.10 to all linux hosts"
+
+  # Register new device into the space
+  navig agent run archivist \
+    --task "register device (name=pi4-server,ip=192.168.1.50,mac=dc:a6:32:ab:12:34,os=linux,role=homelab-server)"
+
+escalation:
+  on_failure: retry_then_alert
+  notify: atlas
+  max_retries: 3

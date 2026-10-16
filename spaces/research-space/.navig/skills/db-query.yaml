@@ -1,0 +1,81 @@
+id: db-query
+name: DB Query
+version: "1.0.0"
+description: >
+  Run a read-only SQL query against the research database and print the result
+  as a table. Refuses anything that mutates data — analysis only.
+category: analysis
+platform: [windows, linux, macos]
+formation: analysis-lab
+author: research-space
+
+parameters:
+  - name: sql
+    type: string
+    required: true
+    description: "A read-only SQL SELECT query"
+  - name: db
+    type: string
+    required: false
+    default: "out/research.db"
+    description: "SQLite database path to query"
+  - name: limit
+    type: string
+    required: false
+    default: "50"
+    description: "Max rows to print"
+
+steps:
+  - id: query
+    name: "Run Query"
+    shell: auto
+    env:
+      NAVIG_PARAM_SQL: "{{params.sql}}"
+      NAVIG_PARAM_DB: "{{params.db}}"
+      NAVIG_PARAM_LIMIT: "{{params.limit}}"
+    script: |
+      python3 - <<'EOF'
+      import sqlite3, os
+
+      sql = os.environ.get("NAVIG_PARAM_SQL", "").strip()
+      db_path = os.environ.get("NAVIG_PARAM_DB", "") or "out/research.db"
+      limit_raw = os.environ.get("NAVIG_PARAM_LIMIT", "") or "50"
+      try:
+          limit = int(limit_raw)
+      except ValueError:
+          print(f"ERROR: invalid limit {limit_raw!r} (expected an integer).")
+          raise SystemExit(1)
+
+      lowered = sql.lower().lstrip("(")
+      forbidden = ("insert", "update", "delete", "drop", "alter",
+                   "create", "replace", "attach", "pragma")
+      if not lowered.startswith(("select", "with")):
+          print("ERROR: only SELECT / WITH queries are allowed.")
+          raise SystemExit(1)
+      if any(f" {w} " in f" {lowered} " for w in forbidden):
+          print("ERROR: query contains a write/DDL keyword — refused.")
+          raise SystemExit(1)
+      if not os.path.exists(db_path):
+          print(f"ERROR: database not found at {db_path}. Build a dataset first.")
+          raise SystemExit(1)
+
+      con = sqlite3.connect(db_path)
+      con.row_factory = sqlite3.Row
+      cur = con.execute(sql)
+      rows = cur.fetchmany(limit)
+      if not rows:
+          print("(0 rows)")
+      else:
+          cols = rows[0].keys()
+          print(" | ".join(cols))
+          print("-+-".join("-" * len(c) for c in cols))
+          for r in rows:
+              print(" | ".join(str(r[c]) for c in cols))
+          print(f"\n({len(rows)} row(s) shown, limit {limit})")
+      con.close()
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: query

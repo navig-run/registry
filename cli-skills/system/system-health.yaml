@@ -1,0 +1,64 @@
+name: System Health
+description: Snapshot CPU, memory, disk, and top processes in one command
+version: 1.1.0
+category: system
+license: MIT
+
+user_invocable: true
+risk_level: safe
+
+commands:
+  - name: vitals
+    syntax: navig skill run system-health vitals [--json]
+    description: Print current CPU %, memory %, disk %, and load average
+    risk: safe
+
+  - name: top
+    syntax: navig skill run system-health top [--n <count>] [--sort cpu|mem]
+    description: Show top N processes by CPU or memory (default N=10, sort=cpu)
+    risk: safe
+
+  - name: alerts
+    syntax: navig skill run system-health alerts [--cpu <pct>] [--mem <pct>] [--disk <pct>]
+    description: Report resources above threshold (default thresholds 80/90/85 %)
+    risk: safe
+
+  - name: watch
+    syntax: navig skill run system-health watch [--interval <sec>]
+    description: Stream vitals every N seconds until Ctrl-C (default interval=5)
+    risk: safe
+
+examples:
+  - title: Quick system snapshot
+    user: How is my system doing right now?
+    command: navig skill run system-health vitals
+
+  - title: Find what is eating RAM
+    user: What is using all my memory?
+    command: navig skill run system-health top --n 15 --sort mem
+
+  - title: Check if anything is over threshold
+    user: Alert me if CPU or disk is high
+    command: navig skill run system-health alerts --cpu 80 --disk 85
+
+  - title: Live monitoring
+    user: Watch my system for the next minute
+    command: navig skill run system-health watch --interval 3
+
+agent_hints:
+  when_to_use: >
+    Use when the user mentions slowness, high CPU, out-of-memory errors, full disk,
+    or asks for a system check. Trigger on: "my system is slow", "high cpu",
+    "disk full", "check memory", "system health", "what's using resources".
+  output_format: >
+    JSON: { cpu_pct, mem_pct, mem_used_gb, mem_total_gb, disk_pct,
+    disk_used_gb, disk_total_gb, load_avg_1m, top_procs: [{pid, name, cpu_pct, mem_pct}] }
+  follow_up: >
+    If cpu_pct > 80, offer to identify and optionally kill the top process.
+    If disk_pct > 85, offer to find large files and clean temp directories.
+    If mem_pct > 90, warn about swap usage and offer to identify memory hogs.
+
+platforms:
+  - linux
+  - mac
+  - windows

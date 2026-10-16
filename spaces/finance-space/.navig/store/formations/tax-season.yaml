@@ -1,0 +1,43 @@
+id: tax-season
+name: Tax Season
+version: "1.0.0"
+description: >
+  Year-round tax preparation formation. Active January through April with
+  increased cadence. Tracks incoming documents, estimates liability, and ensures
+  nothing is missing before the filing deadline.
+
+space: finance
+lead: tax-planner
+supporting:
+  - budget-analyst
+
+trigger_conditions:
+  - January 1 (activate for new tax year)
+  - Any document placed in documents/tax/{year}/
+  - Quarterly estimate dates
+  - Manual activation
+
+skills:
+  - tax-estimate
+  - categorize-transaction
+
+workflows:
+  - tax-prep-checklist
+
+steps:
+  - stage: document-inventory
+    owner: tax-planner
+    action: Run checklist for required documents — flag outstanding
+  - stage: deduction-extraction
+    owner: budget-analyst
+    action: Scan transactions for deductible categories and total them
+  - stage: estimate
+    owner: tax-planner
+    action: Calculate estimated liability — report to #taxes
+  - stage: pre-filing-review
+    owner: tax-planner
+    action: Final document confirmation — produce pre-filing summary
+
+escalation:
+  on_missing_document: tax-planner via #taxes
+  on_high_liability: operator notification

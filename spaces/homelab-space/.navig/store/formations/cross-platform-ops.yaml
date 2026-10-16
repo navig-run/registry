@@ -1,0 +1,63 @@
+id: cross-platform-ops
+name: Cross-Platform Operations
+version: "1.0.0"
+description: >
+  Routes tasks to the correct OS-specific shell syntax and execution environment.
+  Acts as a translation layer when the operator issues commands without specifying
+  whether the target is Windows, Linux, or macOS.
+
+agents:
+  lead: herald
+  supporting: [atlas, wrench]
+
+trigger_conditions:
+  - "Skill or workflow targets a host with an OS different from the local machine"
+  - "Operator uses platform-neutral command syntax"
+  - "Multi-host workflow requires concurrent execution across OS types"
+  - "Manual: navig formation run cross-platform-ops"
+
+action_scope:
+  - ALLOW: all skills with cross-platform steps defined
+  - ALLOW: translate command syntax between Windows PowerShell, Linux bash, macOS zsh
+  - ALLOW: select correct script block per target OS
+  - ALLOW: spawn SSH sessions for remote execution
+  - DENY: modify local system files without explicit target specification
+  - DENY: execute destructive commands without dry-run verification
+
+skills_used:
+  - ssh-connect
+  - sync-configs
+  - hardware-inventory
+  - disk-clean
+
+os_routing:
+  windows:
+    shell: powershell
+    elevation: runas_admin
+    package_manager: winget
+  linux:
+    shell: bash
+    elevation: sudo
+    package_manager: auto_detect  # apt/dnf/pacman/zypper
+  macos:
+    shell: zsh
+    elevation: sudo
+    package_manager: brew
+
+communication:
+  inbox_channel: "#cross-platform"
+  escalation: operator
+  notify_on:
+    - platform_mismatch_detected
+    - unsupported_platform
+    - remote_execution_failed
+
+context_memory:
+  read: [device-registry.json, space-context.json]
+  write: []
+
+example_invocation: |
+  # Route a disk-clean to a Linux host from Windows:
+  navig formation run "run disk-clean on linux-server"
+
+  # herald will: detect OS of target → pick bash path → translate and execute → report results

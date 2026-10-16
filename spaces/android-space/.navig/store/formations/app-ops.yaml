@@ -1,0 +1,52 @@
+id: app-ops
+name: App Operations
+version: "1.0.0"
+description: >
+  Formation covering the full app lifecycle: install, uninstall, sideload, split-APK
+  bundles, APK extraction, and runtime permission management. Active when software on
+  a device changes.
+
+agents:
+  lead: installer
+  supporting: [scrub]
+
+trigger_conditions:
+  - "Operator requests an app install / uninstall / sideload"
+  - "APK extraction requested for backup or analysis"
+  - "Permission grant or revoke requested"
+  - "Manual invocation: navig formation run app-ops"
+  - "Weekly app-update-check surfaces outdated sideloaded apps"
+
+action_scope:
+  - ALLOW: apk-install, apk-extract, permission-audit
+  - ALLOW: adb install / install-multiple / uninstall
+  - ALLOW: pm grant / revoke runtime permissions
+  - ALLOW: write to .navig/memory/known-issues.json
+  - DENY: pm disable-user of system packages (belongs to privacy-hardening)
+  - DENY: fastboot / firmware flashing
+
+skills_used:
+  - apk-install
+  - apk-extract
+  - permission-audit
+
+workflows_used:
+  - app-update-check   # list + reinstall step
+  - debloat-sweep      # permission-audit step
+
+communication:
+  inbox_channel: "#apps"
+  escalation: operator
+  notify_on:
+    - install_complete
+    - install_failed
+    - untrusted_apk_detected
+
+context_memory:
+  read: [device-registry.json]
+  write: [known-issues.json]
+
+example_invocation: |
+  # Trigger the app-ops formation manually:
+  navig formation run app-ops
+  # installer will: verify APK → install/sideload → grant permissions → report

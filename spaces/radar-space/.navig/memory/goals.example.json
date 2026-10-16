@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "radar-space",
+  "goals": [
+    {
+      "id": "no-surprise-bills",
+      "title": "Zero surprise bills",
+      "description": "Every cost anomaly detected within 24h of occurrence, never discovered at month-end",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

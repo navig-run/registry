@@ -1,0 +1,101 @@
+name: Docker Ops
+description: Manage Docker containers, images, volumes, and compose stacks from one skill
+version: 1.0.0
+category: docker
+license: MIT
+
+user_invocable: true
+risk_level: elevated
+
+requires:
+  - docker
+
+commands:
+  - name: ps
+    syntax: navig skill run docker-ops ps [--all] [--json]
+    description: List running containers (add --all to include stopped)
+    risk: safe
+
+  - name: logs
+    syntax: navig skill run docker-ops logs <container> [--tail <n>] [--follow]
+    description: Stream or tail container logs (default last 100 lines)
+    risk: safe
+
+  - name: stats
+    syntax: navig skill run docker-ops stats [--container <name>]
+    description: Live CPU/mem/net/disk stats for all or a specific container
+    risk: safe
+
+  - name: exec
+    syntax: navig skill run docker-ops exec <container> <cmd>
+    description: Run a command inside a running container
+    risk: elevated
+
+  - name: restart
+    syntax: navig skill run docker-ops restart <container>
+    description: Gracefully restart a container
+    risk: elevated
+    confirmation: "Restart container {{container}}?"
+
+  - name: compose-up
+    syntax: navig skill run docker-ops compose-up [--file <path>] [--detach]
+    description: Start a compose stack (default file docker-compose.yml, default detach=true)
+    risk: elevated
+
+  - name: compose-down
+    syntax: navig skill run docker-ops compose-down [--file <path>] [--volumes]
+    description: Stop and remove a compose stack; add --volumes to also remove named volumes
+    risk: destructive
+    confirmation: "Take down compose stack at {{file}}? Volumes will also be removed if --volumes is set."
+
+  - name: prune
+    syntax: navig skill run docker-ops prune [--images] [--volumes] [--all]
+    description: Remove stopped containers and optionally dangling images or volumes
+    risk: destructive
+    confirmation: "Prune stopped containers (and selected resources). This cannot be undone."
+
+examples:
+  - title: See what is running
+    user: What Docker containers are currently running?
+    command: navig skill run docker-ops ps
+
+  - title: Follow application logs
+    user: Show me the last 200 log lines for my api container and follow
+    command: navig skill run docker-ops logs api --tail 200 --follow
+
+  - title: Resource usage at a glance
+    user: How much CPU and memory are my containers using?
+    command: navig skill run docker-ops stats
+
+  - title: Restart misbehaving container
+    user: Restart my nginx container
+    command: navig skill run docker-ops restart nginx
+
+  - title: Bring up a compose stack
+    user: Start the production compose stack
+    command: navig skill run docker-ops compose-up --file docker-compose.prod.yml
+
+  - title: Clean up dangling images
+    user: Free up disk space from unused Docker images
+    command: navig skill run docker-ops prune --images
+
+agent_hints:
+  when_to_use: >
+    Use when the user mentions Docker, containers, images, compose stacks, or
+    container resource usage. Trigger on: "docker ps", "container logs",
+    "restart container", "container stats", "compose up/down", "prune images",
+    "what's running in Docker", "container is not responding".
+  output_format: >
+    ps/stats: JSON array of { id, name, status, cpu_pct, mem_usage, image }.
+    logs: plain text stream.
+    exec: stdout + stderr + exit_code.
+    compose actions: { status, services: [{name, state}] }.
+  follow_up: >
+    After ps, offer to show logs for any unhealthy container.
+    After stats, if any container exceeds 80% CPU offer to restart it.
+    After prune, report bytes reclaimed.
+
+platforms:
+  - linux
+  - mac
+  - windows

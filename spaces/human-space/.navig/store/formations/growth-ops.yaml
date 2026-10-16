@@ -1,0 +1,45 @@
+id: growth-ops
+name: Growth Operations
+version: "1.0.0"
+description: Monthly learning and personal development review — books, courses, skills, and growth trajectory.
+
+agents:
+  lead: growth-tracker
+  supporting:
+    - daily-planner
+    - habit-coach
+
+trigger_conditions:
+  - Monthly growth review scheduled (1st of month)
+  - Quarterly growth review
+  - Manual review request
+
+action_scope:
+  - Aggregate monthly learning activity (books, courses, skills)
+  - Review habit portfolio (which habits support growth goals)
+  - Generate growth report with progress vs. goals
+  - Identify knowledge gaps or stalled learning
+  - Quarterly deep review with trend analysis
+
+skills_used:
+  - track-learning
+
+workflows_used:
+  - monthly-growth-review
+  - quarterly-life-review
+
+communication:
+  inbox_channel: "#growth"
+  escalation: daily-planner
+  notify_on:
+    - zero learning activity for 2+ weeks
+    - course abandoned without completion note
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+    - spaces/growth/learning.csv
+    - spaces/growth/books/
+  write: []
+
+example_invocation: "@growth-ops monthly-review"

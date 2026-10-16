@@ -1,0 +1,48 @@
+name: monthly-strategy-review
+description: |
+  Monthly business review. Calculates effective hourly rate, compares against
+  target, produces a revenue P&L, and surfaces pipeline and client risk.
+
+schedule:
+  cron: "0 10 1 * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: project-scope
+
+steps:
+  - id: rate_analysis
+    name: "Effective Rate Analysis"
+    skill: calculate-rate
+    params:
+      client: "all"
+      period: "{{date.prev_month}}"
+    on_error: continue
+
+  - id: revenue_pnl
+    name: "Revenue P&L"
+    agent: strategist
+    action: generate_revenue_pnl
+    params:
+      period: "{{date.prev_month}}"
+    on_error: continue
+
+  - id: pipeline_review
+    name: "Pipeline Review"
+    agent: strategist
+    action: pipeline_projection
+    params:
+      horizon_months: 3
+    on_error: continue
+
+  - id: strategy_report
+    name: "Generate Monthly Strategy Report"
+    depends_on: [rate_analysis, revenue_pnl, pipeline_review]
+    agent: strategist
+    action: generate_strategy_report
+    params:
+      rate: "{{steps.rate_analysis.output}}"
+      pnl: "{{steps.revenue_pnl.output}}"
+      pipeline: "{{steps.pipeline_review.output}}"
+      deliver_to: operator

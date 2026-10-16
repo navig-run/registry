@@ -1,0 +1,62 @@
+# Secrets & environment
+.env
+.env.*
+vault/
+secrets/
+*.private.*
+
+# Personal health data (sensitive)
+spaces/health/metrics.csv
+spaces/health/*.bak
+# Medical records belong in `navig cabinet` (encrypted) — these keep any leftover plain
+# scans off the record.
+spaces/health/records/
+records/
+
+# Personal growth data (private)
+spaces/growth/habits.csv
+spaces/growth/learning.csv
+spaces/growth/journal/
+spaces/growth/retros/
+spaces/growth/books/
+
+# Bureau sensitive documents
+spaces/bureau/renewals.csv
+spaces/bureau/ids/
+spaces/bureau/medical/
+spaces/bureau/insurance/
+spaces/bureau/vehicle/
+spaces/bureau/tax/
+spaces/bureau/*.bank
+spaces/bureau/*.iban
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Runtime state — your own data. Only the shipped seeds and READMEs are tracked.
+.navig/memory/*
+!.navig/memory/README.md
+!.navig/memory/.gitkeep
+!.navig/memory/*.example.*
+.navig/state/*
+!.navig/state/.gitkeep
+.navig/inbox/*
+!.navig/inbox/.gitkeep
+!.navig/inbox/README.md
+!.navig/inbox/*.example.*
+!.navig/inbox/docs/
+!.navig/inbox/shortcuts/
+.navig/logs/*
+!.navig/logs/.gitkeep

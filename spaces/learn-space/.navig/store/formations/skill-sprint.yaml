@@ -1,0 +1,9 @@
+id: skill-sprint
+name: Skill Sprint
+version: "1.0.0"
+description: Focused multi-week push to level up a specific skill.
+space: learn
+lead: skill-planner
+supporting: [course-tracker, book-synthesizer, review-scheduler]
+trigger_conditions: [skill sprint initiated, quarterly skill assessment]
+workflows: [skill-assessment]

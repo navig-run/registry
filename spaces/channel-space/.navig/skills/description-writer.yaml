@@ -1,0 +1,43 @@
+id: description-writer
+name: Description Writer
+version: "1.0.0"
+description: Writes SEO-optimised YouTube video descriptions with timestamps, links, and keywords.
+category: seo
+platform: [windows, linux, macos]
+formation: content-planning
+author: navig-run
+
+parameters:
+  - name: title
+    type: string
+    required: true
+    description: Video title
+  - name: topic
+    type: string
+    required: true
+    description: Video topic summary
+  - name: include_timestamps
+    type: boolean
+    required: false
+    default: true
+    description: Include timestamp placeholders
+  - name: output_file
+    type: string
+    required: false
+    default: content/scripts/description.txt
+    description: Output file path
+
+steps:
+  - id: ensure-dir
+    name: Ensure output directory
+    shell: true
+    script_windows: "if not exist \"content\\scripts\" mkdir \"content\\scripts\""
+    script_linux: "mkdir -p content/scripts"
+    script_macos: "mkdir -p content/scripts"
+
+  - id: write-description
+    name: Write description template
+    shell: true
+    script_windows: "echo Title: {{title}} > \"{{output_file}}\" && echo Topic: {{topic}} >> \"{{output_file}}\" && echo. >> \"{{output_file}}\" && echo [Description with SEO keywords, timestamps, and links] >> \"{{output_file}}\""
+    script_linux: "echo 'Title: {{title}}' > '{{output_file}}' && echo 'Topic: {{topic}}' >> '{{output_file}}' && echo '' >> '{{output_file}}'"
+    script_macos: "echo 'Title: {{title}}' > '{{output_file}}' && echo 'Topic: {{topic}}' >> '{{output_file}}' && echo '' >> '{{output_file}}'"

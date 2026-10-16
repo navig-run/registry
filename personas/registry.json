@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "updated": "2026-07-07",
+  "description": "Index of all drop-in AI personas in the NAVIG registry. Install one with `navig install add persona:navig-run/registry/personas/<id>`, then pick it as your AI persona in the Deck (Settings → AI & Models → AI persona). Entries without a marketplace block are free.",
+  "personas": [
+    {
+      "id": "the-navigator",
+      "name": "The Navigator",
+      "archetype": "orchestrator",
+      "description": "Universal organizing intelligence for life and work — health, finances, relationships, and shipping; coordinates specialist agents, honest and consent-first",
+      "path": "the-navigator/soul.yaml",
+      "version": "1.0.0",
+      "install": "navig install add persona:navig-run/registry/personas/the-navigator"
+    },
+    {
+      "id": "senior-engineer",
+      "name": "Senior Engineer",
+      "archetype": "specialist",
+      "description": "Battle-tested senior software engineer — root-cause analysis, clean architecture, reliable code",
+      "path": "senior-engineer/soul.yaml",
+      "version": "1.0.0",
+      "install": "navig install add persona:navig-run/registry/personas/senior-engineer"
+    },
+    {
+      "id": "product-reviewer",
+      "name": "Product Reviewer",
+      "archetype": "analyst",
+      "description": "Product-minded reviewer — evaluates features and code through user impact and business value",
+      "path": "product-reviewer/soul.yaml",
+      "version": "1.0.0",
+      "install": "navig install add persona:navig-run/registry/personas/product-reviewer"
+    },
+    {
+      "id": "community-assistant",
+      "name": "Community Assistant",
+      "archetype": "diplomat",
+      "description": "Friendly community guide — onboarding, FAQ answers, doc navigation, healthy collaboration",
+      "path": "community-assistant/soul.yaml",
+      "version": "1.0.0",
+      "install": "navig install add persona:navig-run/registry/personas/community-assistant"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+id: tax-prep-checklist
+name: Tax Prep Checklist
+version: "1.0.0"
+description: >
+  Year-round tax document collection workflow. Run in January to initialize
+  the checklist, then run again any time a document arrives or you want
+  a status update.
+
+space: finance
+formation: tax-season
+
+steps:
+  - step: 1
+    name: Initialize Checklist
+    agent: tax-planner
+    command: "@tax-planner checklist --year {YYYY}"
+    automated: true
+    when: "Run in January of new tax year"
+    output: documents/tax/{YYYY}/checklist.md
+    note: |
+      Standard checklist covers: W-2, 1099-INT, 1099-DIV, 1099-B,
+      1099-NEC (if freelance), mortgage interest statement, charitable receipts,
+      HSA form 5498, student loan interest.
+
+  - step: 2
+    name: Confirm Document Arrival
+    agent: tax-planner
+    command: "@tax-planner confirm --doc {document-name}"
+    manual: true
+    when: "Run each time a document arrives"
+    note: |
+      Place received documents in: documents/tax/{YYYY}/
+      Then confirm them in the checklist.
+
+  - step: 3
+    name: Run Deduction Extraction
+    agent: budget-analyst
+    command: "@budget-analyst deductions --year {YYYY}"
+    skill: categorize-transaction
+    automated: true
+    when: "Run after all transactions for the year are imported"
+
+  - step: 4
+    name: Tax Estimate
+    agent: tax-planner
+    skill: tax-estimate
+    command: "@tax-planner estimate --year {YYYY}"
+    automated: true
+    output: reports/{YYYY}-tax-estimate.md
+
+  - step: 5
+    name: Pre-Filing Review
+    agent: tax-planner
+    command: "@tax-planner pre-filing --year {YYYY}"
+    automated: true
+    when: "Run in March before filing"
+    note: |
+      Confirms all checklist items are ✅ before handing off to your tax preparer.
+
+key_dates:
+  - Jan 15: Q4 estimated tax due (prior year)
+  - Jan 31: W-2s and most 1099s due from employers/institutions
+  - Apr 1: Internal doc completion target
+  - Apr 15: Filing deadline (or Oct 15 if extension filed)
+  - Jun 15: Q2 estimated tax due
+  - Sep 15: Q3 estimated tax due

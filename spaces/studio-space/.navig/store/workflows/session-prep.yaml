@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────
+# Workflow: Session Prep
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: session-prep
+description: |
+  Pre-session preparation workflow. Verifies required assets
+  are present, prepares reference tracks, checks recent backups,
+  and sets up the session folder structure.
+
+schedule:
+  cron: null
+  timezone: null
+  enabled: false
+
+on_demand: true
+formation: collab-session
+
+steps:
+  - id: verify-assets
+    name: Verify Required Assets
+    agent: session-planner
+    action: verify-assets
+    params:
+      session_name: "{{session_name}}"
+      required_stems: "{{required_stems}}"
+      reference_tracks: "{{reference_tracks}}"
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: check-backup
+    name: Check Recent Backups
+    skill: backup-session
+    params:
+      session_dir: "{{config.sessions_dir}}"
+      check_only: true
+      max_age_hours: 24
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: prepare-references
+    name: Prepare Reference Tracks
+    skill: format-convert
+    params:
+      input_file: "{{reference_tracks}}"
+      output_format: wav
+      sample_rate: "{{config.audio_defaults.sample_rate}}"
+      bit_depth: "{{config.audio_defaults.bit_depth}}"
+      output_dir: "{{session_dir}}/references"
+    depends_on:
+      - verify-assets
+    on_error: continue
+    timeout_seconds: 300
+
+  - id: create-structure
+    name: Create Session Structure
+    agent: session-planner
+    action: scaffold-session
+    params:
+      session_name: "{{session_name}}"
+      genre: "{{genre}}"
+      bpm: "{{bpm}}"
+      key: "{{key}}"
+      collaborators: "{{collaborators}}"
+    depends_on:
+      - verify-assets
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: notify
+    name: Notify Participants
+    agent: session-planner
+    action: notify-collaborators
+    params:
+      session_name: "{{session_name}}"
+      collaborators: "{{collaborators}}"
+      session_dir: "{{session_dir}}"
+      start_time: "{{start_time}}"
+    depends_on:
+      - create-structure
+      - prepare-references
+    on_error: continue
+    timeout_seconds: 30
+
+  - id: readiness-check
+    name: Session Readiness Check
+    agent: session-planner
+    action: readiness-report
+    params:
+      assets_ok: "{{steps.verify-assets.status}}"
+      backup_ok: "{{steps.check-backup.status}}"
+      references_ok: "{{steps.prepare-references.status}}"
+      structure_ok: "{{steps.create-structure.status}}"
+    depends_on:
+      - notify
+      - check-backup
+    on_error: continue
+    timeout_seconds: 30

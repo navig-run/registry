@@ -1,0 +1,47 @@
+id: extension-build
+name: Extension Build
+version: "1.0.0"
+description: >
+  Formation for browser extension and userscript development. Scripter leads
+  the build; Coder supports with general implementation; Reviewer validates
+  manifests and permission scopes.
+
+agents:
+  lead: scripter
+  supporting: [coder, reviewer]
+
+trigger_conditions:
+  - "Extension task in #extensions"
+  - "publish-extension skill invoked"
+  - "scaffold-project skill invoked with type=userscript or type=extension"
+  - "Manual: navig formation run extension-build"
+
+action_scope:
+  - ALLOW: scaffold-project, publish-extension, code-lint
+  - ALLOW: read/write workspace files in sub-workspaces
+  - DENY: submit to Chrome Web Store without operator credentials
+  - DENY: embed API keys in extension manifests
+
+skills_used:
+  - scaffold-project
+  - publish-extension
+  - code-lint
+
+workflows_used:
+  - code-review
+
+communication:
+  inbox_channel: "#extensions"
+  escalation: operator
+  notify_on:
+    - extension_packaged
+    - manifest_permission_risk
+    - publish_complete
+
+context_memory:
+  read: [space-context.json, architecture.md]
+  write: [architecture.md]
+
+example_invocation: |
+  navig formation run extension-build
+  # scripter will: scaffold → implement → review manifest → pack → notify #extensions

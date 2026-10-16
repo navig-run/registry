@@ -1,0 +1,30 @@
+name: Unlock
+description: Prodigious file unlocker. Finds the exact processes locking a file/folder (Restart Manager + full system handle scan) and FORCE-CLOSES the offending handles in place - unlocking WITHOUT killing the app. Escalates only if needed - terminate locker, take ownership, clear read-only/system/hidden, delete, delete-on-reboot. Self-contained; no PowerToys/handle.exe. Self-elevates (handle surgery needs admin).
+version: 1.0.0
+category: system
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: elevated
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: unlock
+    syntax: navig skill run unlock unlock --target <file-or-folder>
+    description: Identify locking processes and offer to close/kill them, take ownership, clear attributes, and delete
+    risk: elevated
+
+agent_hints:
+  when_to_use: >
+    Use when a file/folder is "in use", "access denied", or "cannot be deleted".
+    Trigger on "this file is locked", "can't delete", "in use by another process",
+    "what's using this file", "force delete".
+  output_format: >
+    Lists each locking process (name + pid; system processes flagged), then an
+    action menu: close gracefully, force-kill, take ownership + clear attributes,
+    or UNLOCK + DELETE. Falls back to delete-on-reboot if the file is still held.
+  follow_up: >
+    System-critical processes are never killed. Killing explorer.exe auto-relaunches
+    the shell. Take-ownership uses takeown/icacls; delete-on-reboot may need admin.

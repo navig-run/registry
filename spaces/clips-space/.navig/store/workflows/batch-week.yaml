@@ -1,0 +1,76 @@
+name: batch-week
+description: |
+  Weekly batch planning workflow. Plans and pre-produces a full week of
+  clips every Monday. Includes trend forecasting, content calendar
+  creation, batch hook writing, and scheduling across platforms.
+
+schedule:
+  cron: "0 9 * * 1"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: batch-schedule
+
+steps:
+  - id: weekly-trends
+    name: Forecast weekly trends
+    agent: trend-scout
+    action: weekly-forecast
+    params:
+      platforms: [tiktok, reels, shorts]
+      lookahead_days: 7
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 180
+
+  - id: plan-calendar
+    name: Create weekly content calendar
+    agent: clip-director
+    action: plan-week
+    params:
+      clips_per_day: 2
+      platforms: [tiktok, reels, shorts]
+    depends_on: [weekly-trends]
+    on_error: stop
+    timeout_seconds: 120
+
+  - id: batch-hooks
+    name: Write hooks for all clips
+    agent: hook-writer
+    action: batch-generate
+    params:
+      variants_per_clip: 2
+    depends_on: [plan-calendar]
+    on_error: continue
+    timeout_seconds: 300
+
+  - id: batch-hashtags
+    name: Optimise hashtags for each clip
+    skill: hashtag-optimize
+    params:
+      per_platform: true
+    depends_on: [plan-calendar]
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: schedule-posts
+    name: Schedule clips across platforms
+    agent: distributor
+    action: schedule-batch
+    params:
+      optimise_times: true
+    depends_on: [batch-hooks, batch-hashtags]
+    on_error: stop
+    timeout_seconds: 120
+
+  - id: weekly-brief
+    name: Generate weekly production brief
+    agent: clip-director
+    action: generate-brief
+    params:
+      include: [calendar, hooks, hashtags, schedule]
+    depends_on: [schedule-posts]
+    on_error: continue
+    timeout_seconds: 60

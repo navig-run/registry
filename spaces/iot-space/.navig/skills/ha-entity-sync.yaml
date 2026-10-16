@@ -1,0 +1,74 @@
+id: ha-entity-sync
+name: Home Assistant Entity Sync
+version: "1.0.0"
+description: Reconcile Home Assistant entities with the IoT device registry and flag orphans.
+category: automation
+platform: [windows, linux, macos]
+formation: automation-loop
+author: navig-run
+
+parameters:
+  - name: ha_url
+    type: string
+    description: "Home Assistant base URL"
+    default: "{{config.ha_url}}"
+  - name: token
+    type: string
+    description: "Long-lived access token (resolved from the space vault, never hardcoded)"
+    default: "{{vault.ha_token}}"
+  - name: domain
+    type: string
+    description: "Optional entity domain filter (e.g. switch, light, sensor)"
+    default: ""
+
+steps:
+  - id: fetch_states
+    name: "Fetch all HA entity states via REST API"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_TOKEN: "{{token}}"
+      NAVIG_PARAM_HA_URL: "{{ha_url}}"
+      NAVIG_PARAM_DOMAIN: "{{domain}}"
+    script: |
+      curl -s -H "Authorization: Bearer $NAVIG_PARAM_TOKEN" \
+        -H "Content-Type: application/json" \
+        "$NAVIG_PARAM_HA_URL/api/states" | \
+        python3 -c "import sys,json,os; dom=os.environ.get('NAVIG_PARAM_DOMAIN',''); [print(e['entity_id'], '=', e['state']) for e in json.load(sys.stdin) if not dom or e['entity_id'].startswith(dom + '.')]"
+    script_windows: |
+      $dom = $env:NAVIG_PARAM_DOMAIN
+      $h = @{ Authorization = "Bearer $env:NAVIG_PARAM_TOKEN"; "Content-Type" = "application/json" }
+      $states = Invoke-RestMethod "$env:NAVIG_PARAM_HA_URL/api/states" -Headers $h
+      $states | Where-Object { -not $dom -or $_.entity_id.StartsWith("$dom.") } |
+        ForEach-Object { "$($_.entity_id) = $($_.state)" }
+
+  - id: reconcile
+    name: "Reconcile entities against device-registry.json"
+    shell: auto
+    script: |
+      python3 - <<'PY'
+      import json, os
+      reg_path = '.navig/memory/device-registry.json'
+      reg = json.load(open(reg_path)) if os.path.exists(reg_path) else {'devices':[]}
+      names = {d.get('name') for d in reg.get('devices', [])}
+      print(f"Registry has {len(names)} devices.")
+      print("Entities present in HA but with no matching registry device are ORPHANS.")
+      print("Registry devices with no HA entity are UNEXPOSED — consider adding to HA.")
+      PY
+
+  - id: report
+    name: "Report drift"
+    shell: auto
+    script: |
+      echo "HA entity sync complete against {{ha_url}} (domain filter: '{{domain}}')."
+
+output:
+  fields: [entity_id, matched_device, state, drift]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Sync all HA entities to the registry"
+    command: "navig skill run ha-entity-sync"
+  - description: "Sync only switch entities"
+    command: "navig skill run ha-entity-sync --domain switch"

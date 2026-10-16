@@ -1,0 +1,38 @@
+id: crawl-pipeline
+name: Crawl Pipeline
+version: "1.0.0"
+description: >
+  Turn tracked sources into raw structured records. Crawler leads the fetch and
+  extract; Curator stands by to clean what comes out.
+
+agents:
+  lead: crawler
+  supporting: [curator]
+
+trigger_conditions:
+  - "#crawl inbox activity"
+  - "Scout hands off a newly tracked source"
+  - "A source's recrawl interval has elapsed"
+
+action_scope:
+  - ALLOW: crawl-site
+  - ALLOW: write to crawls/
+  - ALLOW: update .navig/memory/sources.json (last_crawled, status)
+  - DENY: write to datasets/ or the database
+
+skills_used:
+  - crawl-site
+
+workflows_used:
+  - daily-discovery-sweep
+
+communication:
+  inbox_channel: "#crawl"
+  escalation: curator
+  notify_on:
+    - host_blocked
+    - extraction_schema_changed
+
+context_memory:
+  read: [sources.json]
+  write: [sources.json]

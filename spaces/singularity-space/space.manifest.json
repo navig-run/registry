@@ -1,0 +1,42 @@
+{
+  "space_id": "singularity-space",
+  "display_name": "Singularity Space",
+  "description": "Long-horizon self-tracking and civilization signal monitoring. Version the self, track AI frontiers, log civilizational shifts, and maintain a destiny log for future-state planning.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-12",
+  "updated": "2026-03-12",
+  "author": "navig-run",
+  "tier": "personal",
+  "tags": [
+    "singularity",
+    "ai-frontier",
+    "civilization",
+    "self-versioning",
+    "future",
+    "destiny"
+  ],
+  "status": "active",
+  "agents": [
+    "oracle",
+    "signal-tracker",
+    "destiny-keeper",
+    "ai-researcher"
+  ],
+  "formations": [
+    "signal-watch",
+    "destiny-mapping",
+    "ai-frontier"
+  ],
+  "owner": "navig-run",
+  "skills": [
+    "log-insight",
+    "rate-signal",
+    "snapshot-self",
+    "tag-content"
+  ],
+  "workflows": [
+    "monthly-singularity-review",
+    "weekly-signal-sweep"
+  ]
+}

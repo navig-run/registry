@@ -1,0 +1,23 @@
+# Freelance Space — Inbox Routes (example)
+# Copy to routes.yaml to activate routing: NAVIG loads .navig/inbox/routes.yaml.
+version: "1.0"
+routes:
+  - channel: "#clients"
+    description: "New client inquiries and client updates"
+    handlers: ["account-manager"]
+    default: true
+  - channel: "#invoices"
+    description: "Invoice events and payment notifications"
+    handlers: ["billing-officer"]
+  - channel: "#billing"
+    description: "Billing runs, overdue escalations, and payment follow-ups"
+    handlers: ["billing-officer"]
+  - channel: "#time"
+    description: "Time log entries and overruns"
+    handlers: ["timekeeper"]
+  - channel: "#pipeline"
+    description: "New opportunities and proposals"
+    handlers: ["strategist"]
+  - channel: "#strategy"
+    description: "Rate reviews, positioning, and monthly strategy questions"
+    handlers: ["strategist"]

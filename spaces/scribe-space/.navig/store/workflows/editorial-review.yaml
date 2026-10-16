@@ -1,0 +1,48 @@
+name: editorial-review
+description: >
+  Runs a three-tier editorial review on a completed draft: structural → line → copy.
+  Each pass is logged. A final grade (pass / needs-work / reject) is produced.
+
+schedule:
+  cron: ""
+  timezone: "UTC"
+  enabled: false
+
+on_demand: true
+formation: fiction-workshop
+
+params:
+  - name: file
+    description: "Path to the draft file to review"
+    required: true
+  - name: depth
+    description: "Edit depth: structural | line | copy | full (runs all three)"
+    required: false
+    default: "full"
+
+steps:
+  - name: structural-edit
+    description: Assess organisation, pacing, and overall structure
+    shell: auto
+    condition: "depth == 'structural' OR depth == 'full'"
+
+  - name: line-edit
+    description: Rewrite unclear, wordy, or weak sentences
+    depends_on: structural-edit
+    condition: "depth == 'line' OR depth == 'full'"
+
+  - name: copy-edit
+    description: Grammar, spelling, punctuation, and style consistency pass
+    depends_on: line-edit
+    condition: "depth == 'copy' OR depth == 'full'"
+
+  - name: readability-score
+    description: Compute Flesch-Kincaid and Gunning Fog index
+    depends_on: copy-edit
+    skill: readability-score
+    params:
+      file: "{{file}}"
+
+  - name: grade-and-report
+    description: Produce final grade and annotated report
+    depends_on: readability-score

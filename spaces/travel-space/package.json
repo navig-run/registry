@@ -1,0 +1,13 @@
+{
+  "name": "travel-space",
+  "version": "1.0.0",
+  "description": "Plan, track, and document every trip.",
+  "navig": {
+    "runtime": "navig-space-2",
+    "tier": "personal",
+    "type": "travel",
+    "space": "travel-space"
+  },
+  "author": "navig-run",
+  "license": "MIT"
+}

@@ -1,0 +1,75 @@
+id: clip-extract
+name: "Clip Extract"
+version: "1.0.0"
+description: "Extract highlight clips from full episodes for social media promotion"
+category: editing
+platform: [windows, linux, macos]
+formation: content-repurpose
+author: "NAVIG Community"
+
+parameters:
+  - name: input_path
+    type: string
+    required: true
+    description: "Input episode audio/video file"
+  - name: output_dir
+    type: string
+    required: true
+    description: "Output directory for clips"
+  - name: max_clips
+    type: integer
+    default: 3
+    description: "Maximum number of clips to extract"
+  - name: max_duration_seconds
+    type: integer
+    default: 60
+    description: "Maximum clip duration in seconds"
+  - name: start_times
+    type: string
+    default: ""
+    description: "Comma-separated start times (HH:MM:SS) for manual clip points"
+
+steps:
+  - id: identify-highlights
+    env:
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_MAX_CLIPS: "{{max_clips}}"
+      NAVIG_PARAM_MAX_DURATION_SECONDS: "{{max_duration_seconds}}"
+    name: "Identify Highlight Segments"
+    shell: bash
+    script_linux: |
+      echo "Analysing ${NAVIG_PARAM_INPUT_PATH} for highlights"
+      echo "Max clips: ${NAVIG_PARAM_MAX_CLIPS}, Max duration: ${NAVIG_PARAM_MAX_DURATION_SECONDS}s"
+      # AI-powered highlight detection:
+      # - Energy peaks in audio
+      # - Key quote identification
+      # - Topic transitions
+      # - Audience engagement markers (for live recordings)
+      ffprobe -v quiet -print_format json -show_format "${NAVIG_PARAM_INPUT_PATH}" | head -20
+    script_windows: |
+      Write-Host "Analysing $($env:NAVIG_PARAM_INPUT_PATH) for highlights"
+      ffprobe -v quiet -print_format json -show_format "$($env:NAVIG_PARAM_INPUT_PATH)" | Select-Object -First 20
+    script_macos: |
+      echo "Analysing ${NAVIG_PARAM_INPUT_PATH} for highlights"
+      ffprobe -v quiet -print_format json -show_format "${NAVIG_PARAM_INPUT_PATH}" | head -20
+
+  - id: extract-clips
+    env:
+      NAVIG_PARAM_OUTPUT_DIR: "{{output_dir}}"
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_MAX_DURATION_SECONDS: "{{max_duration_seconds}}"
+    name: "Extract Audio Clips"
+    shell: bash
+    script_linux: |
+      mkdir -p "${NAVIG_PARAM_OUTPUT_DIR}"
+      # Extract clips at identified timestamps
+      # For each clip: trim, normalize, fade in/out
+      echo "Extracting clips to ${NAVIG_PARAM_OUTPUT_DIR}"
+      # Example single clip extraction:
+      # ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -ss START -t ${NAVIG_PARAM_MAX_DURATION_SECONDS} -af "afade=t=in:st=0:d=0.5,afade=t=out:st=$((${NAVIG_PARAM_MAX_DURATION_SECONDS}-1)):d=1" "${NAVIG_PARAM_OUTPUT_DIR}/clip_01.mp3"
+    script_windows: |
+      New-Item -ItemType Directory -Force -Path "$($env:NAVIG_PARAM_OUTPUT_DIR)" | Out-Null
+      Write-Host "Extracting clips to $($env:NAVIG_PARAM_OUTPUT_DIR)"
+    script_macos: |
+      mkdir -p "${NAVIG_PARAM_OUTPUT_DIR}"
+      echo "Extracting clips to ${NAVIG_PARAM_OUTPUT_DIR}"

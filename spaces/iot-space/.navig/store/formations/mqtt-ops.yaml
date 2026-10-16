@@ -1,0 +1,51 @@
+id: mqtt-ops
+name: MQTT Operations
+version: "1.0.0"
+description: >
+  Formation covering MQTT broker health, topic mapping, and publish/subscribe
+  message routing. Active when the message bus needs monitoring or a device's
+  topics need to be mapped or driven.
+
+agents:
+  lead: broker
+  supporting: [automa]
+
+trigger_conditions:
+  - "Broker restart detected (uptime reset in $SYS)"
+  - "Device topic goes silent past its expected interval"
+  - "New unmapped topic appears on the bus"
+  - "Manual invocation: navig formation run mqtt-ops"
+  - "Automation needs a command published to a device"
+
+action_scope:
+  - ALLOW: mqtt-subscribe, mqtt-publish
+  - ALLOW: read broker $SYS topics
+  - ALLOW: write to .navig/wiki/mqtt-topics.md
+  - DENY: publish to $SYS topics
+  - DENY: delete retained messages without approval
+  - DENY: restart the broker without approval
+
+skills_used:
+  - mqtt-subscribe
+  - mqtt-publish
+
+workflows_used:
+  - nightly-telemetry-sync   # subscribe/collect step
+  - automation-review        # command routing step
+
+communication:
+  inbox_channel: "#mqtt"
+  escalation: operator
+  notify_on:
+    - broker_restart
+    - stale_topic
+    - new_unmapped_topic
+
+context_memory:
+  read: [device-registry.json, mqtt-topics.md]
+  write: [mqtt-topics.md, device-registry.json]
+
+example_invocation: |
+  # Trigger MQTT ops formation manually:
+  navig formation run mqtt-ops
+  # broker will: check broker health → map topic tree → detect stale topics → report

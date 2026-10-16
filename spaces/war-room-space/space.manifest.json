@@ -1,0 +1,59 @@
+{
+  "space_id": "war-room-space",
+  "display_name": "War Room — Operator Command Center",
+  "description": "Operator command center for OSINT, investigation, and authorized offensive security. Find, investigate, and operate: open-source intelligence, structured case-work, attack-surface mapping, ethical hacking against authorized targets, digital forensics, and an isolated lab — all gated by written authorization and rules of engagement.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-12",
+  "updated": "2026-06-20",
+  "author": "navig-run",
+  "tier": "work",
+  "tags": [
+    "war-room",
+    "osint",
+    "investigation",
+    "ethical-hacking",
+    "red-team",
+    "recon",
+    "dfir",
+    "threat-intel",
+    "operator",
+    "command-center"
+  ],
+  "status": "active",
+  "agents": [
+    "strategist",
+    "osint-analyst",
+    "recon-operator",
+    "red-team-lead",
+    "forensics-investigator",
+    "case-manager",
+    "intelligence-officer",
+    "legal-counsel",
+    "narrative-engineer"
+  ],
+  "formations": [
+    "ops-command",
+    "osint-sweep",
+    "recon-and-map",
+    "investigation",
+    "red-team-op",
+    "intel-sweep",
+    "narrative-war"
+  ],
+  "skills": [
+    "build-op",
+    "advance-status",
+    "log-intel",
+    "arsenal-search",
+    "open-case",
+    "log-finding",
+    "add-entity",
+    "map-asset",
+    "start-engagement"
+  ],
+  "id": "war-room-space",
+  "workflows": [
+    "weekly-war-room-brief"
+  ]
+}

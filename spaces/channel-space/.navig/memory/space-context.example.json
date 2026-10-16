@@ -1,0 +1,28 @@
+{
+  "space": "channel-space",
+  "owner": null,
+  "counts": {
+    "videos_published": 0,
+    "videos_draft": 0,
+    "thumbnails": 0,
+    "scripts": 0
+  },
+  "channel_info": {
+    "name": null,
+    "url": null,
+    "subscribers": 0,
+    "total_views": 0,
+    "category": null
+  },
+  "content_defaults": {
+    "video_length_target": "10-15 min",
+    "upload_frequency": "weekly",
+    "niche": null,
+    "tone": null
+  },
+  "active_workflows": [],
+  "active_formations": [
+    "video-production"
+  ],
+  "recently_used_skills": []
+}

@@ -1,0 +1,36 @@
+name: Remote
+description: SSH into a server at the folder's mapped remote path, or upload/deploy a folder via scp. Reads config.json (ssh_host, ssh_port, remote_root, ssh_key).
+version: 1.0.0
+category: remote
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: elevated
+platforms: [windows]
+requires: [ssh]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: ssh
+    syntax: navig skill run remote ssh --target <local-dir>
+    description: Open an SSH terminal, cd'd to the remote path mapped from the local folder
+    risk: safe
+  - name: upload
+    syntax: navig skill run remote upload --target <local-dir>
+    description: Upload the folder to the server via scp -r
+    risk: elevated
+  - name: deploy
+    syntax: navig skill run remote deploy --target <local-dir>
+    description: Deploy the folder to remote_root/<name> via scp -r
+    risk: elevated
+
+agent_hints:
+  when_to_use: >
+    Use to connect to or push files to the configured server. Trigger on "ssh into the
+    server here", "upload this folder", "deploy this".
+  output_format: >
+    Banner with host/remote path, then ssh/scp output and an OK/exit-code line.
+  follow_up: >
+    Requires config.json (copy from config.example.json). Without it the command
+    explains what to fill in and stops.

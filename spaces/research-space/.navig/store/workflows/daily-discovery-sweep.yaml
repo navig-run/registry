@@ -1,0 +1,39 @@
+name: daily-discovery-sweep
+description: |
+  Daily pass over tracked sources: search for new info on active topics, recrawl
+  sources whose interval has elapsed, and stage fresh extractions for the foundry.
+
+schedule:
+  cron: "0 7 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: discovery-run
+
+steps:
+  - id: search_topics
+    name: "Search Active Topics"
+    agent: scout
+    action: run_topic_searches
+    params:
+      only_active: true
+    on_error: continue
+
+  - id: recrawl_due
+    name: "Recrawl Due Sources"
+    agent: crawler
+    action: crawl_due_sources
+    params:
+      respect_recrawl_interval: true
+    on_error: continue
+
+  - id: stage_summary
+    name: "Summarize Sweep"
+    depends_on: [search_topics, recrawl_due]
+    agent: scout
+    action: summarize_sweep
+    params:
+      new_sources: "{{steps.search_topics.output}}"
+      crawled: "{{steps.recrawl_due.output}}"
+      deliver_to: operator

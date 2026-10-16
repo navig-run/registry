@@ -1,0 +1,42 @@
+channels:
+  - id: finance
+    label: "Finance & Compliance"
+    owner: controller
+    keywords: [invoice, expense, tax, payment, receipt, banking, revenue]
+    priority: high
+
+  - id: sales
+    label: "Client Relations & Growth"
+    owner: sales
+    keywords: [lead, proposal, client, contract, prospect, quote, deal, outreach]
+    priority: high
+
+  - id: ops
+    label: "Operations"
+    owner: ops-manager
+    keywords: [vendor, meeting, runbook, sop, compliance, maintenance]
+    priority: normal
+
+  - id: projects
+    label: "Delivery & Milestones"
+    owner: project-lead
+    keywords: [project, milestone, delivery, sprint, spec, adr, scope, budget]
+    priority: normal
+
+  - id: strategic
+    label: "Strategy & Vision"
+    owner: chief
+    keywords: [vision, strategy, okr, planning, partnership, positioning, budget-approval]
+    priority: high
+
+  - id: urgent
+    label: "Urgent / Escalation"
+    owner: chief
+    cc: [ops-manager]
+    keywords: [urgent, critical, emergency, escalation, incident]
+    priority: critical
+
+defaults:
+  sla_hours: 48
+  unrouted_fallback: ops-manager
+  escalation_chain: [ops-manager, chief]

@@ -1,0 +1,51 @@
+id: clip-trim
+name: Clip Trim
+version: "1.0.0"
+description: "Trim video to target duration, maintaining key moments and pacing."
+category: editing
+platform: [windows, linux, macos]
+formation: clip-factory
+author: navig-run
+
+parameters:
+  - name: input
+    type: string
+    required: true
+    description: "Path to input video file"
+  - name: output
+    type: string
+    required: true
+    description: "Path to output video file"
+  - name: start
+    type: string
+    default: "00:00:00"
+    description: "Start time (HH:MM:SS)"
+  - name: max_duration
+    type: integer
+    default: 60
+    description: "Maximum duration in seconds"
+  - name: aspect
+    type: string
+    default: "9:16"
+    description: "Output aspect ratio"
+
+steps:
+  - id: trim-video
+    name: Trim video with ffmpeg
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -ss {{start}} -t {{max_duration}} -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "{{output}}"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -ss {{start}} -t {{max_duration}} -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "{{output}}"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -ss {{start}} -t {{max_duration}} -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "{{output}}"
+
+  - id: verify-output
+    name: Verify trimmed clip
+    shell: bash
+    script_windows: |
+      ffprobe -v quiet -print_format json -show_format -show_streams "{{output}}" 2>nul
+    script_linux: |
+      ffprobe -v quiet -print_format json -show_format -show_streams "{{output}}" 2>/dev/null
+    script_macos: |
+      ffprobe -v quiet -print_format json -show_format -show_streams "{{output}}" 2>/dev/null

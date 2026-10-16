@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#streams"
+    description: "Live session broadcasts and recordings"
+    default: true
+  - channel: "#workflows"
+    description: "Published workflow definitions for community use"
+  - channel: "#forks"
+    description: "Forked builds from community setups"

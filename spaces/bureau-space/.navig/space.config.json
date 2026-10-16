@@ -1,0 +1,10 @@
+{
+  "spaceId": "bureau-space",
+  "displayName": "Bureau",
+  "description": "French bureaucratic organization — administrative documents, taxes, housing, health coverage, civil status, and official correspondence.",
+  "defaultLocale": "fr",
+  "createdAt": "2026-03-06T00:00:00.000Z",
+  "tier": "personal",
+  "status": "planned",
+  "author": "navig-run"
+}

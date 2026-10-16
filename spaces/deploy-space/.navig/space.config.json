@@ -1,0 +1,21 @@
+{
+  "name": "deploy-space",
+  "version": "1.0.0",
+  "description": "Every deploy, every diff, every rollback — one unified view",
+  "owner": "navig-run",
+  "tier": "platform",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "storage",
+    "tools"
+  ],
+  "config_key": null,
+  "viral_hook": "Deploy + instant diff card — share what changed in one screenshot",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

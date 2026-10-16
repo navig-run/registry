@@ -1,0 +1,70 @@
+# Skill template — copy this and fill it in
+# Full reference: ../docs/SKILL_STANDARD.md
+# Validate: navig skill validate <path>
+
+# ── Identity (required) ──────────────────────────────────────────────────────
+name: My Skill
+description: One sentence starting with a verb — what does this skill do?
+version: 1.0.0
+category: custom           # network | system | cloud | docker | database | security | developer | media | ai | homelab | productivity | custom
+license: MIT
+author: your-github-handle # optional
+
+# ── Invocation ────────────────────────────────────────────────────────────────
+user_invocable: true
+risk_level: safe           # safe | elevated | destructive
+
+# ── Commands (at least one required) ─────────────────────────────────────────
+commands:
+  - name: run
+    syntax: navig skill run my-skill run [--flag <value>]
+    description: What this specific command does
+    risk: safe
+    # For destructive commands, add:
+    # risk: destructive
+    # confirmation: "This will delete X. Are you sure?"
+
+# ── Examples (at least one required) ─────────────────────────────────────────
+# Phrase `user:` as natural language — how an operator would actually ask
+examples:
+  - title: Basic usage
+    user: Do the thing for me
+    command: navig skill run my-skill run
+
+  - title: With options
+    user: Do the thing with custom flag
+    command: navig skill run my-skill run --flag value
+
+# ── Agent hints (required for agent-invocable skills) ─────────────────────────
+agent_hints:
+  when_to_use: >
+    Use when the user asks about [specific domain]. Trigger on phrases like
+    "[example phrase 1]", "[example phrase 2]".
+  output_format: >
+    Describe the exact output shape, e.g.:
+    JSON: { key: type, key2: type }
+    Or: plain text / table / markdown.
+  follow_up: >
+    What should the agent offer after running this? E.g.,
+    "Offer to investigate any flagged items."
+
+# ── Platform compatibility (optional) ────────────────────────────────────────
+# platforms:
+#   - linux
+#   - mac
+#   - windows
+
+# ── System dependencies (optional) ───────────────────────────────────────────
+# requires:
+#   - some-tool   # shown to user if missing
+
+# ── Vault keys (optional) ─────────────────────────────────────────────────────
+# Use {{vault.key_name}} in commands when credentials are needed
+# vault_keys:
+#   - name: my_api_key
+#     description: API key for the service
+#     required: true
+
+# ── Entrypoint (optional) ─────────────────────────────────────────────────────
+# Only needed if the skill has a Python/script implementation
+# entrypoint: main.py

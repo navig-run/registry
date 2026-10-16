@@ -1,0 +1,58 @@
+id: weekly-content-plan
+name: Weekly Content Plan
+version: "1.0.0"
+description: >
+  Monday morning kickoff workflow. Loads last week's analytics, generates
+  content briefs for every active brand, and populates the 7-day content
+  calendar. Designed to run before the team starts writing.
+
+formation: content-pipeline
+space: social-media-space
+enabled: false
+schedule:
+  cron: "0 9 * * MON"
+  timezone: UTC
+
+steps:
+  - id: load-analytics
+    name: Load Last Week Analytics
+    description: Run analyze-engagement for all active brands (last 7 days)
+    skill: analyze-engagement
+    params:
+      period: last-7-days
+      brands: all
+    output: .navig/memory/last-week-analytics.json
+
+  - id: detect-viral
+    name: Check for Viral Posts
+    description: Flag any posts that exceeded 3x baseline
+    depends_on: load-analytics
+    inline: |
+      Read .navig/memory/last-week-analytics.json.
+      For each brand, identify posts where engagement_rate > 3 * brand_avg.
+      Write flagged post slugs to .navig/memory/viral-candidates.json.
+      If any found, post summary to #viral channel.
+
+  - id: generate-briefs
+    name: Generate Weekly Content Briefs
+    description: Use content-calendar prompt to produce 7-day plan per brand
+    depends_on: detect-viral
+    agent: content-strategist
+    prompt: content-calendar
+    params:
+      week: current
+      analytics_source: .navig/memory/last-week-analytics.json
+    output: .navig/plans/briefs/week-{YYYYWWW}-{brand}.md
+
+  - id: populate-calendar
+    name: Checkpoint Schedule Coverage
+    description: Verify the queue has at least 3 approved drafts per active brand for the week
+    depends_on: generate-briefs
+    inline: |
+      Check content/drafts/{brand}/ for files with status:approved and
+      scheduled_at in the coming 7 days.
+      For any brand with < 3 scheduled, post alert to #strategy.
+
+notifications:
+  on_complete: "#strategy"
+  on_failure: operator

@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "space": "research",
+  "goals": [
+    {
+      "id": "source-coverage",
+      "title": "Broad, credible source coverage",
+      "description": "Every active topic has multiple independent, tracked sources — no single-source conclusions",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "clean-datasets",
+      "title": "Datasets you can trust",
+      "description": "Every dataset is deduplicated, schema-validated, and carries provenance back to its sources",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "cited-findings",
+      "title": "Findings with citations",
+      "description": "No claim ships without the query or source that backs it and a stated confidence level",
+      "status": "active",
+      "priority": "medium"
+    }
+  ]
+}

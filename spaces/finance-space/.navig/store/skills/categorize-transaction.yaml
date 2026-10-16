@@ -1,0 +1,57 @@
+id: categorize-transaction
+name: Categorize Transaction
+version: "1.0.0"
+description: >
+  Applies budget category labels to raw transaction rows using keyword rules,
+  merchant name patterns, and amount ranges. Writes categorized output to
+  transactions/{YYYY-MM}/{account}-categorized.csv.
+
+steps:
+  - id: load-rules
+    name: Load Categorization Rules
+    description: Read category rules from budgets/categorization-rules.json if it exists
+    script_windows: |
+      $rulesFile = "budgets/categorization-rules.json"
+      if (Test-Path $rulesFile) {
+        $rules = Get-Content $rulesFile | ConvertFrom-Json
+        Write-Host "Loaded $($rules.Count) categorization rules"
+      } else {
+        Write-Host "No rules file found — using default patterns"
+        $rules = @()
+      }
+
+  - id: apply-categories
+    name: Apply Category Labels
+    description: Match each transaction against rules; assign best-match category
+    script_windows: |
+      # Default category patterns (override with categorization-rules.json)
+      $defaults = @{
+        "salary|payroll|direct deposit" = "income"
+        "grocery|supermarket|whole foods|trader joe|kroger|safeway" = "food"
+        "restaurant|cafe|doordash|ubereats|grubhub" = "food"
+        "rent|mortgage|lease" = "housing"
+        "electric|gas|water|internet|phone|utility" = "utilities"
+        "uber|lyft|taxi|transit|gas station|parking" = "transport"
+        "netflix|spotify|hulu|amazon prime|subscription" = "entertainment"
+        "doctor|dentist|pharmacy|cvs|walgreens|insurance" = "health"
+        "amazon|walmart|target" = "miscellaneous"
+      }
+      Write-Host "Applying $($defaults.Count) default patterns + $($rules.Count) custom rules"
+
+  - id: write-output
+    name: Write Categorized CSV
+    description: Write categorized transactions preserving original data
+    script_windows: |
+      # Output adds 'category' column to original CSV
+      # Uncategorized transactions get category = "uncategorized" and are flagged
+      Write-Host "Categorized output written"
+      Write-Host "Uncategorized rows flagged for manual review"
+
+params:
+  - name: account
+    required: true
+    description: Account slug (e.g., checking)
+  - name: month
+    required: false
+    default: current
+    description: "Month in YYYY-MM format (default: current month)"

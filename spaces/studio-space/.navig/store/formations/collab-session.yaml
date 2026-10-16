@@ -1,0 +1,48 @@
+id: collab-session
+name: Collaboration Session
+version: "1.0.0"
+description: >
+  Multi-artist session coordination. Manages stem exchange, project packaging,
+  version synchronization, and communication between collaborators.
+
+agents:
+  lead: session-planner
+  supporting: [producer, mix-engineer]
+
+trigger_conditions:
+  - "Collaboration request received"
+  - "Stem exchange needed"
+  - "Manual invocation: navig formation run collab-session"
+  - "External artist onboarding"
+
+action_scope:
+  - ALLOW: stem-export, backup-session, format-convert, daw-project-scan
+  - ALLOW: read/write sessions/
+  - ALLOW: write to .navig/memory/space-context.json
+  - DENY: release operations
+  - DENY: sample library writes
+
+skills_used:
+  - stem-export
+  - backup-session
+  - format-convert
+  - daw-project-scan
+
+workflows_used:
+  - session-prep
+
+communication:
+  inbox_channel: "#production"
+  escalation: producer
+  notify_on:
+    - stems_exported
+    - package_ready
+    - session_synced
+
+context_memory:
+  read: [space-context.json, goals.json]
+  write: [space-context.json]
+
+example_invocation: |
+  navig formation run collab-session
+  # session-planner will: prep assets → export stems → package project → deliver

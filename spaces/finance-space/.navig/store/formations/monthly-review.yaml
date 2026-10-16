@@ -1,0 +1,47 @@
+id: monthly-review
+name: Monthly Review
+version: "1.0.0"
+description: >
+  Complete monthly financial close — from transaction import through variance
+  analysis, savings update, and portfolio check. The core operating rhythm
+  of this space.
+
+space: finance
+lead: budget-analyst
+supporting:
+  - savings-coach
+  - investment-tracker
+
+trigger_conditions:
+  - 1st of every month
+  - Manual trigger
+
+skills:
+  - categorize-transaction
+  - project-cashflow
+  - budget-variance
+
+workflows:
+  - monthly-close
+  - weekly-spending
+
+close_steps:
+  - stage: import
+    owner: budget-analyst
+    action: Import all transactions for closed month
+  - stage: categorize
+    owner: budget-analyst
+    action: Categorize any uncategorized transactions
+  - stage: variance
+    owner: budget-analyst
+    action: Run actuals vs budget targets — report to #budget
+  - stage: savings-update
+    owner: savings-coach
+    action: Update goal progress from close data — report to #goals
+  - stage: investment-check
+    owner: investment-tracker
+    action: Portfolio value snapshot — report to #investments
+
+escalation:
+  on_budget_overrun: savings-coach
+  on_unusual_transaction: budget-analyst

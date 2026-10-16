@@ -1,0 +1,28 @@
+{
+  "tools": {
+    "yt-dlp": {
+      "description": "YouTube video/metadata downloader",
+      "install": {
+        "windows": "winget install yt-dlp",
+        "linux": "pip install yt-dlp",
+        "macos": "brew install yt-dlp"
+      }
+    },
+    "ffmpeg": {
+      "description": "Video/audio processing",
+      "install": {
+        "windows": "winget install ffmpeg",
+        "linux": "sudo apt install ffmpeg",
+        "macos": "brew install ffmpeg"
+      }
+    },
+    "imagemagick": {
+      "description": "Image processing for thumbnails",
+      "install": {
+        "windows": "winget install ImageMagick",
+        "linux": "sudo apt install imagemagick",
+        "macos": "brew install imagemagick"
+      }
+    }
+  }
+}

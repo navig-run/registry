@@ -1,0 +1,29 @@
+{
+  "name": "studio-space",
+  "version": "1.0.0",
+  "description": "NAVIG space — music production command center",
+  "private": true,
+  "author": "navig-run",
+  "scripts": {
+    "validate":     "navig space doctor . --no-interactive",
+    "doctor":       "navig space doctor .",
+    "status":       "navig space current",
+    "skills":       "navig skill list",
+    "formations":   "navig formation list"
+  },
+  "navig": {
+    "type": "space",
+    "min_navig_version": "2.0.0",
+    "skills_dir": ".navig/skills",
+    "store_dir": ".navig/store",
+    "entry_workflow": "morning-studio"
+  },
+  "keywords": [
+    "navig",
+    "space",
+    "music",
+    "production",
+    "studio"
+  ],
+  "license": "MIT"
+}

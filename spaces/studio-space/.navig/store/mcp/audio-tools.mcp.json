@@ -1,0 +1,29 @@
+{
+  "tools": {
+    "ffmpeg": {
+      "description": "Audio format conversion, metadata manipulation, and analysis",
+      "command": "ffmpeg",
+      "platform": ["windows", "linux", "macos"],
+      "install": {
+        "windows": "winget install Gyan.FFmpeg",
+        "linux": "sudo apt install ffmpeg",
+        "macos": "brew install ffmpeg"
+      }
+    },
+    "ffprobe": {
+      "description": "Audio stream analysis and metadata extraction",
+      "command": "ffprobe",
+      "platform": ["windows", "linux", "macos"]
+    },
+    "sox": {
+      "description": "Sound eXchange — audio effects, conversion, analysis",
+      "command": "sox",
+      "platform": ["windows", "linux", "macos"],
+      "install": {
+        "windows": "winget install sox",
+        "linux": "sudo apt install sox",
+        "macos": "brew install sox"
+      }
+    }
+  }
+}

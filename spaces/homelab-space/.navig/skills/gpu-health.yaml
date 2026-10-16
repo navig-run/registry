@@ -1,0 +1,115 @@
+id: gpu-health
+name: GPU Health
+version: "1.0.0"
+description: >
+  Check GPU status, temperatures, VRAM usage, clock speeds, and power draw
+  for NVIDIA (nvidia-smi) and AMD (rocm-smi / radeontop) GPUs across all platforms.
+category: hardware
+platform: [windows, linux, macos]
+formation: hardware-patrol
+author: navig-run
+
+parameters:
+  - name: vendor
+    type: enum
+    values: [nvidia, amd, auto]
+    default: auto
+  - name: alert_temp_c
+    type: int
+    description: "Temperature threshold for warning alert (°C)"
+    default: 85
+  - name: watch
+    type: bool
+    description: "Continuous monitoring mode (5-second refresh)"
+    default: false
+
+steps:
+  - id: detect_vendor
+    name: "Auto-detect GPU vendor"
+    condition: "vendor == 'auto'"
+    shell: auto
+    script_windows: |
+      $gpu = Get-WmiObject Win32_VideoController | Select-Object -First 1
+      if ($gpu.Name -match "NVIDIA") { Write-Output "vendor=nvidia" }
+      elseif ($gpu.Name -match "AMD|Radeon") { Write-Output "vendor=amd" }
+      else { Write-Output "vendor=unknown"; Write-Output "gpu_name=$($gpu.Name)" }
+    script_linux: |
+      if nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | grep -q .; then
+        echo "vendor=nvidia"
+      elif command -v rocm-smi >/dev/null 2>&1; then
+        echo "vendor=amd"
+      else
+        lspci | grep -i "vga\|3d\|display" | head -3
+        echo "vendor=unknown"
+      fi
+    script_macos: |
+      system_profiler SPDisplaysDataType 2>/dev/null | grep -E "Chipset Model|VRAM" | head -4
+      echo "vendor=macos_metal"
+
+  - id: nvidia_health
+    name: "NVIDIA GPU health (nvidia-smi)"
+    condition: "vendor == 'nvidia'"
+    shell: auto
+    script: |
+      echo "=== NVIDIA GPU Health ==="
+      nvidia-smi --query-gpu=index,name,temperature.gpu,utilization.gpu,\
+      utilization.memory,memory.used,memory.total,power.draw,clocks.current.graphics,\
+      clocks.current.memory,fan.speed,pstate,ecc.errors.corrected.volatile.total \
+      --format=csv,noheader,nounits 2>/dev/null | \
+      awk -F',' -v thresh={{alert_temp_c}} '{
+        printf "GPU %s: %s\n  Temp: %s°C%s  Util: %s%%  VRAM: %s/%s MiB\n  Power: %sW  Graphics: %s MHz  Mem: %s MHz  Fan: %s%%  PState: %s\n",
+          $1,$2,$3,(($3+0)>thresh?" [WARN: HIGH TEMP]":""),$4,$6,$7,$8,$9,$10,$11,$12
+      }'
+    script_windows: |
+      nvidia-smi --query-gpu=index,name,temperature.gpu,utilization.gpu,memory.used,memory.total,power.draw --format=csv,noheader,nounits |
+      ForEach-Object {
+        $f = $_ -split ","
+        $tempWarn = if ([int]$f[2] -gt {{alert_temp_c}}) { " [WARN: HIGH TEMP]" } else { "" }
+        Write-Output "GPU $($f[0]): $($f[1])  Temp: $($f[2])°C$tempWarn  Util: $($f[3])%  VRAM: $($f[4])/$($f[5]) MiB  Power: $($f[6])W"
+      }
+
+  - id: amd_health
+    name: "AMD GPU health (rocm-smi)"
+    condition: "vendor == 'amd'"
+    shell: auto
+    script_linux: |
+      echo "=== AMD GPU Health ==="
+      rocm-smi 2>/dev/null || radeontop -d - -l 1 2>/dev/null | head -10
+      echo "--- Temperature ---"
+      cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | \
+        awk '{printf "%.1f°C\n", $1/1000}'
+    script_windows: |
+      # AMD on Windows: use WMI
+      $g = Get-WmiObject Win32_VideoController | Where Name -match "AMD|Radeon"
+      $g | Select Name, CurrentRefreshRate, AdapterRAM | Format-List
+
+  - id: windows_fallback
+    name: "Windows WMI GPU info (fallback)"
+    condition: "vendor == 'unknown' or vendor == 'macos_metal'"
+    shell: auto
+    script_windows: |
+      Get-WmiObject Win32_VideoController | Select-Object Name, DriverVersion,
+        CurrentHorizontalResolution, CurrentVerticalResolution,
+        @{n='VRAM_MB';e={[math]::Round($_.AdapterRAM/1MB,0)}} | Format-List
+    script_macos: |
+      system_profiler SPDisplaysDataType | grep -E "Chipset|VRAM|Vendor|Metal|Resolution"
+
+  - id: watch_mode
+    name: "Continuous monitoring"
+    condition: "watch == true"
+    shell: auto
+    script_linux: |
+      watch -n 5 "nvidia-smi 2>/dev/null || rocm-smi 2>/dev/null"
+    script_windows: |
+      while ($true) { nvidia-smi; Start-Sleep 5; Clear-Host }
+
+output:
+  store_to: ".navig/memory/gpu-health-snapshot.json"
+
+examples:
+  - description: "Quick GPU health check"
+    command: "navig skill run gpu-health"
+  - description: "NVIDIA with 80°C alert threshold"
+    command: "navig skill run gpu-health --vendor nvidia --alert_temp_c 80"
+  - description: "Continuous watch mode"
+    command: "navig skill run gpu-health --watch true"

@@ -1,0 +1,25 @@
+# Contributor Profile Template
+# Copy this file to contributors/<your-github-handle>.yaml
+# Fill in your details and open a PR.
+
+handle: your-github-handle
+github: https://github.com/your-github-handle
+website: ""                           # optional
+bio: "One-line description of yourself and what you build."
+
+skills_contributed:
+  - id: skill-id-here
+    pillar: cli-skills                # cli-skills | ai-skills
+    category: developer               # see cli-skills/ category folders
+    merged: 2026-01-01
+
+spaces_contributed:
+  - id: space-id-here
+    merged: 2026-01-01
+
+formations_contributed: []
+prompts_contributed: []
+
+tags:
+  - devops
+  - homelab

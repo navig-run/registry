@@ -1,0 +1,127 @@
+# ─────────────────────────────────────────────
+# Workflow: Track Production Pipeline
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: track-production
+description: |
+  End-to-end single-track production pipeline.
+  Covers session creation, analysis, arrangement scaffolding,
+  stem export, mix handoff, and final review.
+
+schedule:
+  cron: null
+  timezone: null
+  enabled: false
+
+on_demand: true
+formation: track-production
+
+steps:
+  - id: create-session
+    name: Create Session Folder
+    agent: session-planner
+    action: initialize
+    params:
+      project_name: "{{project_name}}"
+      genre: "{{genre}}"
+      bpm: "{{bpm}}"
+      key: "{{key}}"
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 30
+
+  - id: detect-bpm
+    name: Detect BPM
+    skill: bpm-detect
+    params:
+      input_file: "{{session_dir}}/main.wav"
+    depends_on:
+      - create-session
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: detect-key
+    name: Detect Musical Key
+    skill: key-detect
+    params:
+      input_file: "{{session_dir}}/main.wav"
+    depends_on:
+      - create-session
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: scan-project
+    name: Scan DAW Project
+    skill: daw-project-scan
+    params:
+      session_dir: "{{session_dir}}"
+    depends_on:
+      - create-session
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: arrangement-review
+    name: Arrangement Review
+    agent: producer
+    action: review-arrangement
+    params:
+      session_dir: "{{session_dir}}"
+      bpm: "{{steps.detect-bpm.result}}"
+      key: "{{steps.detect-key.result}}"
+    depends_on:
+      - detect-bpm
+      - detect-key
+      - scan-project
+    on_error: abort
+    timeout_seconds: 300
+
+  - id: export-stems
+    name: Export Stems
+    skill: stem-export
+    params:
+      session_dir: "{{session_dir}}"
+      format: "{{config.audio_defaults.format}}"
+      sample_rate: "{{config.audio_defaults.sample_rate}}"
+      bit_depth: "{{config.audio_defaults.bit_depth}}"
+    depends_on:
+      - arrangement-review
+    on_error: abort
+    timeout_seconds: 600
+
+  - id: mix-handoff
+    name: Hand Off to Mix Engineer
+    agent: mix-engineer
+    action: receive-stems
+    params:
+      stems_dir: "{{session_dir}}/stems"
+      reference_notes: "{{steps.arrangement-review.notes}}"
+    depends_on:
+      - export-stems
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: backup
+    name: Backup Session
+    skill: backup-session
+    params:
+      session_dir: "{{session_dir}}"
+    depends_on:
+      - export-stems
+    on_error: continue
+    timeout_seconds: 300
+    parallel: true
+
+  - id: final-review
+    name: Production Review
+    agent: producer
+    action: sign-off
+    params:
+      session_dir: "{{session_dir}}"
+      mix_status: "{{steps.mix-handoff.status}}"
+    depends_on:
+      - mix-handoff
+      - backup
+    on_error: abort
+    timeout_seconds: 120

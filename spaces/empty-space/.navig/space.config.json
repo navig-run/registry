@@ -1,0 +1,15 @@
+{
+  "name": "{{space-name}}",
+  "version": "0.1.0",
+  "description": "{{one-line description}}",
+  "owner": "{{owner}}",
+  "tier": "personal",
+  "status": "planned",
+  "packages": [],
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "{{ISO-8601 date}}",
+  "crossplatform": true
+}

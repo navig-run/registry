@@ -1,0 +1,35 @@
+name: medication-expiry-check
+description: |
+  Daily medication expiry scan. Checks for items expiring within 30 days
+  and delivers an alert to the #medical inbox if any are found. Critical
+  items (< 7 days) are escalated to the operator immediately.
+
+schedule:
+  cron: "0 8 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: medical-watch
+
+steps:
+  - id: run_expiry_scan
+    name: "Run Expiry Scan"
+    skill: check-expiry
+    params:
+      days: 30
+      person: "all"
+      include_inactive: false
+    on_error: continue
+
+  - id: evaluate_alerts
+    name: "Evaluate Alert Level"
+    depends_on: [run_expiry_scan]
+    agent: medic
+    action: evaluate_expiry_alerts
+    params:
+      scan_result: "{{steps.run_expiry_scan.output}}"
+      critical_threshold_days: 7
+      warning_threshold_days: 30
+      deliver_to: "#medical"
+      escalate_critical_to: operator

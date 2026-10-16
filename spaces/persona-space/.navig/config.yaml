@@ -1,0 +1,8 @@
+space_id: persona-space
+runtime: navig-space-2
+
+persona:
+  default_storage: vault
+  version_history: true
+  gallery_enabled: true
+  fork_enabled: true

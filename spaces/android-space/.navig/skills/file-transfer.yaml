@@ -1,0 +1,77 @@
+id: file-transfer
+name: File Transfer
+version: "1.0.0"
+description: >
+  Push and pull files between the desktop and a device with `adb push` / `adb pull`.
+  Handles single files and whole directories (DCIM, Download, Pictures), with a
+  media-pull preset that grabs all camera/photo/video/download folders at once.
+category: transfer
+platform: [windows, linux, macos]
+formation: backup-restore
+author: navig-run
+
+parameters:
+  - name: direction
+    type: enum
+    values: [pull, push, media]
+    default: pull
+  - name: src
+    type: string
+    description: "Source path (device path for pull, local path for push)"
+    default: ""
+  - name: dest
+    type: string
+    description: "Destination path"
+    default: "devices/media"
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+
+steps:
+  - id: pull_one
+    name: "Pull a file or directory from the device"
+    condition: "direction == 'pull'"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} pull "{{src}}" "{{dest}}"
+
+  - id: push_one
+    name: "Push a file or directory to the device"
+    condition: "direction == 'push'"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} push "{{src}}" "{{dest}}"
+
+  - id: media_pull
+    name: "Media preset — pull DCIM, Pictures, Download, Movies"
+    condition: "direction == 'media'"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $out = "{{dest}}"
+      New-Item -ItemType Directory -Force -Path $out | Out-Null
+      foreach ($dir in @("/sdcard/DCIM","/sdcard/Pictures","/sdcard/Download","/sdcard/Movies")) {
+        Write-Output "Pulling $dir ..."
+        & adb $sel pull "$dir" "$out\" 2>$null
+      }
+      Write-Output "[OK] Media pulled to $out"
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      out="{{dest}}"; mkdir -p "$out"
+      for dir in /sdcard/DCIM /sdcard/Pictures /sdcard/Download /sdcard/Movies; do
+        echo "Pulling $dir ..."
+        adb $sel pull "$dir" "$out/" 2>/dev/null
+      done
+      echo "[OK] Media pulled to $out"
+
+output:
+  fields: [direction, src, dest, bytes]
+
+examples:
+  - description: "Pull a single file from the device"
+    command: "navig skill run file-transfer --direction pull --src /sdcard/report.pdf --dest ./"
+  - description: "Push a file to the device Download folder"
+    command: "navig skill run file-transfer --direction push --src ./app.apk --dest /sdcard/Download/"
+  - description: "Pull all media (photos, videos, downloads)"
+    command: "navig skill run file-transfer --direction media --dest devices/media"

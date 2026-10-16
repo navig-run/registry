@@ -1,0 +1,27 @@
+# Inbox Routes — Broadcast Space
+
+channels:
+  - id: "#episodes"
+    label: "Episodes"
+    route_to: host
+    description: "Episode ideas, recording requests, content briefs"
+
+  - id: "#audio"
+    label: "Audio"
+    route_to: sound-engineer
+    description: "Recording, editing, mixing, mastering requests"
+
+  - id: "#planning"
+    label: "Planning"
+    route_to: show-planner
+    description: "Episode calendar, season planning, topic research"
+
+  - id: "#publishing"
+    label: "Publishing"
+    route_to: publisher
+    description: "Distribution, RSS feeds, platform uploads"
+
+  - id: "#community"
+    label: "Community"
+    route_to: community-manager
+    description: "Guest outreach, listener engagement, reviews"

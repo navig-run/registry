@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────
+# Workflow: Weekly Studio Review
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: weekly-review
+description: |
+  Weekly production review covering output metrics,
+  backlog status, sample catalog health, and goal progress.
+  Produces a summary report and updates goals.
+
+schedule:
+  cron: "0 18 * * 5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: track-production
+
+steps:
+  - id: count-sessions
+    name: Count Sessions This Week
+    skill: daw-project-scan
+    params:
+      session_dir: "{{config.sessions_dir}}"
+      filter: this_week
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: count-releases
+    name: Count Releases This Week
+    agent: release-manager
+    action: count-releases
+    params:
+      releases_dir: "{{config.releases_dir}}"
+      filter: this_week
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: sample-health
+    name: Sample Catalog Health
+    skill: sample-catalog
+    params:
+      samples_dir: "{{config.samples_dir}}"
+      report_only: true
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 180
+    parallel: true
+
+  - id: backlog-status
+    name: Review Backlog
+    agent: session-planner
+    action: backlog-summary
+    params:
+      include_stale: true
+      stale_days: 14
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: goal-check
+    name: Check Goal Progress
+    agent: producer
+    action: review-goals
+    params:
+      goals_file: ".navig/memory/goals.json"
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: compile-report
+    name: Compile Weekly Report
+    agent: producer
+    action: compile-weekly-report
+    params:
+      sessions: "{{steps.count-sessions.result}}"
+      releases: "{{steps.count-releases.result}}"
+      samples: "{{steps.sample-health.result}}"
+      backlog: "{{steps.backlog-status.result}}"
+      goals: "{{steps.goal-check.result}}"
+    depends_on:
+      - count-sessions
+      - count-releases
+      - sample-health
+      - backlog-status
+      - goal-check
+    on_error: abort
+    timeout_seconds: 120

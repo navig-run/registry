@@ -1,0 +1,92 @@
+id: app-backup
+name: App Backup
+version: "1.0.0"
+description: >
+  Create and restore Android backups. Uses `adb backup` to produce `.ab` archives
+  (one app, or full device with APKs and shared storage), verifies the archive was
+  written, and restores with `adb restore`. Writes archives under backup_dir.
+category: backup
+platform: [windows, linux, macos]
+formation: backup-restore
+author: navig-run
+
+parameters:
+  - name: action
+    type: enum
+    values: [backup, restore]
+    default: backup
+  - name: package
+    type: string
+    description: "Package to back up (blank = full-device backup with -all)"
+    default: ""
+  - name: archive
+    type: string
+    description: "Archive path (.ab). For restore, the file to restore."
+    default: "devices/backups"
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: include_apk
+    type: bool
+    description: "Include the APK(s) in the backup (-apk)"
+    default: true
+
+steps:
+  - id: backup
+    name: "Create adb backup"
+    condition: "action == 'backup'"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $ts  = Get-Date -Format "yyyyMMdd-HHmmss"
+      $dir = "{{archive}}"
+      New-Item -ItemType Directory -Force -Path $dir | Out-Null
+      $apk = if ("{{include_apk}}" -eq "true") { "-apk" } else { "-noapk" }
+      if ("{{package}}") {
+        $file = "$dir\{{package}}-$ts.ab"
+        Write-Output "Backing up {{package}} → $file (confirm on device screen)"
+        & adb $sel backup $apk -f $file "{{package}}"
+      } else {
+        $file = "$dir\full-$ts.ab"
+        Write-Output "Full backup → $file (confirm on device screen)"
+        & adb $sel backup $apk -all -shared -f $file
+      }
+      if (Test-Path $file) { Write-Output "[OK] Wrote $((Get-Item $file).Length) bytes to $file" }
+      else { Write-Warning "Backup file not created — was it confirmed on the device?" }
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      ts=$(date +%Y%m%d-%H%M%S); dir="{{archive}}"; mkdir -p "$dir"
+      apk="-apk"; [ "{{include_apk}}" = "false" ] && apk="-noapk"
+      if [ -n "{{package}}" ]; then
+        file="$dir/{{package}}-$ts.ab"
+        echo "Backing up {{package}} → $file (confirm on device screen)"
+        adb $sel backup $apk -f "$file" "{{package}}"
+      else
+        file="$dir/full-$ts.ab"
+        echo "Full backup → $file (confirm on device screen)"
+        adb $sel backup $apk -all -shared -f "$file"
+      fi
+      [ -s "$file" ] && echo "[OK] Wrote $(wc -c < "$file") bytes to $file" || echo "[WARN] Backup not created — confirm on device"
+
+  - id: restore
+    name: "Restore an adb backup"
+    condition: "action == 'restore'"
+    shell: auto
+    script: |
+      echo "Restoring {{archive}} (confirm on device screen)..."
+      adb {{#serial}}-s {{serial}}{{/serial}} restore "{{archive}}"
+      echo "[OK] Restore dispatched"
+
+output:
+  fields: [action, package, archive, bytes]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Back up a single app (with its APK)"
+    command: "navig skill run app-backup --package com.example.app"
+  - description: "Full-device backup including shared storage"
+    command: "navig skill run app-backup --archive devices/backups"
+  - description: "Restore a backup archive"
+    command: "navig skill run app-backup --action restore --archive devices/backups/full-YYYYMMDD.ab"

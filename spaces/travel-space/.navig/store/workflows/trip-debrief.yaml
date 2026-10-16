@@ -1,0 +1,27 @@
+id: trip-debrief
+name: Trip Debrief
+version: "1.0.0"
+description: Complete debrief within 48 hours of returning. Captures memories before they fade.
+space: travel
+steps:
+  - step: 1
+    name: Write Debrief
+    manual: true
+    description: |
+      Write trips/{slug}/debrief.md covering:
+      - Highlight moments
+      - What worked well
+      - What you'd do differently
+      - Would you recommend to others? For whom?
+      - Best food/restaurant
+      - Hidden gem / unexpected discovery
+  - step: 2
+    name: Budget Reconciliation
+    agent: budget-watcher
+    command: "@budget-watcher reconcile --trip {slug}"
+    automated: true
+  - step: 3
+    name: Archive Trip
+    agent: trip-planner
+    command: "@trip-planner archive --trip {slug}"
+    automated: true

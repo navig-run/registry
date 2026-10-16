@@ -1,0 +1,46 @@
+id: financial-review
+name: Financial Review
+version: "1.0.0"
+description: Monthly P&L close, margin analysis, fee reconciliation, and cash flow update.
+
+agents:
+  lead: finance-analyst
+  supporting:
+    - fulfillment-ops
+
+trigger_conditions:
+  - First business day of each month
+  - On-demand audit request
+  - Fee anomaly spike detected
+
+action_scope:
+  - P&L generation by channel
+  - Net margin calculation per SKU
+  - Platform fee reconciliation
+  - Cash flow forecast update
+  - Invoice generation and dispatch
+
+skills_used:
+  - calculate-margins
+  - check-fees
+  - generate-invoice
+
+workflows_used:
+  - monthly-finance-review
+
+communication:
+  inbox_channel: "#finance"
+  escalation: growth-hacker
+  notify_on:
+    - margin below target
+    - fee anomaly detected
+    - invoice dispatched
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+    - .navig/memory/space-context.json
+  write:
+    - .navig/plans/briefs/
+
+example_invocation: "@financial-review run --period last-month"

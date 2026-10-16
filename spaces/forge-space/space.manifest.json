@@ -1,0 +1,24 @@
+{
+  "space_id": "forge-space",
+  "display_name": "Forge Space",
+  "description": "Build, test, and ship new tool capabilities and packages.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "tags": [
+    "forge",
+    "tools",
+    "packages",
+    "capabilities",
+    "build"
+  ],
+  "capability_deps": [
+    "tools",
+    "storage",
+    "agent"
+  ]
+}

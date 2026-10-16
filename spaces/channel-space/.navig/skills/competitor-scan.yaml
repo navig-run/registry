@@ -1,0 +1,51 @@
+id: competitor-scan
+name: Competitor Scan
+version: "1.0.0"
+description: Scans competitor YouTube channels for content strategy, posting frequency, trending topics, and engagement patterns.
+category: analytics
+platform: [windows, linux, macos]
+formation: channel-growth
+author: navig-run
+
+parameters:
+  - name: channels
+    type: string
+    required: false
+    description: Comma-separated competitor channel URLs
+  - name: top_n
+    type: integer
+    required: false
+    default: 5
+    description: Number of top videos to analyse per channel
+  - name: focus
+    type: string
+    required: false
+    default: content_strategy
+    description: "Focus area: content_strategy, trending_topics, posting_schedule"
+  - name: output_dir
+    type: string
+    required: false
+    default: content/analytics
+    description: Output directory
+
+steps:
+  - id: ensure-dir
+    name: Ensure output directory
+    shell: true
+    script_windows: "if not exist \"{{output_dir}}\" mkdir \"{{output_dir}}\""
+    script_linux: "mkdir -p '{{output_dir}}'"
+    script_macos: "mkdir -p '{{output_dir}}'"
+
+  - id: scan-channels
+    name: Scan competitor channels
+    shell: true
+    script_windows: "echo Competitor scan — Focus: {{focus}} — Top: {{top_n}} > \"{{output_dir}}\\competitor-scan.txt\""
+    script_linux: "echo 'Competitor scan — Focus: {{focus}} — Top: {{top_n}}' > '{{output_dir}}/competitor-scan.txt'"
+    script_macos: "echo 'Competitor scan — Focus: {{focus}} — Top: {{top_n}}' > '{{output_dir}}/competitor-scan.txt'"
+
+  - id: fetch-videos
+    name: Fetch top videos from competitors
+    shell: true
+    script_windows: "yt-dlp --dump-json --playlist-items 1:{{top_n}} --no-download --flat-playlist \"{{channels}}\" >> \"{{output_dir}}\\competitor-scan.json\" 2>nul || echo Manual scan required"
+    script_linux: "yt-dlp --dump-json --playlist-items 1:{{top_n}} --no-download --flat-playlist '{{channels}}' >> '{{output_dir}}/competitor-scan.json' 2>/dev/null || echo 'Manual scan required'"
+    script_macos: "yt-dlp --dump-json --playlist-items 1:{{top_n}} --no-download --flat-playlist '{{channels}}' >> '{{output_dir}}/competitor-scan.json' 2>/dev/null || echo 'Manual scan required'"

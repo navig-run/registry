@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "load-unpacked",
+      "prompt": "How do I load the Dock extension into Chrome for development, and what do I reload after editing?",
+      "expect": {
+        "contains": ["Load unpacked", "dist/", "manifest.json"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "worker-lost-state",
+      "prompt": "My extension's background service worker keeps losing its state between events. Why, and how should I hold state instead?",
+      "expect": {
+        "contains": ["service worker", "chrome.storage"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "content-script-page-globals",
+      "prompt": "My content script can't read the page's JavaScript variables. How do I reach the page's window globals?",
+      "expect": {
+        "contains": ["content script", "isolated world", "postMessage"],
+        "excludes": []
+      }
+    }
+  ]
+}

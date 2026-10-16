@@ -1,0 +1,8 @@
+space_id: lab-space
+runtime: navig-space-2
+
+lab:
+  session_history_limit: 500
+  auto_save_snippets: true
+  share_mode: url
+  sandbox_isolation: true

@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "run-dev-single-origin",
+      "prompt": "How do I run this Vite + React app in dev, and where does the Express API live — is there a separate backend port?",
+      "expect": {
+        "contains": ["vite.config.ts", "Express", "middleware"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "shared-contract",
+      "prompt": "Where do the shared types and validation schemas live in this full-stack Vite app so the client and server agree on shape?",
+      "expect": {
+        "contains": ["shared/", "Zod", "TanStack Query"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "add-route",
+      "prompt": "How do I add a new page/route to this Vite React SPA?",
+      "expect": {
+        "contains": ["react-router-dom", "pages/", "App.tsx"],
+        "excludes": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Set up content calendar",
+      "description": "Create a 4-week content calendar with planned topics and publish dates.",
+      "status": "not_started",
+      "priority": "high"
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Establish daily routine",
+      "description": "Configure the morning-channel workflow for daily briefings.",
+      "status": "not_started",
+      "priority": "high"
+    },
+    {
+      "id": "GOAL-003",
+      "title": "SEO baseline audit",
+      "description": "Run seo-audit on existing videos to establish baseline metrics.",
+      "status": "not_started",
+      "priority": "medium"
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Thumbnail style guide",
+      "description": "Define a consistent thumbnail template and style guide for the channel.",
+      "status": "not_started",
+      "priority": "medium"
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Analytics dashboard",
+      "description": "Set up automated analytics pull for weekly growth tracking.",
+      "status": "not_started",
+      "priority": "low"
+    }
+  ]
+}

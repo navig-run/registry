@@ -1,0 +1,13 @@
+{
+  "space": "devops",
+  "primary_cloud": "multi-cloud",
+  "iac_tool": "terraform",
+  "config_management": "ansible",
+  "ci_platform": "github-actions",
+  "monitoring_stack": "prometheus-grafana",
+  "on_call_tool": "pagerduty",
+  "container_runtime": "docker",
+  "orchestration": "kubernetes",
+  "secrets_manager": "vault",
+  "notes": "devops-space is platform-agnostic by default. Override these values per-project in project-level context files."
+}

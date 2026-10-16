@@ -1,0 +1,69 @@
+id: energy-report
+name: Energy Report
+version: "1.0.0"
+description: Summarize power and energy readings across smart plugs and energy meters via MQTT.
+category: telemetry
+platform: [windows, linux, macos]
+formation: discovery-sweep
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    description: "Telemetry topic filter carrying ENERGY payloads"
+    default: "tele/+/SENSOR"
+  - name: host
+    type: string
+    default: "{{config.mqtt_host}}"
+  - name: port
+    type: int
+    default: 1883
+  - name: duration
+    type: int
+    description: "Seconds to collect telemetry"
+    default: 30
+
+steps:
+  - id: collect
+    name: "Collect ENERGY telemetry from the bus"
+    shell: auto
+    script: |
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v -W {{duration}} | \
+        tee /tmp/iot-energy.raw
+    script_windows: |
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v -W {{duration}} |
+        Tee-Object -FilePath "$env:TEMP\iot-energy.raw"
+
+  - id: parse
+    name: "Parse ENERGY blocks into a summary"
+    shell: auto
+    script: |
+      python3 - <<'PY'
+      import json, re, os
+      raw = open('/tmp/iot-energy.raw', errors='ignore').read() if os.path.exists('/tmp/iot-energy.raw') else ''
+      total_power = 0.0; rows = []
+      for line in raw.splitlines():
+        m = re.match(r'(\S+)\s+(\{.*\})', line)
+        if not m: continue
+        topic, payload = m.group(1), m.group(2)
+        try: d = json.loads(payload)
+        except Exception: continue
+        e = d.get('ENERGY')
+        if e:
+          p = float(e.get('Power', 0)); total_power += p
+          rows.append((topic, p, e.get('Today'), e.get('Total')))
+      for t,p,today,tot in rows:
+        print(f"{t:35s} {p:8.1f} W  today={today}  total={tot}")
+      print(f"\nTotal instantaneous power: {total_power:.1f} W across {len(rows)} device(s)")
+      PY
+
+output:
+  fields: [device, power_w, energy_today_kwh, energy_total_kwh]
+  store_to: ".navig/memory/health-snapshots.json"
+  merge: true
+
+examples:
+  - description: "Energy report across all sensors for 30s"
+    command: "navig skill run energy-report"
+  - description: "Energy report for one device topic"
+    command: "navig skill run energy-report --topic tele/plug-office/SENSOR --duration 15"

@@ -1,0 +1,14 @@
+{
+  "name": "project-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Own every project from idea to done.",
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": "https://github.com/navig-run/registry",
+  "navig": {
+    "runtime": "navig-space-2",
+    "tier": "work",
+    "type": "project-management"
+  }
+}

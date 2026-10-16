@@ -1,0 +1,57 @@
+Title: Starter Script
+Credit: Written by
+Author: Your Name
+Draft date: 2026-03-11
+Contact: your@email.com
+
+/*
+  Fountain format guide
+  =====================
+  Scene headings: INT./EXT. PLACE - TIME (all caps, blank line before/after)
+  Action: plain text paragraphs
+  Character: ALL CAPS, centred (blank line above)
+  Parenthetical: (stage direction) indented under character
+  Dialogue: indented under character/parenthetical
+  Transition: ALL CAPS ending in TO: (right-aligned)
+  Note: [[ double brackets ]]
+  Comments: /* block */ or // line
+*/
+
+FADE IN:
+
+INT. EMPTY ROOM - DAY
+
+A bare room. A single window. Late autumn light.
+
+PROTAGONIST (30s, sharp eyes, worn jacket) stands at the window, back to us.
+
+PROTAGONIST
+(to no one in particular)
+Every story starts with a question.
+
+Beat.
+
+PROTAGONIST (CONT'D)
+This one starts with two.
+
+She turns. Faces us.
+
+PROTAGONIST (CONT'D)
+Who are you? And what do you want?
+
+She crosses toward camera, stops.
+
+PROTAGONIST (CONT'D)
+Those are never the same question.
+
+SMASH CUT TO:
+
+EXT. CITY STREET - DAY
+
+The city moves. She walks with it.
+
+// Replace everything above with your story.
+// Keep scene headings in INT./EXT. ALL CAPS - TIME format.
+// 1 page ≈ 1 minute of screen time. Feature target: 90–120 pages.
+
+FADE OUT.

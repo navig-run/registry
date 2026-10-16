@@ -1,0 +1,42 @@
+id: ci-pipeline
+name: CI Pipeline
+version: "1.0.0"
+description: >
+  Owns CI/CD pipeline design, implementation, and diagnosis. Pipeline Engineer leads;
+  Site Reliability provides deployment reliability gates.
+
+agents:
+  lead: pipeline-engineer
+  supporting:
+    - site-reliability
+
+trigger_conditions:
+  - "Keyword in #pipeline: pipeline, CI, CD, deploy, build, fail, workflow"
+  - "deploy-check workflow invoked"
+
+action_scope:
+  - ci-cd/
+
+skills_used:
+  - deploy-validate
+  - health-probe
+  - rollback
+
+workflows_used:
+  - deploy-check
+
+communication:
+  inbox_channel: "#pipeline"
+  escalation: incident-commander
+  notify_on:
+    - deploy_success
+    - deploy_failed
+    - rollback_triggered
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/known-issues.json
+
+example_invocation: "@ci-pipeline design --platform github-actions --language python --deploy kubernetes"

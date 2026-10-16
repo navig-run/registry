@@ -1,0 +1,47 @@
+id: viral-radar
+name: Viral Radar
+version: "1.0.0"
+description: >
+  Monitors post performance in real-time for breakout signals. When a post
+  exceeds 3× baseline engagement, the radar activates: alerts the team,
+  identifies the hook pattern, and briefs post-writer for rapid follow-up
+  content to capture the momentum.
+
+space: social-media-space
+lead: analytics-watcher
+supporting:
+  - content-strategist
+  - post-writer
+
+trigger_conditions:
+  - Single post engagement exceeds 3× brand/platform baseline
+  - Hook score ≥ 9 on a recently published post
+  - Manual operator trigger for opportunity capture
+
+skills:
+  - analyze-engagement
+  - create-post-draft
+  - hashtag-research
+
+workflows:
+  - viral-monitor
+
+response_protocol:
+  - Alert #viral channel immediately
+  - Identify which hook pattern drove the performance
+  - brief post-writer for 2 follow-up content angles within 4 hours
+  - Update hashtags.json with engagement_rate for hashtags on viral post
+  - Feed hook pattern back to content-strategist for brief template update
+
+data_sources:
+  - analytics/{brand}/{YYYY-MM}/engagement.csv
+  - analytics/{brand}/hashtags.json
+
+escalation:
+  on_breakout: content-strategist (#viral, priority:urgent)
+  on_followup_brief_needed: post-writer (#drafts, priority:urgent)
+
+quality_note: >
+  Viral Radar does not bypass the voice gate. Follow-up content still requires
+  brand-guardian approval before scheduling. Speed is important; quality is
+  non-negotiable.

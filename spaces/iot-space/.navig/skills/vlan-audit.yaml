@@ -1,0 +1,66 @@
+id: vlan-audit
+name: VLAN Audit
+version: "1.0.0"
+description: Verify IoT devices stay inside their isolated VLAN/subnet and flag boundary crossings.
+category: security
+platform: [windows, linux, macos]
+formation: security-mesh
+author: navig-run
+
+parameters:
+  - name: iot_subnet
+    type: string
+    description: "The subnet IoT devices are expected to live in"
+    default: "{{config.iot_subnet}}"
+  - name: trusted_subnet
+    type: string
+    description: "The trusted/main subnet devices must NOT reach directly"
+    default: "192.168.1.0/24"
+  - name: probe_host
+    type: string
+    description: "A host on the trusted subnet to test isolation against"
+    default: "192.168.1.1"
+
+steps:
+  - id: enumerate
+    name: "Enumerate devices currently on the IoT subnet"
+    shell: auto
+    script: |
+      nmap -sn -T4 {{iot_subnet}} -oG - 2>/dev/null | grep "^Host" | awk '{print $2}'
+    script_windows: |
+      nmap -sn -T4 {{iot_subnet}} | Select-String "Nmap scan" | ForEach-Object { $_.Line }
+
+  - id: check_leak
+    name: "Check for devices that appear on the trusted subnet"
+    shell: auto
+    script: |
+      # Any IoT device answering on the trusted subnet is a segmentation leak
+      nmap -sn -T4 {{trusted_subnet}} -oG - 2>/dev/null | grep "^Host" | awk '{print $2}' > /tmp/trusted_hosts.txt
+      echo "Cross-reference these against the IoT device registry — matches = leaks."
+      cat /tmp/trusted_hosts.txt
+
+  - id: isolation_probe
+    name: "Confirm IoT segment cannot route to a trusted host"
+    shell: auto
+    script: |
+      # From an IoT-segment vantage point this should FAIL (no route) if isolation holds
+      if ping -c 2 -W 2 {{probe_host}} >/dev/null 2>&1; then
+        echo "WARNING: trusted host {{probe_host}} is reachable — isolation may be incomplete"
+      else
+        echo "OK: {{probe_host}} not directly reachable — isolation holding"
+      fi
+    script_windows: |
+      if (Test-Connection -ComputerName {{probe_host}} -Count 2 -Quiet) {
+        Write-Output "WARNING: trusted host {{probe_host}} reachable — isolation may be incomplete"
+      } else { Write-Output "OK: {{probe_host}} not directly reachable — isolation holding" }
+
+output:
+  fields: [device, ip, expected_subnet, actual_subnet, isolation_status]
+  store_to: ".navig/memory/known-issues.json"
+  merge: true
+
+examples:
+  - description: "Audit VLAN isolation for the IoT segment"
+    command: "navig skill run vlan-audit"
+  - description: "Audit against a custom trusted subnet"
+    command: "navig skill run vlan-audit --trusted_subnet 10.0.0.0/24 --probe_host 10.0.0.1"

@@ -1,0 +1,52 @@
+name: monthly-financial-close
+version: "1.0.0"
+description: >
+  Monthly financial close process. Runs on the 1st of each month.
+  Generates revenue report, expense report, calculates net income,
+  tax liability, and produces a P&L summary for chief review.
+schedule:
+  cron: "0 8 1 * *"
+  timezone: "{{TIMEZONE}}"
+  enabled: true
+on_demand: true
+formation: financial-review
+
+steps:
+  - name: revenue-report
+    description: Generate revenue report for the previous month
+    skill: revenue-report
+    params:
+      period: "previous-month"
+
+  - name: expense-report
+    description: Generate expense report for the previous month
+    skill: expense-report
+    params:
+      period: "previous-month"
+
+  - name: reconcile
+    description: Cross-check invoices vs payments received, flag discrepancies
+    depends_on:
+      - revenue-report
+      - expense-report
+
+  - name: calculate-pnl
+    description: |
+      Calculate monthly P&L:
+      Revenue - Expenses = Gross profit
+      Gross profit - Tax ({{TAX_RATE}} of revenue) = Net income
+    depends_on: reconcile
+
+  - name: threshold-check
+    description: Check YTD revenue against configured thresholds
+    depends_on: calculate-pnl
+
+  - name: generate-monthly-report
+    description: Compile P&L, threshold status, and recommendations into monthly report
+    depends_on: threshold-check
+
+  - name: notify-chief
+    description: Post monthly financial close report to #finance and #strategic
+    inbox_channel: "#finance"
+    also_notify: "#strategic"
+    depends_on: generate-monthly-report

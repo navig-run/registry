@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#alerts"
+    description: "Cost anomaly alerts and budget threshold warnings"
+    default: true
+  - channel: "#reports"
+    description: "Monthly cost summaries and trend reports"
+  - channel: "#budgets"
+    description: "Budget changes and new service registrations"

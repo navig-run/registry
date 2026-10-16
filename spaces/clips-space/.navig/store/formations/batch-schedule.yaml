@@ -1,0 +1,53 @@
+id: batch-schedule
+name: Batch Schedule
+version: "1.0.0"
+description: |
+  Batch planning and scheduling formation. Plans a full week of clips,
+  assigns posting slots across platforms, and queues content for
+  automated distribution at optimal times.
+
+agents:
+  lead: distributor
+  supporting:
+    - clip-director
+    - trend-scout
+
+trigger_conditions:
+  - "batch schedule"
+  - "plan week"
+  - "schedule clips"
+  - "queue content"
+
+action_scope:
+  ALLOW:
+    - Content calendar creation
+    - Posting time optimisation
+    - Queue management
+    - Platform-specific scheduling
+  DENY:
+    - Clip editing or modification
+    - Account settings changes
+    - Draft deletion
+
+skills_used:
+  - multi-post
+  - analytics-aggregate
+  - hashtag-optimize
+
+workflows_used:
+  - batch-week
+
+communication:
+  inbox_channel: "#scheduling"
+  escalation: clip-director
+  notify_on: [completed]
+
+context_memory:
+  read:
+    - memory/space-context.json
+    - memory/goals.json
+  write:
+    - memory/space-context.json
+
+example_invocation: |
+  navig formation run "Plan and schedule next week at 2 clips per day"

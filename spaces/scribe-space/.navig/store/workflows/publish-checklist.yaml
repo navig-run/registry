@@ -1,0 +1,59 @@
+name: publish-checklist
+description: >
+  Final pre-publication checklist for any piece of writing. Verifies that the
+  piece has passed editorial review, word count is within target, metadata
+  (title, author, tags) is complete, and output is in the required format.
+
+schedule:
+  cron: ""
+  timezone: "UTC"
+  enabled: false
+
+on_demand: true
+formation: content-pipeline
+
+params:
+  - name: file
+    description: "Path to the final draft"
+    required: true
+  - name: format
+    description: "Target output format: md | pdf | docx | epub"
+    required: false
+    default: "md"
+  - name: min_words
+    description: "Minimum acceptable word count"
+    required: false
+    default: "0"
+  - name: max_words
+    description: "Maximum acceptable word count"
+    required: false
+    default: "0"
+
+steps:
+  - name: check-edit-status
+    description: Verify editorial-review workflow completed with grade=pass
+    shell: auto
+
+  - name: word-count-check
+    description: Count words and compare against min/max targets
+    depends_on: check-edit-status
+    skill: word-count
+    params:
+      file: "{{file}}"
+
+  - name: metadata-check
+    description: Verify title, author, tags, and description are present
+    depends_on: word-count-check
+
+  - name: export-output
+    description: Export final file to target format
+    depends_on: metadata-check
+    skill: export-pdf
+    params:
+      file: "{{file}}"
+      format: "{{format}}"
+    condition: "format != 'md'"
+
+  - name: checklist-report
+    description: Print pass/fail report for each check
+    depends_on: export-output

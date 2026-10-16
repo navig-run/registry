@@ -1,0 +1,26 @@
+[
+  {
+    "id": "G001",
+    "goal": "Maintain monthly close within 3 days of month end",
+    "success_criteria": "All transactions imported and categorized by the 3rd of each month",
+    "agent": "budget-analyst"
+  },
+  {
+    "id": "G002",
+    "goal": "Achieve savings rate target",
+    "success_criteria": "Monthly savings >= 20% of net income",
+    "agent": "savings-coach"
+  },
+  {
+    "id": "G003",
+    "goal": "Tax documents organized before April 1",
+    "success_criteria": "All required documents present in documents/tax/{year}/",
+    "agent": "tax-planner"
+  },
+  {
+    "id": "G004",
+    "goal": "Investment portfolio within target allocation bands",
+    "success_criteria": "No asset class deviating > 5% from target allocation",
+    "agent": "investment-tracker"
+  }
+]

@@ -1,0 +1,43 @@
+id: recon-and-map
+name: Recon and Map
+version: "1.0.0"
+description: >
+  Authorized footprinting and attack-surface mapping formation. Recon Operator leads;
+  OSINT Analyst supports with passive footprinting from the entity graph. Active recon
+  is gated: it is denied until an authorized engagement exists in engagements.json and
+  the legal-counsel gate is green.
+
+agents:
+  lead: recon-operator
+  supporting: [osint-analyst]
+
+trigger_conditions:
+  - "Authorized engagement opened in engagements.json"
+  - "Attack-surface map requested for an authorized target"
+  - "Manual: activate the recon-and-map formation"
+
+action_scope:
+  - ALLOW: map-asset
+  - ALLOW: log-finding
+  - ALLOW: passive footprinting from the OSINT entity graph
+  - ALLOW: write to .navig/memory/assets.json
+  - ALLOW: write to .navig/memory/findings.json
+  - DENY: active recon without an authorized engagement in engagements.json (authorization gate)
+  - DENY: any action against out-of-scope or unauthorized assets
+  - DENY: exploitation — recon and mapping only
+
+skills_used:
+  - map-asset
+  - log-finding
+
+communication:
+  inbox_channel: "#recon"
+  escalation: strategist
+  notify_on:
+    - authorized_engagement_required
+    - out_of_scope_asset_detected
+    - high_value_exposure_mapped
+
+context_memory:
+  read: [assets.json, engagements.json, entities.json, findings.json]
+  write: [assets.json, findings.json]

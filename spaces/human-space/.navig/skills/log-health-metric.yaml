@@ -1,0 +1,104 @@
+id: log-health-metric
+name: Log Health Metric
+version: "3.0.0"
+description: Record a health measurement into the space's metrics.csv, through the same writer `navig body` uses.
+category: health
+platform: [windows, linux, macos]
+formation: health-ops
+author: navig-run
+
+# v3.0.0 — delegates to navig.spaces.body_metrics instead of hand-rolling CSV.
+#
+# v2 wrote its OWN 7-column header (date,sleep_hours,steps,weight_kg,energy_1_10,
+# mood_1_10,hrv) while the metrics.csv that spaces actually carry has NINE columns
+# in a different order (date,weight_kg,body_fat_pct,resting_hr,sleep_hours,steps,
+# mood_1_10,hrv,notes). Appending a 7-value row to that file lines the values up
+# positionally against the wrong columns — `sleep` lands in `weight_kg` — and
+# nothing errors. It also appended blindly, so logging twice in a day produced two
+# rows for one date and every average downstream was wrong; and it opened the file
+# with no `encoding=`, which mojibakes a non-ASCII note on a non-UTF-8 locale.
+#
+# All four are gone by having exactly one writer. `upsert` reads the file's own
+# header (so a column added by hand survives), is idempotent by date, writes
+# atomically, and refuses to shrink the record.
+
+parameters:
+  - name: weight
+    description: Weight in kg (decimal; a comma decimal is accepted)
+    required: false
+  - name: sleep
+    description: Hours of sleep (decimal, e.g. 7.5)
+    required: false
+  - name: steps
+    description: Step count for the day
+    required: false
+  - name: mood
+    description: Subjective mood level 1–10
+    required: false
+  - name: energy
+    description: Subjective energy level 1–10
+    required: false
+  - name: hrv
+    description: Heart rate variability (ms)
+    required: false
+  - name: note
+    description: Free-text note for the day
+    required: false
+  - name: date
+    description: Date for the entry (YYYY-MM-DD; defaults to today)
+    required: false
+
+steps:
+  - name: record
+    description: Upsert the measurements into the active space's metrics.csv
+    env:
+      NAVIG_PARAM_WEIGHT: "{{weight}}"
+      NAVIG_PARAM_SLEEP: "{{sleep}}"
+      NAVIG_PARAM_STEPS: "{{steps}}"
+      NAVIG_PARAM_MOOD: "{{mood}}"
+      NAVIG_PARAM_ENERGY: "{{energy}}"
+      NAVIG_PARAM_HRV: "{{hrv}}"
+      NAVIG_PARAM_NOTE: "{{note}}"
+      NAVIG_PARAM_DATE: "{{date}}"
+    script: |
+      import datetime
+      import os
+      import sys
+
+      from navig.spaces import body_metrics as bm
+
+      day = os.environ.get("NAVIG_PARAM_DATE", "").strip() or str(datetime.date.today())
+
+      raw = {
+          "weight_kg": os.environ.get("NAVIG_PARAM_WEIGHT", "").strip(),
+          "sleep_hours": os.environ.get("NAVIG_PARAM_SLEEP", "").strip(),
+          "steps": os.environ.get("NAVIG_PARAM_STEPS", "").strip(),
+          "mood_1_10": os.environ.get("NAVIG_PARAM_MOOD", "").strip(),
+          "energy_1_10": os.environ.get("NAVIG_PARAM_ENERGY", "").strip(),
+          "hrv": os.environ.get("NAVIG_PARAM_HRV", "").strip(),
+          "notes": os.environ.get("NAVIG_PARAM_NOTE", "").strip(),
+      }
+      values = {k: v for k, v in raw.items() if v}
+      if not values:
+          print("Nothing to log - pass at least one measurement.")
+          sys.exit(0)
+
+      # Reject a mis-keyed weight rather than writing it into a record nobody
+      # can reconstruct. A comma decimal parses; anything unreadable stops here.
+      if "weight_kg" in values:
+          try:
+              values["weight_kg"] = f"{bm.parse_weight(values['weight_kg']):g}"
+          except bm.WeightParseError as exc:
+              print(f"Not recorded: {exc}")
+              sys.exit(1)
+
+      path = bm.metrics_path()
+      try:
+          bm.upsert(path, day, values)
+      except bm.MetricsReadError as exc:
+          # An unreadable file must never be overwritten with a fresh one.
+          print(f"Not recorded: {exc}")
+          sys.exit(1)
+
+      print(f"Logged {day}: " + ", ".join(f"{k}={v}" for k, v in values.items()))
+      print(f"  {path}")

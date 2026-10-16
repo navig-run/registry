@@ -1,0 +1,24 @@
+{
+  "space_id": "persona-space",
+  "display_name": "Persona Space",
+  "description": "Design exactly how your agent thinks, speaks, and decides.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "tags": [
+    "persona",
+    "agent-design",
+    "identity",
+    "voice",
+    "decision-style"
+  ],
+  "capability_deps": [
+    "agent",
+    "memory",
+    "vault"
+  ]
+}

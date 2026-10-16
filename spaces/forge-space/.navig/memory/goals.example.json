@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "forge-space",
+  "goals": [
+    {
+      "id": "dream-compiler",
+      "title": "Functional dream compiler",
+      "description": "Any capability described in plain English scaffolded in under 60 seconds",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

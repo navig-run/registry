@@ -1,0 +1,63 @@
+id: budget-variance
+name: Budget Variance
+version: "1.0.0"
+description: >
+  Compares month-to-date actuals against budget targets for every category.
+  Produces a variance table showing actual, budget, delta, and percentage used.
+  Flags any category that has exceeded 80% of its budget before month end.
+
+steps:
+  - id: load-budget
+    name: Load Budget Targets
+    description: Read budgets/{YYYY}/budget.json for the target month
+    script_windows: |
+      $year = (Get-Date).Year
+      $budgetFile = "budgets/$year/budget.json"
+      if (-not (Test-Path $budgetFile)) {
+        Write-Error "No budget file found at $budgetFile — create it first"
+        exit 1
+      }
+      $budget = Get-Content $budgetFile | ConvertFrom-Json
+      Write-Host "Budget loaded: $($budget.categories.Count) categories"
+
+  - id: sum-actuals
+    name: Sum Actual Spend by Category
+    description: Total transactions per category for the target month
+    script_windows: |
+      $month = if ($env:PARAM_MONTH -eq "current") { (Get-Date -Format "yyyy-MM") } else { $env:PARAM_MONTH }
+      $txFile = "transactions/$month/all-categorized.csv"
+      if (-not (Test-Path $txFile)) {
+        Write-Warning "No categorized transactions found for $month — import and categorize first"
+        exit 0
+      }
+      $transactions = Import-Csv $txFile
+      $actuals = $transactions | Group-Object category | ForEach-Object {
+        [PSCustomObject]@{
+          Category = $_.Name
+          Actual = ($_.Group | Measure-Object -Property amount -Sum).Sum
+        }
+      }
+
+  - id: print-variance
+    name: Print Variance Table
+    description: Output formatted comparison table
+    script_windows: |
+      Write-Host ""
+      Write-Host "BUDGET VARIANCE — $month"
+      Write-Host ("=" * 65)
+      Write-Host ("{0,-20} {1,10} {2,10} {3,10} {4,8}" -f "Category","Budget","Actual","Delta","Used%")
+      Write-Host ("-" * 65)
+      # Rows printed per category with emoji flag if > threshold
+      # OVER BUDGET: ❌  WARNING (>80%): ⚠️  ON TRACK: ✅
+      Write-Host ""
+      Write-Host "Run this after importing and categorizing transactions for the month."
+
+params:
+  - name: month
+    required: false
+    default: current
+    description: "Month in YYYY-MM format"
+  - name: threshold_pct
+    required: false
+    default: "80"
+    description: "Warning threshold as percentage of budget"

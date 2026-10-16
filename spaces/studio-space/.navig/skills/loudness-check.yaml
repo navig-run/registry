@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────
+# Skill: Loudness Check
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: loudness-check
+name: Loudness Check
+version: "1.0.0"
+description: |
+  Measure integrated loudness (LUFS), true peak, and loudness range
+  of an audio file. Validates against a target standard.
+category: mastering
+platform:
+  - windows
+  - linux
+  - macos
+formation: mastering-suite
+author: navig-run
+
+parameters:
+  - name: input_file
+    type: string
+    description: Path to the audio file to measure.
+    default: null
+  - name: target_lufs
+    type: number
+    description: Target integrated loudness in LUFS.
+    default: -14
+  - name: tolerance_db
+    type: number
+    description: Acceptable deviation in dB from target.
+    default: 0.5
+
+steps:
+  - id: measure
+    name: Measure loudness
+    shell: true
+    script_windows: |
+      ffmpeg -i "{{input_file}}" -af "loudnorm=print_format=json:I={{target_lufs}}:TP=-1.0:LRA=11" -f null - 2>&1
+    script_linux: |
+      ffmpeg -i "{{input_file}}" -af "loudnorm=print_format=json:I={{target_lufs}}:TP=-1.0:LRA=11" -f null - 2>&1
+    script_macos: |
+      ffmpeg -i "{{input_file}}" -af "loudnorm=print_format=json:I={{target_lufs}}:TP=-1.0:LRA=11" -f null - 2>&1

@@ -1,0 +1,66 @@
+name: weekly-planning
+description: |
+  Weekly content planning session. Reviews upcoming episodes,
+  checks guest pipeline, plans social content, and ensures
+  production calendar is filled for the next 3+ weeks.
+schedule:
+  cron: "0 9 * * 1"
+  timezone: "UTC"
+  enabled: true
+on_demand: true
+formation: guest-booking
+
+steps:
+  - id: calendar-review
+    name: "Review Episode Calendar"
+    agent: show-planner
+    action: "Check upcoming 4 weeks of scheduled content"
+    params:
+      weeks_ahead: 4
+      flag_gaps: true
+    depends_on: []
+    on_error: "continue"
+    timeout_seconds: 300
+
+  - id: guest-status
+    name: "Check Guest Pipeline"
+    agent: community-manager
+    action: "Review status of pending guest outreach and confirmations"
+    params:
+      report_style: "summary"
+    depends_on: []
+    on_error: "continue"
+    timeout_seconds: 300
+    parallel: true
+
+  - id: content-ideas
+    name: "Generate Episode Ideas"
+    agent: show-planner
+    action: "Research trending topics and generate 5 episode ideas"
+    params:
+      count: 5
+      consider_feedback: true
+    depends_on: ["calendar-review"]
+    on_error: "continue"
+    timeout_seconds: 600
+
+  - id: clip-planning
+    name: "Plan Social Clips"
+    agent: publisher
+    action: "Identify episodes needing clip extraction for social"
+    params:
+      clips_per_episode: 3
+    depends_on: ["calendar-review"]
+    on_error: "skip"
+    timeout_seconds: 300
+    parallel: true
+
+  - id: weekly-brief
+    name: "Generate Weekly Brief"
+    agent: host
+    action: "Compile weekly planning brief with calendar, guests, and action items"
+    params:
+      template: "weekly-brief"
+    depends_on: ["content-ideas", "guest-status", "clip-planning"]
+    on_error: "continue"
+    timeout_seconds: 300

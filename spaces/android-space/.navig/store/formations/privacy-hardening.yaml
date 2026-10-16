@@ -1,0 +1,52 @@
+id: privacy-hardening
+name: Privacy Hardening
+version: "1.0.0"
+description: >
+  Formation covering debloat and privacy: removing carrier/OEM bloatware via safe
+  per-user disable, auditing dangerous runtime permissions, and blocking trackers —
+  all reversible, never touching /system. Active on new devices and privacy reviews.
+
+agents:
+  lead: scrub
+  supporting: [pixel]
+
+trigger_conditions:
+  - "Debloat sweep requested (new device or scheduled)"
+  - "Permission audit requested"
+  - "Over-privileged app or tracker detected"
+  - "Manual invocation: navig formation run privacy-hardening"
+  - "New-device onboarding reaches the hardening step"
+
+action_scope:
+  - ALLOW: app-debloat, permission-audit
+  - ALLOW: pm disable-user --user 0 / pm uninstall -k --user 0 (reversible)
+  - ALLOW: cmd package install-existing (restore)
+  - ALLOW: write to .navig/wiki/debloat-catalog.md
+  - ALLOW: write to .navig/memory/known-issues.json
+  - DENY: removing any package NOT in debloat-catalog.md without confirmation
+  - DENY: root / /system modification / firmware flashing
+
+skills_used:
+  - app-debloat
+  - permission-audit
+
+workflows_used:
+  - debloat-sweep     # disable + audit step
+  - fleet-audit       # permission posture step
+
+communication:
+  inbox_channel: "#privacy"
+  escalation: operator
+  notify_on:
+    - bloat_removed
+    - over_privileged_app_detected
+    - unsafe_removal_blocked
+
+context_memory:
+  read: [debloat-catalog.md, device-registry.json]
+  write: [known-issues.json, debloat-catalog.md]
+
+example_invocation: |
+  # Trigger the privacy hardening formation manually:
+  navig formation run privacy-hardening
+  # scrub will: match catalog → disable bloat → audit permissions → report

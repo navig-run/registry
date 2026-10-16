@@ -1,0 +1,44 @@
+# Vault secrets
+.navig/vault/
+*.key
+*.pem
+
+# Video files (too large for git)
+content/**/*.mp4
+content/**/*.mov
+content/**/*.avi
+content/**/*.mkv
+content/**/*.webm
+thumbnails/**/*.psd
+thumbnails/**/*.ai
+
+# Logs
+*.log
+.navig/state/*.json
+
+# Live memory (private) — the shipped seeds are *.example.json
+.navig/memory/*.json
+!.navig/memory/*.example.json
+
+# Runtime
+.navig/proposed/*.json
+__pycache__/
+*.pyc
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/settings.json
+
+# Pack artifacts
+*.navig-pack
+dist/
+
+# Safe to override
+!.navig/memory/.gitkeep
+!.navig/state/.gitkeep
+!.navig/inbox/README.md
+!.navig/proposed/.gitkeep

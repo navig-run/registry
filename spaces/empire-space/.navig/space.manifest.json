@@ -1,0 +1,22 @@
+{
+  "id": "empire-space",
+  "space_id": "empire-space",
+  "schema_version": "2.0",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Empire Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "description": "Multi-venture portfolio operations — track companies, revenue streams, decisions, market signals, and channel performance across a diversified business empire.",
+  "tags": ["empire", "portfolio", "ventures", "revenue", "strategy", "market", "channels"],
+  "theme": {
+    "accent_color": "#C9A84C",
+    "background_hint": "gold-neutrals",
+    "animation_hint": "portfolio-cards-cascade",
+    "icon": "🏛️",
+    "tone": "command-and-control"
+  }
+}

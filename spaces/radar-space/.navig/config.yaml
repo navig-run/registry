@@ -1,0 +1,9 @@
+space_id: radar-space
+runtime: navig-space-2
+
+radar:
+  anomaly_threshold_pct: 20
+  budget_alert_pct: 80
+  report_frequency: monthly
+  auto_alert: true
+  currency: USD

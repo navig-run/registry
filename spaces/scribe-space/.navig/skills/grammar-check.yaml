@@ -1,0 +1,61 @@
+id: grammar-check
+name: Grammar Check
+version: "1.0.1"
+description: >
+  Run a grammar, spelling, and style check via the LanguageTool API.
+  Outputs a list of issues with character offsets and suggested corrections.
+category: quality
+platform:
+  - windows
+  - linux
+  - macos
+formation: fiction-workshop
+author: navig-run
+
+parameters:
+  - name: file
+    type: string
+    required: true
+    description: Path to the file to check
+  - name: language
+    type: string
+    required: false
+    default: "en-US"
+    description: Language code — e.g. en-US, en-GB, pt-BR
+
+steps:
+  - name: call-languagetool
+    description: Send text to LanguageTool (LANGUAGETOOL_URL overrides the endpoint, e.g. a local server)
+    shell: auto
+    env:
+      NAVIG_PARAM_FILE: "{{file}}"
+      NAVIG_PARAM_LANGUAGE: "{{language}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os, urllib.parse, urllib.request
+      with open(os.environ["NAVIG_PARAM_FILE"], encoding="utf-8") as f:
+          text = f.read()
+      language = os.environ.get("NAVIG_PARAM_LANGUAGE", "").strip() or "en-US"
+      key = os.environ.get("LANGUAGETOOL_API_KEY", "")
+      url = os.environ.get("LANGUAGETOOL_URL") or (
+          "https://api.languagetoolplus.com/v2/check" if key else "https://api.languagetool.org/v2/check"
+      )
+      fields = {"text": text, "language": language}
+      if key:
+          fields["apiKey"] = key
+      req = urllib.request.Request(url, data=urllib.parse.urlencode(fields).encode(), method="POST")
+      with urllib.request.urlopen(req, timeout=10) as resp:
+          result = json.load(resp)
+      matches = result.get("matches", [])
+      print(f"Issues found: {len(matches)}")
+      for m in matches[:20]:
+          offset = m["offset"]
+          msg = m["message"]
+          replacements = [r["value"] for r in m.get("replacements", [])[:3]]
+          print(f"  [{offset}] {msg}")
+          if replacements:
+              print(f"       Suggestions: {', '.join(replacements)}")
+      if len(matches) > 20:
+          print(f"  ... and {len(matches) - 20} more issues.")
+      EOF
+    on_error: "Print 'Grammar check unavailable — run LanguageTool locally (LANGUAGETOOL_URL) or set LANGUAGETOOL_API_KEY.'"

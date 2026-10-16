@@ -1,0 +1,77 @@
+name: firmware-audit
+description: |
+  On-demand firmware audit across the whole IoT fleet. Reads installed versions,
+  diffs them against latest releases, flags version drift and CVE exposure, and
+  proposes a staged OTA rollout plan. Does NOT flash — planning only.
+
+on_demand: true
+formation: firmware-fleet
+agent_lead: flux
+
+steps:
+  - id: inventory
+    name: "Read Firmware Versions Fleet-Wide"
+    skill: firmware-check
+    params:
+      target: all
+      platform: auto
+    parallel: true
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: diff
+    name: "Diff Installed vs Latest Releases"
+    depends_on: [inventory]
+    agent: flux
+    action: diff_firmware_versions
+    params:
+      inventory: "{{steps.inventory.output}}"
+    on_error: continue
+
+  - id: cve_check
+    name: "CVE Exposure Check"
+    depends_on: [inventory]
+    agent: warden
+    action: cve_check
+    params:
+      inventory: "{{steps.inventory.output}}"
+      feed: "iot-cve"
+    timeout_seconds: 60
+    on_error: continue
+
+  - id: plan_rollout
+    name: "Propose Staged OTA Rollout"
+    depends_on: [diff, cve_check]
+    agent: flux
+    action: plan_ota_rollout
+    params:
+      drift: "{{steps.diff.output}}"
+      cve: "{{steps.cve_check.output}}"
+      wave_size: 5
+      prioritize: cve_first
+
+  - id: write_issues
+    name: "Log Drift & CVE Findings"
+    depends_on: [diff, cve_check]
+    agent: warden
+    action: write_memory
+    params:
+      file: ".navig/memory/known-issues.json"
+      data:
+        timestamp: "{{now_iso}}"
+        drift: "{{steps.diff.output}}"
+        cve: "{{steps.cve_check.output}}"
+
+  - id: report
+    name: "Compose Firmware Audit Report"
+    depends_on: [plan_rollout]
+    agent: flux
+    action: compose_report
+    params:
+      template: "firmware-audit"
+      sections:
+        - drift: "{{steps.diff.output}}"
+        - cve: "{{steps.cve_check.output}}"
+        - rollout_plan: "{{steps.plan_rollout.output}}"
+      deliver_to: inbox
+      channel: "#firmware"

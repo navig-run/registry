@@ -1,0 +1,103 @@
+id: device-discover
+name: Device Discover
+version: "1.0.0"
+description: Discover IoT & smart-home devices on the local network via mDNS, SSDP, and ARP.
+category: discovery
+platform: [windows, linux, macos]
+formation: discovery-sweep
+author: navig-run
+
+parameters:
+  - name: range
+    type: string
+    description: "CIDR range to scan (e.g. 192.168.20.0/24)"
+    default: "{{config.default_network_range}}"
+  - name: method
+    type: enum
+    values: [mdns, ssdp, arp, all]
+    default: all
+  - name: output_format
+    type: enum
+    values: [table, json, csv]
+    default: table
+
+steps:
+  - id: mdns_scan
+    name: "mDNS / Bonjour service discovery"
+    condition: "method == 'mdns' or method == 'all'"
+    shell: auto
+    script_windows: |
+      # dns-sd ships with Bonjour; fall back to Resolve-DnsName for common IoT service types
+      $types = @("_http._tcp","_hap._tcp","_esphomelib._tcp","_mqtt._tcp","_ewelink._tcp")
+      foreach ($t in $types) {
+        try { Resolve-DnsName -Name "$t.local" -Type PTR -ErrorAction Stop |
+          Select-Object Name, Type } catch { }
+      }
+    script_linux: |
+      # avahi-browse enumerates all mDNS services on the LAN
+      avahi-browse -art 2>/dev/null | grep -E "IPv4|hostname|address|port" || \
+        echo "avahi-browse not installed — install avahi-utils"
+    script_macos: |
+      dns-sd -B _services._dns-sd._udp local. &
+      DSPID=$!; sleep 4; kill $DSPID 2>/dev/null
+      echo "mDNS browse complete"
+
+  - id: ssdp_scan
+    name: "SSDP / UPnP discovery (M-SEARCH multicast)"
+    condition: "method == 'ssdp' or method == 'all'"
+    shell: auto
+    script: |
+      python3 - <<'PY'
+      import socket
+      msg = "\r\n".join([
+        'M-SEARCH * HTTP/1.1','HOST:239.255.255.250:1900',
+        'MAN:"ssdp:discover"','MX:2','ST:ssdp:all','','']).encode()
+      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+      s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+      s.settimeout(3)
+      s.sendto(msg, ('239.255.255.250', 1900))
+      seen=set()
+      try:
+        while True:
+          data, addr = s.recvfrom(2048)
+          if addr[0] not in seen:
+            seen.add(addr[0])
+            for line in data.decode(errors='ignore').splitlines():
+              if line.lower().startswith(('server:','location:','usn:')):
+                print(f"{addr[0]}\t{line.strip()}")
+      except socket.timeout:
+        pass
+      print(f"SSDP devices found: {len(seen)}")
+      PY
+
+  - id: arp_scan
+    name: "ARP-based fallback discovery"
+    condition: "method == 'arp' or method == 'all'"
+    shell: auto
+    script_windows: |
+      arp -a | Where-Object { $_ -match "^\s+\d" } |
+        ForEach-Object {
+          $parts = $_ -split '\s+' | Where-Object { $_ }
+          [PSCustomObject]@{ IP=$parts[0]; MAC=$parts[1]; Type=$parts[2] }
+        } | Format-Table -AutoSize
+    script_linux: |
+      ip neigh show | awk '{printf "%-18s %-20s %s\n", $1, $5, $6}'
+    script_macos: |
+      arp -a | awk '{print $2, $4}' | tr -d '()'
+
+  - id: summarize
+    name: "Summarize discovery"
+    shell: auto
+    script: |
+      echo "Discovery complete for range: {{range}} (method: {{method}})"
+
+output:
+  fields: [ip, mac, hostname, protocol, vendor, mqtt_topic, status]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Discover all IoT devices on the IoT VLAN"
+    command: "navig skill run device-discover --range 192.168.20.0/24"
+  - description: "mDNS-only discovery, JSON output"
+    command: "navig skill run device-discover --method mdns --output_format json"

@@ -1,0 +1,34 @@
+id: weekly-review
+name: Weekly Review
+version: "1.0.0"
+description: Weekly synthesis. Run every Sunday. Takes 20–30 minutes.
+space: learn
+steps:
+  - step: 1
+    name: Spaced Repetition Queue
+    agent: review-scheduler
+    command: "@review-scheduler due"
+    automated: true
+    note: Review each due item — mark remembered or forgot
+  - step: 2
+    name: Run Review Session
+    agent: review-scheduler
+    command: "@review-scheduler run --session weekly"
+    automated: true
+  - step: 3
+    name: Progress Check
+    agent: course-tracker
+    command: "@course-tracker status"
+    automated: true
+  - step: 4
+    name: Stale Item Review
+    agent: course-tracker
+    description: Any item with no progress in 14+ days — continue, pause, or abandon?
+    manual: true
+  - step: 5
+    name: Update Skills
+    agent: skill-planner
+    command: "@skill-planner update"
+    automated: true
+expected_duration: 20-30 minutes
+cadence: weekly

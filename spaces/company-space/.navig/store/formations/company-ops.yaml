@@ -1,0 +1,81 @@
+id: company-ops
+name: Company Operations — Full Stack
+version: "2.0.0"
+description: |
+  The master formation for {{COMPANY_NAME}}. Orchestrates all 5 agents across finance,
+  sales, projects, operations, and strategy. This is the default formation — always active.
+
+agents:
+  director: chief
+  lead: ops-manager
+  supporting:
+    - controller
+    - sales
+    - project-lead
+
+trigger_conditions:
+  - Inbox item needs processing (any channel)
+  - Project needs kickoff or review
+  - Financial close or tax deadline approaching
+  - Client inquiry or lead received
+  - Strategic review or quarterly planning due
+  - Compliance deadline within 14 days
+  - Runbook or SOP update needed
+  - Weekly ops review (Monday 09:00 UTC)
+
+action_scope:
+  - Inbox triage and routing (6 channels)
+  - Financial operations (invoicing, expenses, tax, reporting)
+  - Client pipeline (leads, proposals, contracts, retention)
+  - Project delivery (specs, milestones, ADRs, profitability)
+  - SOP and runbook maintenance
+  - Strategic planning and decision logging
+  - Meeting coordination and documentation
+  - Compliance monitoring
+
+skills_used:
+  - triage-inbox
+  - generate-invoice
+  - generate-quote
+  - expense-log
+  - lead-qualify
+  - revenue-report
+  - expense-report
+  - tax-summary
+  - contract-draft
+  - meeting-minutes
+
+workflows_used:
+  - weekly-ops-review
+  - monthly-financial-close
+  - quarterly-review
+  - lead-intake
+  - invoice-cycle
+  - tax-deadline-prep
+
+communication:
+  channels:
+    - "#finance"
+    - "#sales"
+    - "#ops"
+    - "#projects"
+    - "#strategic"
+    - "#urgent"
+  escalation: operator
+  notify_on:
+    - critical incident or blocker
+    - project milestone missed
+    - inbox item unactioned >48h
+    - tax threshold >80%
+    - payment overdue >30 days
+    - budget burn >80%
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+    - .navig/memory/space-context.json
+    - .navig/memory/known-issues.json
+    - .navig/config.yaml
+  write: []
+
+example_invocation: "@company-ops review --scope weekly"

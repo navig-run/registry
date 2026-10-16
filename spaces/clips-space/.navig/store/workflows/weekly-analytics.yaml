@@ -1,0 +1,77 @@
+name: weekly-analytics
+description: |
+  Weekly performance analytics workflow. Aggregates cross-platform
+  metrics, identifies top performers, analyses retention patterns,
+  and generates actionable insights report every Friday.
+
+schedule:
+  cron: "0 17 * * 5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: performance-review
+
+steps:
+  - id: pull-analytics
+    name: Aggregate cross-platform analytics
+    skill: analytics-aggregate
+    params:
+      period: 7d
+      platforms: [tiktok, reels, shorts]
+    depends_on: []
+    on_error: stop
+    timeout_seconds: 240
+
+  - id: identify-winners
+    name: Identify top-performing clips
+    agent: trend-scout
+    action: rank-content
+    params:
+      metric: engagement_rate
+      top_n: 5
+    depends_on: [pull-analytics]
+    on_error: continue
+    timeout_seconds: 90
+
+  - id: retention-analysis
+    name: Analyse retention patterns
+    agent: trend-scout
+    action: retention-analysis
+    params:
+      focus: drop_off_points
+    depends_on: [pull-analytics]
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: hashtag-review
+    name: Review hashtag performance
+    skill: hashtag-optimize
+    params:
+      mode: review
+      period: 7d
+    depends_on: [pull-analytics]
+    on_error: continue
+    timeout_seconds: 90
+    parallel: true
+
+  - id: generate-report
+    name: Generate weekly report
+    agent: trend-scout
+    action: generate-report
+    params:
+      include: [top_clips, retention, hashtags, recommendations]
+    depends_on: [identify-winners, retention-analysis, hashtag-review]
+    on_error: stop
+    timeout_seconds: 120
+
+  - id: share-insights
+    name: Share insights with team
+    agent: clip-director
+    action: distribute-report
+    params:
+      channels: ["#clips", "#analytics"]
+    depends_on: [generate-report]
+    on_error: continue
+    timeout_seconds: 30

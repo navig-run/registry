@@ -1,0 +1,51 @@
+id: fleet-patrol
+name: Fleet Patrol
+version: "1.0.0"
+description: >
+  Formation covering multi-device inventory and health: model/serial enumeration,
+  Android-version and security-patch tracking, battery health, and storage headroom
+  across every device. Active for scheduled sweeps and on-demand fleet audits.
+
+agents:
+  lead: pixel
+  supporting: [keeper]
+
+trigger_conditions:
+  - "New device appears in adb devices (detected by device-inventory)"
+  - "Battery or storage report crosses a warning threshold"
+  - "Manual invocation: navig formation run fleet-patrol"
+  - "Daily morning-device-check inventory step"
+  - "Device goes offline that was previously registered"
+
+action_scope:
+  - ALLOW: device-inventory, battery-report
+  - ALLOW: adb getprop / dumpsys battery / df (read-only)
+  - ALLOW: write to .navig/wiki/devices.md
+  - ALLOW: write to .navig/memory/device-registry.json
+  - DENY: app uninstall / pm disable
+  - DENY: fastboot / firmware flashing
+
+skills_used:
+  - device-inventory
+  - battery-report
+
+workflows_used:
+  - morning-device-check   # inventory step
+  - fleet-audit            # full enumeration + health step
+
+communication:
+  inbox_channel: "#fleet"
+  escalation: operator
+  notify_on:
+    - new_device_detected
+    - device_offline
+    - battery_health_degraded
+
+context_memory:
+  read: [device-registry.json, devices.md]
+  write: [device-registry.json, devices.md]
+
+example_invocation: |
+  # Trigger the fleet patrol formation manually:
+  navig formation run fleet-patrol
+  # pixel will: enumerate devices → fingerprint → update registry → flag drift

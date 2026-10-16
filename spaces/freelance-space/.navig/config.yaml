@@ -1,0 +1,22 @@
+space: freelance
+version: "1.0.0"
+runtime: navig-space-2
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+skills_dir: ".navig/skills/"
+formations_dir: ".navig/store/formations/"
+agents_dir: ".navig/store/agents/"
+workflows_dir: ".navig/store/workflows/"
+prompts_dir: ".navig/store/prompts/"
+wiki_dir: ".navig/wiki/"
+memory_dir: ".navig/memory/"
+default_formation: client-ops
+escalation_agent: operator
+log_level: info
+audit_log: ".navig/logs/audit.log"
+pack_format: "navig-space-pack"
+pack_exclude:
+  - ".navig/logs/**"
+  - ".env"
+  - "node_modules/**"

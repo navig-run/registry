@@ -1,0 +1,26 @@
+id: new-trip
+name: New Trip
+version: "1.0.0"
+description: Creates a new trip with full structure.
+space: travel
+steps:
+  - step: 1
+    name: Define Trip
+    agent: trip-planner
+    description: Name, destination, dates, budget target, type (leisure/adventure/city/beach)
+    manual: true
+  - step: 2
+    name: Create Folder Structure
+    agent: trip-planner
+    action: Create trips/{slug}/ with all subdirectories
+    automated: true
+  - step: 3
+    name: Cost Estimate
+    agent: trip-planner
+    description: Rough estimate by destination type and duration (the trip-planner agent estimates; no packaged skill yet)
+    manual: true
+  - step: 4
+    name: Create Packing List
+    agent: document-keeper
+    description: Draft a packing list for the trip type and duration (no packaged skill yet)
+    manual: true

@@ -1,0 +1,12 @@
+{
+  "tier": "personal",
+  "capability_deps": [
+    "storage",
+    "agent",
+    "memory",
+    "vault"
+  ],
+  "space_id": "finance-space",
+  "author": "navig-run",
+  "status": "active"
+}

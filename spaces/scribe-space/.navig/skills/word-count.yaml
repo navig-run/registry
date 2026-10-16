@@ -1,0 +1,62 @@
+id: word-count
+name: Word Count
+version: "1.0.1"
+description: Count words, sentences, and paragraphs in a text file. Returns totals and a brief reading-time estimate.
+category: analysis
+platform:
+  - windows
+  - linux
+  - macos
+formation: fiction-workshop
+author: navig-run
+
+parameters:
+  - name: file
+    type: string
+    required: true
+    description: Path to the Markdown or plain-text file to analyse
+  - name: target
+    type: integer
+    required: false
+    description: Target word count — shows percentage progress if provided
+
+steps:
+  - name: count-words
+    description: Count words using Python
+    shell: auto
+    env:
+      NAVIG_PARAM_FILE: "{{file}}"
+      NAVIG_PARAM_TARGET: "{{target}}"
+    script_windows: |
+      $content = Get-Content -Raw -LiteralPath $env:NAVIG_PARAM_FILE
+      $words = ($content -split '\s+' | Where-Object { $_ -ne '' }).Count
+      $sentences = ($content -split '[.!?]+' | Where-Object { $_ -ne '' }).Count
+      $paras = ($content -split '\n\n+' | Where-Object { $_ -ne '' }).Count
+      $readingMin = [math]::Round($words / 200, 1)
+      Write-Output "Words:     $words"
+      Write-Output "Sentences: $sentences"
+      Write-Output "Paragraphs: $paras"
+      Write-Output "Est. reading time: $readingMin min (200 wpm)"
+      $target = 0
+      if ([int]::TryParse("$env:NAVIG_PARAM_TARGET", [ref]$target) -and $target -gt 0) {
+        $pct = [math]::Round(($words / $target) * 100, 1)
+        Write-Output "Target progress: $pct% of $target words"
+      }
+    script: |
+      python3 - <<'EOF'
+      import os, re
+      with open(os.environ["NAVIG_PARAM_FILE"], encoding="utf-8") as f:
+          text = f.read()
+      words = len(re.findall(r'\b\w+\b', text))
+      sentences = len(re.findall(r'[.!?]+', text))
+      paras = len([p for p in text.split('\n\n') if p.strip()])
+      reading = round(words / 200, 1)
+      print(f"Words:      {words}")
+      print(f"Sentences:  {sentences}")
+      print(f"Paragraphs: {paras}")
+      print(f"Est. reading time: {reading} min (200 wpm)")
+      target = os.environ.get("NAVIG_PARAM_TARGET", "").strip()
+      if target.isdigit() and int(target) > 0:
+          pct = round((words / int(target)) * 100, 1)
+          print(f"Target progress: {pct}% of {target} words")
+      EOF

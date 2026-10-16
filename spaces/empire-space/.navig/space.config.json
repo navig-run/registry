@@ -1,0 +1,22 @@
+{
+  "id": "empire-space",
+  "space_id": "empire-space",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Empire Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "spaces_dir": "spaces",
+  "description": "Multi-venture portfolio — companies, revenue streams, decisions, market signals.",
+  "paths": ["ventures", "channels", "decisions", "intel"],
+  "agents": ["portfolio-commander", "venture-scout", "revenue-tracker", "market-analyst"],
+  "formations": ["portfolio-ops", "venture-review", "market-watch"],
+  "skills": ["advance-stage", "log-decision", "track-revenue", "channel-audit"],
+  "meta": {
+    "tags": ["empire", "portfolio", "ventures", "revenue"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

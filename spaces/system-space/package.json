@@ -1,0 +1,26 @@
+{
+  "name": "@navig/system-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OS & filesystem operator space — safe bulk inventory, migration, trash-not-delete and long-path purge. CLI-driven, navig-wired.",
+  "keywords": ["navig", "space", "windows", "filesystem", "ntfs", "robocopy", "powershell", "organization", "migration", "dedupe", "long-paths"],
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/system-space"
+  },
+  "navig": {
+    "space": "system-space",
+    "type": "space",
+    "engine": "bin/system.ps1"
+  },
+  "scripts": {
+    "inventory": "pwsh -File bin/system.ps1 inventory",
+    "size": "pwsh -File bin/system.ps1 size",
+    "migrate": "pwsh -File bin/system.ps1 migrate",
+    "purge": "pwsh -File bin/system.ps1 purge",
+    "test": "pwsh -File tests/smoke.ps1"
+  }
+}

@@ -1,0 +1,12 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+version: "1.0"
+routes:
+  - channel: "#deadlines"
+    description: "Upcoming administrative deadlines and alerts"
+    default: true
+  - channel: "#documents"
+    description: "New documents to file and existing document queries"
+  - channel: "#dossiers"
+    description: "Active administrative processes (dossiers en cours)"
+  - channel: "#courrier"
+    description: "Incoming and outgoing official correspondence"

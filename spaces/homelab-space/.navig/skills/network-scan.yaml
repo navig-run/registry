@@ -1,0 +1,86 @@
+id: network-scan
+name: Network Scan
+version: "1.0.0"
+description: Discover all active devices on the local network using nmap or ARP fallback.
+category: network
+platform: [windows, linux, macos]
+formation: network-ops
+author: navig-run
+
+parameters:
+  - name: range
+    type: string
+    description: "CIDR range to scan (e.g. 192.168.1.0/24)"
+    default: "{{config.default_network_range}}"
+  - name: method
+    type: enum
+    values: [nmap, arp, both]
+    default: both
+  - name: output_format
+    type: enum
+    values: [table, json, csv]
+    default: table
+
+steps:
+  - id: check_tools
+    name: "Check available tools"
+    shell: auto
+    script: |
+      # Windows
+      if ($IsWindows) {
+        $nmap = Get-Command nmap -ErrorAction SilentlyContinue
+        $has_nmap = $nmap -ne $null
+        Write-Output "platform=windows"
+        Write-Output "has_nmap=$has_nmap"
+      }
+    script_linux: |
+      which nmap >/dev/null 2>&1 && echo "has_nmap=true" || echo "has_nmap=false"
+      echo "platform=linux"
+    script_macos: |
+      which nmap >/dev/null 2>&1 && echo "has_nmap=true" || echo "has_nmap=false"
+      echo "platform=macos"
+
+  - id: arp_scan
+    name: "ARP-based discovery (fast, no root)"
+    condition: "method == 'arp' or method == 'both'"
+    shell: auto
+    script_windows: |
+      arp -a | Where-Object { $_ -match "^\s+\d" } |
+        ForEach-Object {
+          $parts = $_ -split '\s+' | Where-Object { $_ }
+          [PSCustomObject]@{ IP=$parts[0]; MAC=$parts[1]; Type=$parts[2] }
+        } | Format-Table -AutoSize
+    script_linux: |
+      arp -n 2>/dev/null || ip neigh show | \
+        awk '{printf "%-18s %-20s %s\n", $1, $5, $6}'
+    script_macos: |
+      arp -a | awk '{print $2, $4}' | tr -d '()'
+
+  - id: nmap_scan
+    name: "nmap ping sweep (detailed)"
+    condition: "(method == 'nmap' or method == 'both') and has_nmap == 'true'"
+    shell: auto
+    script: |
+      nmap -sn -T4 --open {{range}} \
+        --oG - 2>/dev/null | grep "^Host" | \
+        awk '{print $2, $3}'
+    script_windows: |
+      nmap -sn -T4 {{range}} | Select-String "Nmap scan|Host is up" |
+        ForEach-Object { $_.Line }
+
+  - id: summarize
+    name: "Output device count"
+    shell: auto
+    script: |
+      echo "Scan complete for range: {{range}}"
+
+output:
+  fields: [ip, mac, hostname, status]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Scan default range in table format"
+    command: "navig skill run network-scan"
+  - description: "Scan specific subnet, JSON output"
+    command: "navig skill run network-scan --range 10.0.0.0/24 --output_format json"

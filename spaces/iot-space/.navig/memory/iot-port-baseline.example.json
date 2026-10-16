@@ -1,0 +1,18 @@
+{
+  "_comment": "EXAMPLE FILE — copy to iot-port-baseline.json and list the ports each IoT device class is EXPECTED to expose. warden / security-mesh flag anything outside this list.",
+  "schema_version": "1.0",
+  "updated": null,
+  "defaults": {
+    "allowed_ports": [80]
+  },
+  "device_classes": {
+    "tasmota": { "allowed_ports": [80] },
+    "esphome": { "allowed_ports": [80, 6053] },
+    "shelly": { "allowed_ports": [80] },
+    "mqtt-broker": { "allowed_ports": [1883, 8883] },
+    "home-assistant": { "allowed_ports": [8123] }
+  },
+  "devices": {
+    "iot-001": { "allowed_ports": [80] }
+  }
+}

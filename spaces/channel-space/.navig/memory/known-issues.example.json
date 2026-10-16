@@ -1,0 +1,25 @@
+{
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "No videos indexed",
+      "description": "Channel content has not been scanned or cataloged yet.",
+      "severity": "info",
+      "status": "open"
+    },
+    {
+      "id": "ISS-002",
+      "title": "YouTube API not configured",
+      "description": "Analytics skills require YouTube Data API credentials to be set up.",
+      "severity": "warning",
+      "status": "open"
+    },
+    {
+      "id": "ISS-003",
+      "title": "No thumbnail templates",
+      "description": "Thumbnail lab has no base templates defined yet.",
+      "severity": "info",
+      "status": "open"
+    }
+  ]
+}

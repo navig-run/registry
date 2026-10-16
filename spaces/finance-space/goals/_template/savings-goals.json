@@ -1,0 +1,14 @@
+{
+  "goals": [
+    {
+      "slug": "emergency-fund",
+      "name": "Emergency fund",
+      "target": 0,
+      "current": 0,
+      "monthly_contribution": 0,
+      "deadline": "YYYY-MM-DD",
+      "account": "savings"
+    }
+  ],
+  "notes": "Copy to goals/savings-goals.json and replace the sample goal with your own."
+}

@@ -1,0 +1,7 @@
+space: business
+version: "1.0.0"
+description: "E-commerce operations, FBA selling, affiliate marketing, and financial management"
+default_formation: ecommerce-ops
+runtime: navig-space-2
+language: en
+timezone: UTC

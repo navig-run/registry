@@ -1,0 +1,150 @@
+id: ssh-connect
+name: SSH Connect
+version: "1.0.0"
+description: >
+  Rapid SSH into any registered device in the space device registry.
+  Supports alias lookup, jump hosts, port forwarding, and SFTP mode.
+category: remote-access
+platform: [windows, linux, macos]
+formation: cross-platform-ops
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Device name/alias from registry, or user@host"
+    required: true
+  - name: mode
+    type: enum
+    values: [shell, sftp, tunnel, exec]
+    default: shell
+  - name: command
+    type: string
+    description: "Command to run in exec mode"
+    required_if: "mode == 'exec'"
+  - name: tunnel_local
+    type: int
+    description: "Local port for tunnel mode"
+    default: 0
+  - name: tunnel_remote
+    type: int
+    description: "Remote port for tunnel mode"
+    default: 0
+  - name: identity_file
+    type: string
+    description: "Path to SSH private key (overrides registry value)"
+    default: ""
+  - name: verbose
+    type: bool
+    default: false
+
+steps:
+  - id: resolve_target
+    name: "Resolve device alias from registry"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_TARGET: "{{target}}"
+    script: |
+      python3 -c "
+      import json, os, sys
+
+      target = os.environ.get('NAVIG_PARAM_TARGET', '')
+      reg_path = '.navig/memory/device-registry.json'
+
+      # If target looks like user@host, use directly
+      if '@' in target or '.' in target:
+          print(f'host={target}')
+          print(f'port=22')
+          print(f'user=')
+          sys.exit(0)
+
+      # Look up in registry
+      if not os.path.exists(reg_path):
+          print(f'host={target}')
+          print(f'port=22')
+          print(f'user=')
+          sys.exit(0)
+
+      reg = json.load(open(reg_path))
+      found = None
+      for device in reg.get('devices', []):
+          if device.get('name') == target or device.get('alias') == target:
+              found = device
+              break
+
+      if found:
+          print(f'host={found.get(\"ip\", target)}')
+          print(f'port={found.get(\"ssh_port\", 22)}')
+          print(f'user={found.get(\"ssh_user\", \"\")}')
+          print(f'key={found.get(\"ssh_key\", \"\")}')
+          print(f'jump={found.get(\"jump_host\", \"\")}')
+      else:
+          print(f'host={target}')
+          print(f'port=22')
+          print(f'user=')
+      "
+
+  - id: build_ssh_args
+    name: "Build SSH argument string"
+    shell: auto
+    env:
+      NAVIG_PARAM_MODE: "{{mode}}"
+      NAVIG_PARAM_TARGET: "{{target}}"
+      NAVIG_PARAM_IDENTITY_FILE: "{{identity_file}}"
+      NAVIG_PARAM_VERBOSE: "{{verbose}}"
+      NAVIG_PARAM_TUNNEL_LOCAL: "{{tunnel_local}}"
+      NAVIG_PARAM_TUNNEL_REMOTE: "{{tunnel_remote}}"
+      NAVIG_PARAM_COMMAND: "{{command}}"
+    script: |
+      python3 -c "
+      import os, shlex
+      p = lambda k, d='': os.environ.get('NAVIG_PARAM_' + k, d)
+      mode     = p('MODE')
+      host     = os.environ.get('NAVIG_VAR_host', p('TARGET'))
+      port     = os.environ.get('NAVIG_VAR_port', '22')
+      user     = os.environ.get('NAVIG_VAR_user', '')
+      key      = p('IDENTITY_FILE') or os.environ.get('NAVIG_VAR_key', '')
+      jump     = os.environ.get('NAVIG_VAR_jump', '')
+      verbose  = '-v' if p('VERBOSE') == 'true' else ''
+      t_local  = p('TUNNEL_LOCAL')
+      t_remote = p('TUNNEL_REMOTE')
+      remote_cmd = p('COMMAND')
+
+      user_at  = f'{user}@' if user else ''
+      port_arg = f'-p {port}' if port != '22' else ''
+      key_arg  = f'-i \"{key}\"' if key else ''
+      jump_arg = f'-J {jump}' if jump else ''
+
+      if mode == 'shell':
+          cmd = f'ssh {verbose} {port_arg} {key_arg} {jump_arg} {user_at}{host}'
+      elif mode == 'sftp':
+          cmd = f'sftp {port_arg} {key_arg} {jump_arg} {user_at}{host}'
+      elif mode == 'tunnel' and t_local and t_remote:
+          cmd = f'ssh -N -L {t_local}:localhost:{t_remote} {port_arg} {key_arg} {jump_arg} {user_at}{host}'
+      elif mode == 'exec':
+          cmd = f'ssh {verbose} {port_arg} {key_arg} {jump_arg} {user_at}{host} {shlex.quote(remote_cmd)}'
+      else:
+          cmd = f'ssh {verbose} {port_arg} {key_arg} {jump_arg} {user_at}{host}'
+
+      print(cmd.strip())
+      "
+
+  - id: connect
+    name: "Open SSH connection"
+    shell: auto
+    interactive: true
+    script: |
+      # The SSH command built above is executed here
+      # NAVIG will exec the command directly (replacing the shell process)
+      echo "Connecting to {{target}}..."
+
+examples:
+  - description: "SSH into registered device 'homeserver'"
+    command: "navig skill run ssh-connect --target homeserver"
+  - description: "Run a remote command"
+    command: "navig skill run ssh-connect --target 192.168.1.50 --mode exec --command 'df -h'"
+  - description: "Open SFTP session"
+    command: "navig skill run ssh-connect --target nas --mode sftp"
+  - description: "Port forward: local:5432 → remote:5432"
+    command: "navig skill run ssh-connect --target dbserver --mode tunnel --tunnel_local 5432 --tunnel_remote 5432"

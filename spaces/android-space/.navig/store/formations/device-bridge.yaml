@@ -1,0 +1,52 @@
+id: device-bridge
+name: Device Bridge
+version: "1.0.0"
+description: >
+  Formation covering all ADB connectivity: USB and wireless debugging, pairing,
+  tcpip transport, shell routing, and live screen mirroring/control. Active whenever
+  a device needs to be reached or driven from the desktop.
+
+agents:
+  lead: bridge
+  supporting: [mirror, pixel]
+
+trigger_conditions:
+  - "Operator requests a device connection or mirroring session"
+  - "Device shows 'unauthorized' or 'offline' in adb devices"
+  - "Wireless debugging pairing requested (Android 11+)"
+  - "Manual invocation: navig formation run device-bridge"
+  - "New device plugged in over USB and detected"
+
+action_scope:
+  - ALLOW: adb-connect, wireless-debug, screen-mirror, logcat-capture
+  - ALLOW: adb shell command routing (read + input injection)
+  - ALLOW: write to .navig/memory/device-registry.json
+  - DENY: app uninstall / pm disable (belongs to app-ops / privacy-hardening)
+  - DENY: fastboot / firmware flashing
+
+skills_used:
+  - adb-connect
+  - wireless-debug
+  - screen-mirror
+  - logcat-capture
+
+workflows_used:
+  - morning-device-check   # adb-connect + inventory step
+  - new-device-onboard     # pairing step
+
+communication:
+  inbox_channel: "#bridge"
+  escalation: operator
+  notify_on:
+    - device_connected
+    - device_unauthorized
+    - pairing_failed
+
+context_memory:
+  read: [device-registry.json]
+  write: [device-registry.json]
+
+example_invocation: |
+  # Trigger the device bridge formation manually:
+  navig formation run device-bridge
+  # bridge will: detect devices → authorize/pair → open transport → hand off to mirror

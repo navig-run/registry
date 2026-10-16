@@ -1,0 +1,21 @@
+{
+  "space_id": "clips-space",
+  "name": "Clips Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "paths": {
+    "docs": "docs/",
+    "ops": ".navig/ops/",
+    "inbox": ".navig/inbox/",
+    "skills": ".navig/skills/",
+    "scripts": "scripts/",
+    "tests": "tests/",
+    "tools": ".navig/store/mcp/",
+    "clips": "clips/",
+    "hooks": "hooks/",
+    "trends": "trends/"
+  }
+}

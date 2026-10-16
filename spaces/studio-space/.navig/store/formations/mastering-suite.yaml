@@ -1,0 +1,48 @@
+id: mastering-suite
+name: Mastering Suite
+version: "1.0.0"
+description: >
+  Final mix QC and master delivery. Loudness compliance, format validation,
+  reference comparison, and delivery preparation.
+
+agents:
+  lead: mix-engineer
+  supporting: [producer]
+
+trigger_conditions:
+  - "Mix marked as complete"
+  - "Mastering QC requested"
+  - "Manual invocation: navig formation run mastering-suite"
+  - "Loudness check needed before release"
+
+action_scope:
+  - ALLOW: loudness-check, format-convert, stem-export, metadata-tag
+  - ALLOW: read from sessions/
+  - ALLOW: write to releases/
+  - DENY: arrangement changes
+  - DENY: sample library modifications
+
+skills_used:
+  - loudness-check
+  - format-convert
+  - stem-export
+  - metadata-tag
+
+workflows_used:
+  - release-cycle
+
+communication:
+  inbox_channel: "#mastering"
+  escalation: producer
+  notify_on:
+    - master_approved
+    - loudness_fail
+    - format_ready
+
+context_memory:
+  read: [space-context.json, known-issues.json]
+  write: [known-issues.json]
+
+example_invocation: |
+  navig formation run mastering-suite
+  # mix-engineer will: check loudness → validate formats → compare reference → deliver

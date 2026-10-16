@@ -1,0 +1,21 @@
+{
+  "name": "clips-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Short-form video factory for TikTok, Reels, and YouTube Shorts.",
+  "author": "navig-run",
+  "license": "MIT",
+  "keywords": ["navig", "space", "tiktok", "reels", "shorts", "clips", "viral", "hooks"],
+  "scripts": {
+    "validate": "navig space doctor . --no-interactive",
+    "doctor": "navig space doctor .",
+    "skills": "navig skill list",
+    "formations": "navig formation list"
+  },
+  "navig": {
+    "type": "space",
+    "skills_dir": ".navig/skills",
+    "store_dir": ".navig/store",
+    "entry_workflow": "morning-clips"
+  }
+}

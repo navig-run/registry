@@ -1,0 +1,11 @@
+space_id: health-space
+runtime: navig-space-2
+display_name: Health
+
+health:
+  log_frequency: daily
+  sleep_target_hours: 8
+  water_target_liters: 2.5
+  mood_scale: 1-10
+  energy_scale: 1-10
+  trend_window_days: 30

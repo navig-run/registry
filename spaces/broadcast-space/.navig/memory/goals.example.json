@@ -1,0 +1,40 @@
+{
+  "space_id": "broadcast",
+  "goals": [
+    {
+      "id": "consistent-schedule",
+      "description": "Publish episodes on a consistent weekly schedule",
+      "priority": "high",
+      "status": "not-started",
+      "target": "1 episode per week, same day and time"
+    },
+    {
+      "id": "audio-quality",
+      "description": "Meet broadcast-quality audio standards on every episode",
+      "priority": "high",
+      "status": "not-started",
+      "target": "-16 LUFS, noise floor below -60dB, no clipping"
+    },
+    {
+      "id": "guest-pipeline",
+      "description": "Maintain a pipeline of 5+ confirmed upcoming guests",
+      "priority": "medium",
+      "status": "not-started",
+      "target": "5 guests confirmed at least 2 weeks ahead"
+    },
+    {
+      "id": "multi-platform",
+      "description": "Distribute to all major platforms within 1 hour of release",
+      "priority": "medium",
+      "status": "not-started",
+      "target": "Apple Podcasts, Spotify, YouTube, RSS — simultaneous"
+    },
+    {
+      "id": "social-clips",
+      "description": "Extract and publish 3 social clips per episode",
+      "priority": "medium",
+      "status": "not-started",
+      "target": "3 clips under 60 seconds, posted within 24 hours of episode"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "_comment": "EXAMPLE FILE — safe to commit. Copy to device-registry.json and replace with your real devices.",
+  "schema_version": "1.0",
+  "space": "android",
+  "devices": [
+    {
+      "id": "and-001",
+      "name": "pixel-8-pro",
+      "serial": "3A091FDJ00042X",
+      "manufacturer": "Google",
+      "model": "Pixel 8 Pro",
+      "android_version": "14",
+      "sdk": 34,
+      "security_patch": "2026-06-05",
+      "abi": "arm64-v8a",
+      "role": "daily-driver",
+      "location": "pocket",
+      "battery": {"level": 82, "health": "Good", "temp_c": 31.4},
+      "storage": [
+        {"mount": "/data", "total_gb": 256, "free_gb": 74}
+      ],
+      "transport": "wifi",
+      "wireless_addr": "192.168.1.42:5555",
+      "wake_on_lan": false,
+      "added": "YYYY-MM-DD",
+      "last_seen": "YYYY-MM-DD",
+      "notes": "Replace with your actual device details"
+    },
+    {
+      "id": "and-002",
+      "name": "galaxy-tab-s9",
+      "serial": "R9WT20ABCDE",
+      "manufacturer": "Samsung",
+      "model": "Galaxy Tab S9",
+      "android_version": "13",
+      "sdk": 33,
+      "security_patch": "2026-04-01",
+      "abi": "arm64-v8a",
+      "role": "tablet",
+      "location": "desk",
+      "battery": {"level": 55, "health": "Good", "temp_c": 29.0},
+      "storage": [
+        {"mount": "/data", "total_gb": 128, "free_gb": 40}
+      ],
+      "transport": "usb",
+      "wireless_addr": null,
+      "wake_on_lan": false,
+      "added": "YYYY-MM-DD",
+      "last_seen": "YYYY-MM-DD",
+      "notes": "Replace with your actual device details"
+    }
+  ],
+  "schema": {
+    "template": {
+      "id": "and-NNN",
+      "name": "device-name",
+      "serial": "adb-serial",
+      "manufacturer": "Google|Samsung|Xiaomi|OnePlus|other",
+      "model": "",
+      "android_version": "14",
+      "sdk": 0,
+      "security_patch": "YYYY-MM-DD",
+      "abi": "arm64-v8a",
+      "role": "daily-driver|test|tablet|work|spare",
+      "location": "room-or-owner",
+      "battery": {"level": 0, "health": "", "temp_c": 0},
+      "storage": [],
+      "transport": "usb|wifi",
+      "wireless_addr": null,
+      "wake_on_lan": false,
+      "added": "YYYY-MM-DD",
+      "last_seen": "YYYY-MM-DD",
+      "notes": ""
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "spaceId": "human-space",
+  "displayName": "Human Space",
+  "description": "Personal life, habits, health, and growth.",
+  "defaultPersonaId": "navig",
+  "createdAt": "2026-03-02T00:00:00.000Z",
+  "tier": "personal",
+  "status": "active",
+  "author": "navig-run"
+}

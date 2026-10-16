@@ -1,0 +1,12 @@
+{
+  "slug": "checking",
+  "name": "Checking Account",
+  "type": "checking",
+  "institution": "Bank Name",
+  "account_number_last4": "1234",
+  "currency": "USD",
+  "balance": 0.00,
+  "balance_as_of": "YYYY-MM-DD",
+  "tags": ["primary", "daily-spending"],
+  "notes": ""
+}

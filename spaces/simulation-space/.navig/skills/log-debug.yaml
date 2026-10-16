@@ -1,0 +1,90 @@
+id: log-debug
+name: Log Debug
+version: "1.0.0"
+description: >
+  Log a behavioral debug ticket. Captures symptom, trace (cause chain),
+  hypothesis (proposed fix), and schedules a retest date.
+category: debugging
+platform: [windows, linux, macos]
+formation: debug-loop
+author: simulation-space
+
+parameters:
+  - name: symptom
+    type: string
+    required: true
+    description: "Observable failure or repeating behavior"
+  - name: trace
+    type: string
+    required: true
+    description: "Root cause chain — what caused it"
+  - name: hypothesis
+    type: string
+    required: true
+    description: "Proposed fix or intervention"
+  - name: retest_in_days
+    type: string
+    required: false
+    default: "7"
+    description: "Days until retest (check if fix holds)"
+  - name: related_habit
+    type: string
+    required: false
+    default: ""
+    description: "Related habit ID or name if applicable"
+
+steps:
+  - id: write_debug_ticket
+    name: "Write Debug Ticket"
+    shell: auto
+    env:
+      NAVIG_PARAM_SYMPTOM: "{{params.symptom}}"
+      NAVIG_PARAM_TRACE: "{{params.trace}}"
+      NAVIG_PARAM_HYPOTHESIS: "{{params.hypothesis}}"
+      NAVIG_PARAM_RETEST_IN_DAYS: "{{params.retest_in_days}}"
+      NAVIG_PARAM_RELATED_HABIT: "{{params.related_habit}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime, date, timedelta
+
+      debug_path = ".navig/memory/debug-log.json"
+      try:
+          with open(debug_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"tickets": []}
+
+      retest_raw = os.environ.get("NAVIG_PARAM_RETEST_IN_DAYS", "") or "7"
+      try:
+          retest_days = int(retest_raw)
+      except ValueError:
+          print(f"ERROR: invalid retest_in_days {retest_raw!r} (expected an integer)")
+          raise SystemExit(1)
+      retest_date = (date.today() + timedelta(days=retest_days)).isoformat()
+
+      ticket = {
+          "id": f"dbg_{len(data['tickets']) + 1:04d}",
+          "symptom": os.environ.get("NAVIG_PARAM_SYMPTOM", ""),
+          "trace": os.environ.get("NAVIG_PARAM_TRACE", ""),
+          "hypothesis": os.environ.get("NAVIG_PARAM_HYPOTHESIS", ""),
+          "related_habit": os.environ.get("NAVIG_PARAM_RELATED_HABIT", ""),
+          "status": "open",
+          "retest_date": retest_date,
+          "resolution": None,
+          "logged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data["tickets"].append(ticket)
+      os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+      with open(debug_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Debug ticket [{ticket['id']}] opened")
+      print(f"Symptom: {ticket['symptom']}")
+      print(f"Hypothesis: {ticket['hypothesis']}")
+      print(f"Retest: {retest_date}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_debug_ticket

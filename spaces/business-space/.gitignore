@@ -1,0 +1,37 @@
+# Secrets, credentials, and sensitive data
+*.env
+.env.*
+vault/
+secrets/
+
+# Financial data — never commit real P&L or invoice data
+finance-ops/data/*.csv
+finance-ops/invoices/*.pdf
+finance-ops/invoices/*.md
+finance-ops/reports/*.md
+!finance-ops/data/.gitkeep
+!finance-ops/invoices/.gitkeep
+!finance-ops/reports/.gitkeep
+
+# API credentials
+*credentials*.json
+*api_keys*
+*access_tokens*
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+__pycache__/
+*.py[cod]
+
+# Working state (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml

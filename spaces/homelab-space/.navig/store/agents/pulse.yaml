@@ -1,0 +1,77 @@
+name: pulse
+role: Hardware Health Monitor
+description: |
+  Pulse is the space's vital-signs monitor. It continuously tracks GPU temperatures,
+  CPU load, VRAM usage, disk health (SMART data), and thermal sensors across all
+  registered hosts. It fires alerts when thresholds are breached, generates the
+  hardware-report prompt output, and feeds data into the hardware-patrol formation.
+  Pulse keeps the space from suffering silent hardware failures.
+
+formation: hardware-patrol
+inbox_channel: "#hardware"
+
+triggers:
+  - type: intent
+    pattern: "check * health"
+    description: Run a targeted health check on a specified subsystem or host
+  - type: intent
+    pattern: "gpu *"
+    description: GPU-specific queries (temps, VRAM, errors)
+  - type: intent
+    pattern: "disk * health"
+    description: SMART data and disk status
+  - type: formation_event
+    event: morning_sweep_started
+    description: Runs hardware-inventory + gpu-health as part of morning sweep
+  - type: scheduled
+    cron: "*/15 * * * *"
+    description: Check GPU temps every 15 minutes; alert if >85°C
+  - type: threshold
+    metric: gpu_temp_celsius
+    operator: ">"
+    value: 85
+    description: Emergency alert on critical GPU temperature
+
+capabilities:
+  - Run gpu-health skill on all or targeted hosts
+  - Run hardware-inventory skill and store results to memory
+  - Query SMART data for all drives via smartmontools (cross-platform)
+  - Monitor CPU temperature via lm-sensors (Linux) / WMI (Windows) / iStats (macOS)
+  - Parse nvidia-smi and rocm-smi output into structured health data
+  - Emit threshold alerts to sentinel when values exceed configured limits
+  - Generate structured hardware-report.md output for weekly review
+
+tool_allowlist:
+  - shell_exec
+  - ssh_exec
+  - gpu_query
+  - smart_query
+  - memory_read
+  - memory_write
+  - alert_emit
+
+thresholds:
+  gpu_temp_warning_c: 80
+  gpu_temp_critical_c: 85
+  cpu_temp_warning_c: 75
+  cpu_temp_critical_c: 90
+  disk_reallocated_sectors_max: 10
+  vram_usage_warning_pct: 90
+
+example_invocation: |
+  # Full hardware health sweep on all hosts
+  navig agent run pulse \
+    --task "full hardware health check"
+
+  # GPU health only on primary homelab
+  navig agent run pulse \
+    --task "gpu health (host=192.168.1.10)"
+
+  # Check all SMART data
+  navig agent run pulse \
+    --task "disk health all"
+
+escalation:
+  on_failure: alert_immediately
+  notify: sentinel
+  max_retries: 1

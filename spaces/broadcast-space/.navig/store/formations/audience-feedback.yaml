@@ -1,0 +1,45 @@
+id: audience-feedback
+name: "Audience Feedback"
+version: "1.0.0"
+description: |
+  Monitor, collect, and analyse listener feedback, reviews, and engagement
+  data. Community-manager leads collection while host and show-planner
+  use insights for content planning.
+agents:
+  lead: community-manager
+  supporting:
+    - host
+    - show-planner
+trigger_conditions:
+  - "New reviews posted"
+  - "Monthly feedback review"
+  - "Listener survey completed"
+  - "Engagement metrics update"
+action_scope:
+  ALLOW:
+    - Collect and summarise reviews
+    - Analyse listener trends
+    - Generate feedback reports
+    - Suggest content based on feedback
+  DENY:
+    - Share private listener data
+    - Respond to reviews without host tone approval
+    - Delete negative feedback
+skills_used:
+  - guest-research
+  - show-notes-write
+workflows_used:
+  - monthly-review
+communication:
+  inbox_channel: "#community"
+  escalation: host
+  notify_on:
+    - feedback_report_ready
+    - negative_review_flagged
+context_memory:
+  read:
+    - space-context
+    - goals
+  write:
+    - goals
+example_invocation: "Summarise all listener feedback and reviews from the past month"

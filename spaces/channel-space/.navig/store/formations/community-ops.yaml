@@ -1,0 +1,57 @@
+id: community-ops
+name: Community Operations
+version: "1.0.0"
+description: |
+  Community engagement formation. Manages audience interaction,
+  comment moderation, collaboration outreach, and community posts.
+  Keeps the channel connected with its viewers.
+
+agents:
+  lead: showrunner
+  supporting:
+    - scriptwriter
+    - growth-analyst
+
+trigger_conditions:
+  - "community"
+  - "comments"
+  - "engagement"
+  - "collaboration"
+  - "audience"
+
+action_scope:
+  ALLOW:
+    - draft community posts
+    - analyse comment sentiment
+    - plan collaboration outreach
+    - generate engagement reports
+    - respond to viewer questions
+  DENY:
+    - delete viewer comments
+    - block users without approval
+    - post on behalf of channel without review
+
+skills_used:
+  - analytics-pull
+  - competitor-scan
+
+workflows_used:
+  - weekly-review
+
+communication:
+  inbox_channel: "#production"
+  escalation: operator
+  notify_on:
+    - engagement_spike
+    - negative_sentiment_detected
+    - collab_opportunity
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/memory/goals.json
+  write:
+    - .navig/state/
+
+example_invocation: |
+  navig formation run "Write the weekly community engagement report"

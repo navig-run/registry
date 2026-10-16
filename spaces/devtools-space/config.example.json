@@ -1,0 +1,10 @@
+{
+  "_comment": "devtools-space config. Copy to config.json and fill in. Used by ssh/upload/deploy and virustotal.",
+  "ssh_host": "user@yourserver.com",
+  "ssh_port": 22,
+  "remote_root": "/var/www",
+  "ssh_key": "",
+  "_ssh_key_example": "%USERPROFILE%\\.ssh\\id_rsa",
+  "_vt_comment": "Free VirusTotal key: https://www.virustotal.com/gui/join-us",
+  "virustotal_api_key": "YOUR_KEY_HERE"
+}

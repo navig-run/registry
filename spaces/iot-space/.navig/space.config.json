@@ -1,0 +1,60 @@
+{
+  "id": "iot-space",
+  "kind": "space",
+  "name": "IoT Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Command mesh for every IoT & smart-home device — discovery & fingerprinting, MQTT message bus, firmware/OTA, network segmentation & security, telemetry, and automation.",
+  "agent": {
+    "default": "beacon",
+    "formation": "discovery-sweep"
+  },
+  "agents": [
+    {"id": "beacon", "role": "Device discovery cartographer",   "formation": "discovery-sweep"},
+    {"id": "broker", "role": "Message bus operator",            "formation": "mqtt-ops"},
+    {"id": "warden", "role": "Security and segmentation watcher","formation": "security-mesh"},
+    {"id": "flux",   "role": "Firmware and OTA manager",         "formation": "firmware-fleet"},
+    {"id": "automa", "role": "Automation and scene orchestrator","formation": "automation-loop"},
+    {"id": "sensor", "role": "Telemetry and health monitor",     "formation": "discovery-sweep"}
+  ],
+  "formations": [
+    {"id": "discovery-sweep", "description": "mDNS/SSDP/ARP discovery, fingerprinting, device registry updates"},
+    {"id": "mqtt-ops",        "description": "MQTT broker health, topic mapping, publish/subscribe routing"},
+    {"id": "security-mesh",   "description": "VLAN/subnet segmentation, default-credential & CVE audit, intrusion watch"},
+    {"id": "firmware-fleet",  "description": "OTA rollouts, Tasmota/ESPHome flashing, firmware version drift"},
+    {"id": "automation-loop", "description": "Scenes, schedules, triggers, Home Assistant entity sync"}
+  ],
+  "skills": [
+    "device-discover",
+    "mqtt-subscribe",
+    "mqtt-publish",
+    "firmware-check",
+    "ota-update",
+    "tasmota-flash",
+    "energy-report",
+    "sensor-telemetry",
+    "vlan-audit",
+    "credential-audit",
+    "ha-entity-sync",
+    "zigbee-scan"
+  ],
+  "workflows": [
+    {"id": "morning-mesh-sweep",    "schedule": "daily"},
+    {"id": "device-onboard",        "schedule": "on-demand"},
+    {"id": "firmware-audit",        "schedule": "on-demand"},
+    {"id": "nightly-telemetry-sync","schedule": "nightly"},
+    {"id": "security-review",       "schedule": "weekly"},
+    {"id": "automation-review",     "schedule": "on-demand"}
+  ],
+  "packages": [
+    {"id": "mosquitto", "version": "2.0", "bin_windows": "mosquitto_sub", "bin_config_key": "iot.mosquitto_bin"},
+    {"id": "esphome",   "version": "2024.6", "bin_windows": "esphome"}
+  ],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": ["iot", "smart-home", "mqtt", "zigbee", "matter", "automation", "security"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

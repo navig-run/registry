@@ -1,0 +1,50 @@
+{
+  "id": "scribe-space",
+  "space_id": "scribe-space",
+  "name": "Scribe Space",
+  "display_name": "Scribe Space",
+  "version": "1.0.1",
+  "description": "The ultimate writers' space — fiction, journalism, screenwriting, technical docs, and content strategy.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-11",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "tier": "work",
+  "tags": [
+    "writing",
+    "fiction",
+    "journalism",
+    "screenwriting",
+    "content-strategy",
+    "technical-writing"
+  ],
+  "status": "active",
+  "agents": [
+    "storyteller",
+    "journalist",
+    "editor",
+    "content-strategist",
+    "screenwriter",
+    "tech-writer"
+  ],
+  "formations": [
+    "fiction-workshop",
+    "journalism-workflow",
+    "content-pipeline",
+    "production-draft"
+  ],
+  "license": "MIT",
+  "skills": [
+    "word-count",
+    "grammar-check",
+    "outline-draft",
+    "export-pdf",
+    "readability-score"
+  ],
+  "workflows": [
+    "first-draft",
+    "editorial-review",
+    "publish-checklist"
+  ]
+}

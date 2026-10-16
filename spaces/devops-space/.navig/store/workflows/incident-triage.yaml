@@ -1,0 +1,55 @@
+name: incident-triage
+description: >
+  Triggered by a critical or high-severity alert. Opens an incident record,
+  runs alert triage, pages on-call, and begins the incident timeline.
+
+schedule:
+  cron: ""
+  timezone: "UTC"
+  enabled: false
+
+on_demand: true
+formation: incident-response
+
+params:
+  - name: alert_name
+    description: "Name of the triggering alert"
+    required: true
+  - name: service
+    description: "Affected service"
+    required: true
+  - name: severity
+    description: "critical | high | medium | low"
+    required: true
+    default: "high"
+  - name: environment
+    description: "Affected environment"
+    required: false
+    default: "prod"
+
+steps:
+  - name: open-incident
+    description: Create an incident record in .navig/memory/known-issues.json (copy known-issues.example.json on first use)
+    manual: true
+
+  - name: triage-alert
+    description: Run alert-triage skill to produce first-response report
+    depends_on: open-incident
+    shell: auto
+    script: navig skill run alert-triage --alert "{{alert_name}}" --service {{service}} --environment {{environment}}
+
+  - name: health-probe
+    description: Check current service health
+    depends_on: open-incident
+    shell: auto
+    script: navig skill run health-probe --service {{service}} --environment {{environment}}
+
+  - name: notify-on-call
+    description: Page on-call with your paging tool and post to the #incidents channel
+    depends_on: triage-alert
+    manual: true
+
+  - name: start-timeline
+    description: Open an incident timeline from .navig/store/prompts/incident-runbook.md
+    depends_on: notify-on-call
+    manual: true

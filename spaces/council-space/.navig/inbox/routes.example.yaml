@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#questions"
+    description: "Questions and decisions to bring to the council"
+    default: true
+  - channel: "#decisions"
+    description: "Logged decision cards from completed sessions"
+  - channel: "#dissents"
+    description: "Recorded minority views and counter-arguments"

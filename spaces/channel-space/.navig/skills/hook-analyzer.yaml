@@ -1,0 +1,38 @@
+id: hook-analyzer
+name: Hook Analyzer
+version: "1.0.0"
+description: Analyses video hooks (first 30 seconds) for engagement potential, clarity, and retention impact.
+category: content
+platform: [windows, linux, macos]
+formation: content-planning
+author: navig-run
+
+parameters:
+  - name: script_file
+    type: string
+    required: false
+    description: Path to script file containing the hook
+  - name: hook_text
+    type: string
+    required: false
+    description: Raw hook text to analyse
+  - name: min_score
+    type: integer
+    required: false
+    default: 7
+    description: Minimum acceptable hook score (1-10)
+
+steps:
+  - id: read-hook
+    name: Read hook content
+    shell: true
+    script_windows: "if defined script_file (type \"{{script_file}}\" | findstr /n \"^\" | findstr /r \"^[1-9]:\" ) else (echo {{hook_text}})"
+    script_linux: "if [ -n '{{script_file}}' ]; then head -10 '{{script_file}}'; else echo '{{hook_text}}'; fi"
+    script_macos: "if [ -n '{{script_file}}' ]; then head -10 '{{script_file}}'; else echo '{{hook_text}}'; fi"
+
+  - id: analyse-hook
+    name: Analyse hook quality
+    shell: true
+    script_windows: "echo [Hook analysis — scoring for curiosity gap, pattern interrupt, value promise, emotional trigger] > \"content\\scripts\\hook-analysis.txt\""
+    script_linux: "echo '[Hook analysis — scoring for curiosity gap, pattern interrupt, value promise, emotional trigger]' > content/scripts/hook-analysis.txt"
+    script_macos: "echo '[Hook analysis — scoring for curiosity gap, pattern interrupt, value promise, emotional trigger]' > content/scripts/hook-analysis.txt"

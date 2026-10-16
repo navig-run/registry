@@ -1,0 +1,21 @@
+space: finance-space
+version: "1.0.0"
+runtime: navig-space-2
+default_formation: monthly-review
+
+settings:
+  currency: USD
+  fiscal_year_start: January
+  tax_year_offset: 0
+  budget_warning_threshold_pct: 80
+  savings_rate_target_pct: 20
+  investment_rebalance_threshold_pct: 5
+
+inbox:
+  default_channel: "#budget"
+  priority_channels:
+    - "#taxes"
+
+privacy:
+  data_stays_local: true
+  vault_prefix: "finance/"

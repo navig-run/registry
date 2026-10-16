@@ -1,0 +1,69 @@
+name: nightly-telemetry-sync
+description: |
+  Nightly telemetry collection and snapshot. Subscribes to the telemetry topics,
+  aggregates energy and environment readings, records battery levels, and writes a
+  trend snapshot to memory for the weekly review.
+
+schedule:
+  cron: "0 1 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: mqtt-ops
+
+steps:
+  - id: collect_telemetry
+    name: "Collect Telemetry from the Bus"
+    skill: sensor-telemetry
+    params:
+      topic: "tele/#"
+      duration: 60
+      battery_threshold: 15
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: energy
+    name: "Aggregate Energy Readings"
+    skill: energy-report
+    params:
+      topic: "tele/+/SENSOR"
+      duration: 60
+    depends_on: [collect_telemetry]
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: snapshot
+    name: "Write Nightly Snapshot"
+    depends_on: [collect_telemetry, energy]
+    agent: sensor
+    action: write_memory
+    params:
+      file: ".navig/memory/health-snapshots.json"
+      data:
+        timestamp: "{{now_iso}}"
+        telemetry: "{{steps.collect_telemetry.output}}"
+        energy: "{{steps.energy.output}}"
+
+  - id: low_battery_alert
+    name: "Alert on Low Batteries"
+    depends_on: [collect_telemetry]
+    agent: sensor
+    action: alert_low_battery
+    params:
+      telemetry: "{{steps.collect_telemetry.output}}"
+      threshold: 15
+    condition: "{{steps.collect_telemetry.low_battery | length}} > 0"
+
+  - id: report
+    name: "Compose Nightly Telemetry Summary"
+    depends_on: [snapshot]
+    agent: sensor
+    action: compose_report
+    params:
+      template: "nightly-telemetry-sync"
+      sections:
+        - telemetry: "{{steps.collect_telemetry.output}}"
+        - energy: "{{steps.energy.output}}"
+      deliver_to: inbox
+      channel: "#telemetry"

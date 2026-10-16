@@ -1,0 +1,10 @@
+space_id: social-circle-space
+runtime: navig-space-2
+
+social_circle:
+  default_view: graph
+  relationship_cold_after_days: 90
+  warmth_alert_enabled: true
+  import_formats: [csv, linkedin, google-contacts, vcf]
+  privacy_default: private
+  max_circles: 20

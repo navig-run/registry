@@ -1,0 +1,30 @@
+{
+  "id": "incident",
+  "space_id": "incident",
+  "name": "Incident",
+  "version": "1.0.0",
+  "description": "Structured triage from alert to post-mortem — everything you need is already open.",
+  "owner": "navig-run",
+  "tier": "work",
+  "status": "ready",
+  "packages": [],
+  "capability_deps": [
+    "agent",
+    "memory",
+    "tools",
+    "storage"
+  ],
+  "config_key": null,
+  "viral_hook": "Auto-generated postmortem report — share with your team in one click",
+  "navig_files_used": [
+    "navig/blackbox/timeline.py",
+    "navig/memory/",
+    "navig/agent/"
+  ],
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

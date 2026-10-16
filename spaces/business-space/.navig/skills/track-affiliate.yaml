@@ -1,0 +1,46 @@
+id: track-affiliate
+name: Track Affiliate Performance
+version: "1.0.0"
+description: Pull affiliate click, conversion, and commission data for a given period and flag anomalies.
+category: affiliate
+platform: [windows, linux, macos]
+formation: ecommerce-ops
+author: navig-run
+
+parameters:
+  - name: period
+    description: "Reporting period: last-week | last-month | last-quarter"
+    required: false
+    default: last-week
+  - name: format
+    description: "Output format: table | csv | json"
+    required: false
+    default: table
+  - name: output
+    description: Output file path (only used when format=csv or json)
+    required: false
+
+steps:
+  - name: load-affiliate-data
+    description: Load affiliate data from finance-ops/affiliate/
+    script: |
+      import os, glob
+      aff_dir = os.path.join("finance-ops", "affiliate")
+      os.makedirs(aff_dir, exist_ok=True)
+      files = glob.glob(os.path.join(aff_dir, "*.csv"))
+      if not files:
+          print("INFO: No affiliate data CSVs in finance-ops/affiliate/. Connect affiliate platform.")
+      else:
+          print(f"Found {len(files)} affiliate data file(s)")
+    script_windows: |
+      $affDir = "finance-ops\affiliate"
+      New-Item -ItemType Directory -Force $affDir | Out-Null
+      $files = Get-ChildItem "$affDir\*.csv" -ErrorAction SilentlyContinue
+      if (-not $files) { Write-Host "INFO: No affiliate data found in $affDir" }
+      else { Write-Host "Found $($files.Count) affiliate data file(s)" }
+
+  - name: report
+    description: Print affiliate performance summary
+    script: |
+      print("Affiliate tracking requires data in finance-ops/affiliate/. See affiliate-marketing/README.md.")
+    depends_on: load-affiliate-data

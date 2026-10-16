@@ -1,0 +1,21 @@
+{
+  "name": "showcase-space",
+  "version": "1.0.0",
+  "description": "Browse, demo, and install agents and packs made by the community",
+  "owner": "navig-run",
+  "tier": "community",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "agent",
+    "storage"
+  ],
+  "config_key": null,
+  "viral_hook": "Install a stranger's agent and run it in your Navig in 10 seconds",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

@@ -1,0 +1,79 @@
+id: track-overdue
+name: Track Overdue
+version: "1.0.0"
+description: >
+  Scan all sent invoices for overdue items. An invoice is overdue when its
+  due_date has passed and status is still 'sent'. Outputs a sorted list
+  of overdue invoices with days outstanding.
+category: billing
+platform: [windows, linux, macos]
+formation: billing-cycle
+author: freelance-space
+
+parameters:
+  - name: threshold_days
+    type: integer
+    required: false
+    default: 0
+    description: "Only show invoices overdue by more than this many days (0 = all overdue)"
+
+steps:
+  - id: scan_overdue
+    name: "Scan Overdue Invoices"
+    shell: auto
+    env:
+      NAVIG_PARAM_THRESHOLD_DAYS: "{{params.threshold_days}}"
+    script: |
+      python3 - <<'EOF'
+      import os
+      import json
+      from datetime import date
+
+      inv_path = ".navig/memory/invoices.json"
+      threshold = int(os.environ.get("NAVIG_PARAM_THRESHOLD_DAYS") or 0)
+
+      try:
+          with open(inv_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          print("No invoice log found.")
+          raise SystemExit(0)
+
+      today = date.today()
+      overdue = []
+      for inv in data.get("invoices", []):
+          if inv.get("status") != "sent":
+              continue
+          due_str = inv.get("due_date")
+          if not due_str:
+              continue
+          try:
+              due = date.fromisoformat(due_str)
+          except ValueError:
+              continue
+          days_od = (today - due).days
+          if days_od > threshold:
+              overdue.append({**inv, "days_overdue": days_od})
+
+      overdue.sort(key=lambda x: x["days_overdue"], reverse=True)
+
+      if not overdue:
+          print("No overdue invoices. All sent invoices are within their payment window.")
+          raise SystemExit(0)
+
+      print(f"Overdue invoices (threshold: >{threshold} days):\n")
+      print(f"{'ID':<12} {'Client':<20} {'Total':>10} {'Due Date':<12} {'Days OD':>8}")
+      print("-" * 66)
+      for inv in overdue:
+          currency = inv.get("currency", "")
+          alert = " 🔴" if inv["days_overdue"] >= 30 else " ⚠️" if inv["days_overdue"] >= 14 else ""
+          print(f"{inv['id']:<12} {inv.get('client',''):<20} {currency} {inv.get('total',0):>8,.2f}  {inv.get('due_date',''):<12} {inv['days_overdue']:>6}d{alert}")
+      print()
+      total_outstanding = sum(i.get("total", 0) for i in overdue)
+      print(f"Total outstanding: {total_outstanding:,.2f}")
+      EOF
+    on_error: continue
+
+outputs:
+  - name: overdue_report
+    from: scan_overdue

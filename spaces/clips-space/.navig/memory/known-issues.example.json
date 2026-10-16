@@ -1,0 +1,23 @@
+{
+  "space": "clips-space",
+  "known_issues": [
+    {
+      "id": "no-clips-indexed",
+      "issue": "No clips have been indexed yet",
+      "severity": "info",
+      "workaround": "Add clips to clips/ directory and run clip-factory workflow"
+    },
+    {
+      "id": "platform-apis-not-configured",
+      "issue": "TikTok, Instagram, and YouTube API credentials not configured",
+      "severity": "warning",
+      "workaround": "Manual upload until API integration is configured"
+    },
+    {
+      "id": "no-sound-library",
+      "issue": "No trending sound library initialised",
+      "severity": "info",
+      "workaround": "Run trend-scan skill to populate initial sound library"
+    }
+  ]
+}

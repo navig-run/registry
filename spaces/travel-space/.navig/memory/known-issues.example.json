@@ -1,0 +1,10 @@
+{
+  "issues": [
+    {
+      "id": "ISS-001",
+      "description": "No trips added yet",
+      "action": "Ask @trip-planner to create your first trip (workflow: .navig/store/workflows/new-trip.yaml)",
+      "severity": "info"
+    }
+  ]
+}

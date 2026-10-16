@@ -1,0 +1,42 @@
+{
+  "id": "scribe-space",
+  "name": "Scribe Space",
+  "version": "1.0.1",
+  "tier": "work",
+  "status": "active",
+  "description": "The ultimate writers' space — fiction, journalism, screenwriting, technical docs, content strategy, and more.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": {
+    "default": "editor",
+    "formation": "fiction-workshop"
+  },
+  "agents": [
+    "storyteller",
+    "journalist",
+    "editor",
+    "content-strategist",
+    "screenwriter",
+    "tech-writer"
+  ],
+  "formations": [
+    "fiction-workshop",
+    "journalism-workflow",
+    "content-pipeline",
+    "production-draft"
+  ],
+  "skills": [
+    "word-count",
+    "grammar-check",
+    "outline-draft",
+    "export-pdf",
+    "readability-score"
+  ],
+  "workflows": [
+    "first-draft",
+    "editorial-review",
+    "publish-checklist"
+  ],
+  "packages": [],
+  "subspaces": []
+}

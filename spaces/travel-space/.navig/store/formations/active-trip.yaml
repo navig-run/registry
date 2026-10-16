@@ -1,0 +1,8 @@
+id: active-trip
+name: Active Trip
+version: "1.0.0"
+description: Formation active during travel — documents accessible, notes captured.
+space: travel
+lead: document-keeper
+supporting: [itinerary-builder]
+trigger_conditions: [trip start date reached]

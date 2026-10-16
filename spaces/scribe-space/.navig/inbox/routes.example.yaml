@@ -1,0 +1,44 @@
+schema: "1.0"
+space: scribe
+updated: 2026-03-11
+
+channels:
+  - id: fiction
+    owner: storyteller
+    formation: fiction-workshop
+    response_mode: immediate
+    description: "Long-form fiction and narrative non-fiction projects"
+
+  - id: journalism
+    owner: journalist
+    formation: journalism-workflow
+    response_mode: immediate
+    description: "Articles, investigations, and interview work"
+
+  - id: edit
+    owner: editor
+    formation: fiction-workshop
+    response_mode: immediate
+    description: "Editing requests — structural, line, and copy editing"
+
+  - id: screen
+    owner: screenwriter
+    formation: production-draft
+    response_mode: immediate
+    description: "Screenplay and TV script work"
+
+  - id: content
+    owner: content-strategist
+    formation: content-pipeline
+    response_mode: immediate
+    description: "Content strategy, editorial calendars, brand voice"
+
+  - id: docs
+    owner: tech-writer
+    formation: content-pipeline
+    response_mode: immediate
+    description: "Technical writing — API docs, guides, SOPs"
+
+defaults:
+  unrouted: "#edit"
+  escalation: operator

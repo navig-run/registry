@@ -1,0 +1,22 @@
+{
+  "id": "freelance-space",
+  "space_id": "freelance-space",
+  "schema_version": "2.0",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Freelance Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "description": "Freelance business operations — client management, time tracking, invoicing, project scoping, and revenue visibility for independent operators.",
+  "tags": ["freelance", "clients", "invoicing", "time-tracking", "revenue", "projects"],
+  "theme": {
+    "accent_color": "#2ECC71",
+    "background_hint": "clean-growth",
+    "animation_hint": "revenue-counter-up",
+    "icon": "💼",
+    "tone": "sharp-account-manager"
+  }
+}

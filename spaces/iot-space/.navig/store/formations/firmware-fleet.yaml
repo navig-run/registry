@@ -1,0 +1,59 @@
+id: firmware-fleet
+name: Firmware Fleet
+version: "1.0.0"
+description: >
+  Formation covering firmware version tracking, Tasmota/ESPHome flashing, and staged
+  OTA rollouts across the IoT fleet. Active when firmware drifts or a security update
+  is required.
+
+agents:
+  lead: flux
+  supporting: [sensor]
+
+trigger_conditions:
+  - "firmware-check detects a device behind the latest release"
+  - "Security CVE requires an urgent firmware update (from warden)"
+  - "New device onboarded that needs initial flashing"
+  - "Scheduled: firmware audit (on-demand)"
+  - "Manual: navig formation run firmware-fleet"
+
+action_scope:
+  - ALLOW: firmware-check, ota-update, tasmota-flash
+  - ALLOW: read device version endpoints
+  - ALLOW: write firmware version to .navig/memory/device-registry.json
+  - DENY: flash more than one wave without operator approval
+  - DENY: flash devices flagged critical without confirmation
+  - DENY: skip the firmware-check dry step before ota-update
+
+skills_used:
+  - firmware-check
+  - ota-update
+  - tasmota-flash
+
+workflows_used:
+  - firmware-audit
+  - device-onboard   # initial flash step
+
+rollout_policy:
+  mode: staged          # staged | immediate
+  wave_size: 5          # devices per wave
+  verify_after_wave: true
+  rollback_on_failure: true
+
+communication:
+  inbox_channel: "#firmware"
+  escalation: operator
+  notify_on:
+    - version_drift_detected
+    - ota_wave_complete
+    - flash_failed
+    - rollback_triggered
+
+context_memory:
+  read: [device-registry.json, known-issues.json]
+  write: [device-registry.json, known-issues.json]
+
+example_invocation: |
+  # Trigger firmware fleet formation manually:
+  navig formation run firmware-fleet
+  # flux will: check versions → diff against releases → OTA-update in waves → verify health

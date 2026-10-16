@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "space": "war-room",
+  "description": "OSINT / investigation / ethical-hacking connections for the operator command center. Each server is OPT-IN: the operator supplies credentials and confirms legality/ToS before enabling. 'enabled:false' means scaffolding only.",
+  "updated": "2026-06-20",
+  "notes": [
+    "Authorization gate applies to every active connection — see docs/ETHICS-AND-AUTHORIZATION.md.",
+    "Secrets are NEVER stored here; reference env vars (e.g. ${SHODAN_API_KEY}). Keep keys in the NAVIG vault / .env (gitignored).",
+    "Passive/open sources are preferred. Active scanners require an in-scope, authorized target."
+  ],
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "enabled": true,
+      "purpose": "Read/write case files, evidence notes, memory, arsenal — sandboxed to the space.",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/operations",
+          "{workspace_root}/intelligence",
+          "{workspace_root}/arsenal",
+          "{workspace_root}/lab",
+          "{workspace_root}/.navig/memory"
+        ],
+        "max_file_size_mb": 25,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "case-db",
+      "type": "mcp-server",
+      "provider": "sqlite",
+      "enabled": false,
+      "purpose": "Queryable case database — entities, findings, assets, timeline. Backs the OSINT graph.",
+      "config": { "database": "{workspace_root}/.navig/memory/case.db", "mode": "readwrite" }
+    },
+    {
+      "id": "memory-graph",
+      "type": "mcp-server",
+      "provider": "mcp-knowledge-graph",
+      "enabled": false,
+      "purpose": "Entity/relationship graph for pivoting (person↔org↔domain↔ip↔handle).",
+      "config": { "store": "{workspace_root}/.navig/memory/entities.json" }
+    },
+    {
+      "id": "web-search",
+      "type": "mcp-server",
+      "provider": "brave-search | tavily | searxng",
+      "enabled": false,
+      "purpose": "Open-source web search for OSINT collection (passive).",
+      "config": { "api_key_env": "${SEARCH_API_KEY}", "rate_limit_per_min": 30 }
+    },
+    {
+      "id": "web-fetch",
+      "type": "mcp-server",
+      "provider": "navig-builtin | fetch",
+      "enabled": false,
+      "purpose": "Fetch + extract a URL to text/markdown (passive read of public pages).",
+      "config": { "respect_robots": true, "user_agent": "war-room-osint", "timeout_seconds": 20 }
+    },
+    {
+      "id": "browser",
+      "type": "mcp-server",
+      "provider": "playwright | chrome-devtools",
+      "enabled": false,
+      "purpose": "Headless browser for JS-heavy pages, screenshots, archived snapshots (passive).",
+      "config": { "headless": true, "block_downloads": true, "isolated_profile": true }
+    },
+    {
+      "id": "dns-whois",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "enabled": false,
+      "purpose": "Passive DNS, WHOIS, cert-transparency, ASN lookups for infra footprinting.",
+      "config": { "providers": ["crt.sh", "rdap", "dns-over-https"] }
+    },
+    {
+      "id": "shodan",
+      "type": "mcp-server",
+      "provider": "shodan",
+      "enabled": false,
+      "purpose": "Internet-exposure data for AUTHORIZED targets (attack-surface mapping).",
+      "config": { "api_key_env": "${SHODAN_API_KEY}", "passive_only": true },
+      "legality": "Use only against assets you are authorized to test; Shodan data is passive but scope still applies."
+    },
+    {
+      "id": "breach-lookup",
+      "type": "mcp-server",
+      "provider": "haveibeenpwned",
+      "enabled": false,
+      "purpose": "Exposure check (which breaches an email appears in) — legitimate sources only.",
+      "config": { "api_key_env": "${HIBP_API_KEY}" },
+      "legality": "HIBP only. Do NOT wire raw breach-dump/combolist sources — that crosses legal lines."
+    },
+    {
+      "id": "recon-cli",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "enabled": false,
+      "purpose": "Run vetted recon CLIs against IN-SCOPE targets (subfinder, httpx, naabu, nuclei, amass).",
+      "config": {
+        "allowed_commands": ["subfinder", "httpx", "naabu", "amass", "nuclei", "whois", "dig", "nmap"],
+        "require_engagement": true,
+        "working_dir": "{workspace_root}/operations",
+        "timeout_seconds": 120
+      },
+      "legality": "GATED: refuses to run unless an active, authorized engagement in engagements.json covers the target."
+    },
+    {
+      "id": "git",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "enabled": true,
+      "purpose": "Version case files and evidence notes; diff timelines.",
+      "config": { "repo_root": "{workspace_root}" }
+    },
+    {
+      "id": "github",
+      "type": "mcp-server",
+      "provider": "github",
+      "enabled": false,
+      "purpose": "Code/secret/identity OSINT across repos and commits (public + your orgs).",
+      "config": { "token_env": "${GITHUB_TOKEN}" }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "enabled": true,
+      "purpose": "Run the space's python skills (memory mutations).",
+      "config": { "allowed_commands": ["python", "python3", "py"], "working_dir": "{workspace_root}", "timeout_seconds": 60 }
+    }
+  ]
+}

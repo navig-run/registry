@@ -1,0 +1,65 @@
+name: live-show
+description: |
+  Live streaming workflow covering pre-show preparation, live monitoring,
+  and post-stream processing (recording backup, clip extraction).
+schedule:
+  cron: null
+  timezone: "UTC"
+  enabled: false
+on_demand: true
+formation: live-session
+
+steps:
+  - id: pre-show-check
+    name: "Pre-Show Checklist"
+    agent: sound-engineer
+    action: "Verify audio setup, levels, and stream configuration"
+    params:
+      checklist: ["mic_levels", "stream_key", "backup_recording", "chat_moderation"]
+    depends_on: []
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: go-live
+    name: "Start Live Stream"
+    skill: audio-record
+    params:
+      mode: "live"
+      backup_local: true
+      format: "wav"
+    depends_on: ["pre-show-check"]
+    on_error: "pause"
+    timeout_seconds: 7200
+
+  - id: monitor-chat
+    name: "Monitor Live Chat"
+    agent: community-manager
+    action: "Moderate chat, collect questions, flag highlights"
+    params:
+      flag_questions: true
+      highlight_moments: true
+    depends_on: ["go-live"]
+    on_error: "skip"
+    timeout_seconds: 7200
+    parallel: true
+
+  - id: post-stream-backup
+    name: "Backup Stream Recording"
+    agent: sound-engineer
+    action: "Verify local recording backup and check quality"
+    params:
+      verify_integrity: true
+    depends_on: ["go-live"]
+    on_error: "pause"
+    timeout_seconds: 600
+
+  - id: extract-clips
+    name: "Extract Highlight Clips"
+    skill: clip-extract
+    params:
+      max_clips: 5
+      max_duration_seconds: 60
+      criteria: ["peak_engagement", "key_quotes", "funny_moments"]
+    depends_on: ["post-stream-backup"]
+    on_error: "skip"
+    timeout_seconds: 900

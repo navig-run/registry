@@ -1,0 +1,41 @@
+id: analytics-review
+name: Analytics Review
+version: "1.0.0"
+description: >
+  Weekly and on-demand performance review across all brands and platforms.
+  Surfaces what is working, what is underperforming, and feeds insights
+  directly into the content strategy for the next cycle.
+
+space: social-media-space
+lead: analytics-watcher
+supporting:
+  - content-strategist
+
+trigger_conditions:
+  - Weekly Monday morning (cron: 0 8 * * MON)
+  - 30% engagement drop detected on any metric
+  - Manual operator request
+
+skills:
+  - analyze-engagement
+  - hashtag-research
+
+workflows:
+  - analytics-weekly
+
+review_outputs:
+  - Per-brand performance summary
+  - Per-platform engagement breakdown
+  - Top post identification
+  - Hashtag effectiveness ranking
+  - Anomaly flags (> 30% delta vs prior period)
+  - Next-week strategy recommendation brief
+
+data_sources:
+  - analytics/{brand}/{YYYY-MM}/engagement.csv
+  - analytics/{brand}/hashtags.json
+  - .navig/memory/space-context.json
+
+escalation:
+  on_anomaly: content-strategist via #viral
+  on_sustained_decline: operator notification

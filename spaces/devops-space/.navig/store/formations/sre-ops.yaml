@@ -1,0 +1,44 @@
+id: sre-ops
+name: SRE Operations
+version: "1.0.0"
+description: >
+  Ongoing reliability operations — SLO management, error budget reviews,
+  alert tuning, and capacity planning. Site Reliability leads; Incident Commander
+  escalates when error budgets are exhausted.
+
+agents:
+  lead: site-reliability
+  supporting:
+    - incident-commander
+
+trigger_conditions:
+  - "Keyword in #sre: SLO, SLI, error budget, reliability, capacity, toil"
+  - "weekly-reliability-review workflow invoked"
+
+action_scope:
+  - monitoring/
+
+skills_used:
+  - health-probe
+  - alert-triage
+  - cert-check
+
+workflows_used:
+  - weekly-reliability-review
+
+communication:
+  inbox_channel: "#sre"
+  escalation: incident-commander
+  notify_on:
+    - error_budget_exhausted
+    - slo_breach
+    - review_complete
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/space-context.json
+
+example_invocation: "@sre-ops review --period weekly --services api-gateway,auth-service"

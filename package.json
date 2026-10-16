@@ -1,0 +1,10 @@
+{
+  "name": "navig-registry",
+  "version": "2.4.14",
+  "description": "The NAVIG Registry — CLI skills, AI skills, spaces, formations, and examples",
+  "private": false,
+  "engines": { "node": ">=18.0.0" },
+  "keywords": ["navig","cli-skills","ai-skills","spaces","formations","community","agentic","devops","ai"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/navig-run/registry" }
+}

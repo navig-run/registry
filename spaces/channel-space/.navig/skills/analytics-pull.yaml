@@ -1,0 +1,42 @@
+id: analytics-pull
+name: Analytics Pull
+version: "1.0.0"
+description: Pulls YouTube channel analytics data for a specified time period and saves to the analytics directory.
+category: analytics
+platform: [windows, linux, macos]
+formation: channel-growth
+author: navig-run
+
+parameters:
+  - name: period
+    type: string
+    required: false
+    default: last_7_days
+    description: "Time period: last_24_hours, last_7_days, last_28_days, last_90_days"
+  - name: output_dir
+    type: string
+    required: false
+    default: content/analytics
+    description: Directory to save analytics data
+
+steps:
+  - id: ensure-dir
+    name: Ensure analytics directory exists
+    shell: true
+    script_windows: "if not exist \"{{output_dir}}\" mkdir \"{{output_dir}}\""
+    script_linux: "mkdir -p '{{output_dir}}'"
+    script_macos: "mkdir -p '{{output_dir}}'"
+
+  - id: pull-channel-stats
+    name: Pull channel statistics
+    shell: true
+    script_windows: "yt-dlp --dump-json --playlist-items 1:10 --no-download \"https://www.youtube.com/@CHANNEL/videos\" > \"{{output_dir}}\\recent-videos.json\""
+    script_linux: "yt-dlp --dump-json --playlist-items 1:10 --no-download 'https://www.youtube.com/@CHANNEL/videos' > '{{output_dir}}/recent-videos.json'"
+    script_macos: "yt-dlp --dump-json --playlist-items 1:10 --no-download 'https://www.youtube.com/@CHANNEL/videos' > '{{output_dir}}/recent-videos.json'"
+
+  - id: summarise
+    name: Generate analytics summary
+    shell: true
+    script_windows: "python -c \"import json,glob; files=glob.glob(r'{{output_dir}}\\*.json'); print(f'Analytics files: {len(files)}')\""
+    script_linux: "python3 -c \"import json,glob; files=glob.glob('{{output_dir}}/*.json'); print(f'Analytics files: {len(files)}')\""
+    script_macos: "python3 -c \"import json,glob; files=glob.glob('{{output_dir}}/*.json'); print(f'Analytics files: {len(files)}')\""

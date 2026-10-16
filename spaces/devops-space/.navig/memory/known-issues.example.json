@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ISS-001",
+    "title": "Example: flaky integration test in CI",
+    "description": "EXAMPLE ENTRY — replace with your own. A test that fails intermittently on transient DNS resolution; needs retry logic or a mock.",
+    "severity": "medium",
+    "status": "open",
+    "detected_by": "pipeline-engineer"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "space_id": "studio-space",
+  "display_name": "Studio Space",
+  "description": "Music production command center — from first beat to final master, manage sessions, mixes, releases, and samples in one space.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-04-05",
+  "updated": "2026-04-05",
+  "author": "navig-run",
+  "tier": "work",
+  "tags": [
+    "music",
+    "production",
+    "daw",
+    "mixing",
+    "mastering",
+    "releases"
+  ],
+  "status": "active",
+  "agents": [
+    "mix-engineer",
+    "producer",
+    "release-manager",
+    "session-planner",
+    "sound-designer"
+  ],
+  "formations": [
+    "collab-session",
+    "mastering-suite",
+    "release-pipeline",
+    "sample-lab",
+    "track-production"
+  ],
+  "capability_deps": [],
+  "version": "1.0.0",
+  "license": "MIT",
+  "skills": [
+    "backup-session",
+    "bpm-detect",
+    "daw-project-scan",
+    "format-convert",
+    "key-detect",
+    "loudness-check",
+    "metadata-tag",
+    "sample-catalog",
+    "stem-export",
+    "upload-distro"
+  ],
+  "workflows": [
+    "morning-studio",
+    "release-cycle",
+    "sample-harvest",
+    "session-prep",
+    "track-production",
+    "weekly-review"
+  ]
+}

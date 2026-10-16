@@ -1,0 +1,14 @@
+{
+  "id": "social-media-space",
+  "spaceId": "social-media-space",
+  "name": "Social Media Space",
+  "displayName": "Social Media Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "description": "Unified command layer for all social media — brands, accounts, content pipelines, scheduling, analytics, and viral intelligence.",
+  "defaultPersonaId": "navig",
+  "packages": ["content-pipeline", "analytics", "scheduling", "brand-voice"],
+  "capability_deps": ["llm", "file-system", "scheduler"],
+  "viral_hook": "Manage every social media brand, account, and content pipeline from a single space — multi-brand, multi-platform, one command."
+}

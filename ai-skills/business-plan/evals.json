@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "scan-and-write",
+      "prompt": "Scan this repository and build me an investor-grade business plan.",
+      "expect": {
+        "contains": ["BUSINESS-PLAN.md", "Investigate", "Adapt"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "evidence-discipline",
+      "prompt": "I want a business plan, but don't make anything up — how do you keep every claim grounded in the actual project?",
+      "expect": {
+        "contains": ["[ASSUMPTION]", "file:line"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "market-research",
+      "prompt": "Validate the market size and competitors in my plan with real, cited data.",
+      "expect": {
+        "contains": ["Upgrade", "TAM", "WebSearch"],
+        "excludes": []
+      }
+    }
+  ]
+}

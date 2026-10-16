@@ -1,0 +1,16 @@
+{
+  "name": "residence-space",
+  "version": "1.0.0",
+  "description": "Residence space for navig — household inventory, medication tracking, and maintenance management.",
+  "keywords": [
+    "navig",
+    "space",
+    "residence",
+    "home",
+    "inventory",
+    "medication",
+    "maintenance"
+  ],
+  "license": "MIT",
+  "author": "navig-run"
+}

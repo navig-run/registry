@@ -1,0 +1,78 @@
+name: repurpose-pipeline
+description: |
+  Content repurposing workflow. Takes a long-form video or audio file,
+  identifies the best segments for short-form, creates clips with new
+  hooks and captions, and exports for all platforms.
+
+schedule:
+  cron: null
+  timezone: UTC
+  enabled: false
+
+on_demand: true
+formation: repurpose-lab
+
+steps:
+  - id: analyse-source
+    name: Analyse source content
+    agent: clip-director
+    action: analyse-long-form
+    params:
+      identify_highlights: true
+      min_segment_seconds: 10
+      max_segment_seconds: 60
+    depends_on: []
+    on_error: stop
+    timeout_seconds: 300
+
+  - id: extract-segments
+    name: Extract best segments
+    skill: clip-trim
+    params:
+      count: 5
+      criteria: engagement_potential
+    depends_on: [analyse-source]
+    on_error: stop
+    timeout_seconds: 240
+
+  - id: write-hooks
+    name: Write hooks for each segment
+    agent: hook-writer
+    action: batch-generate
+    params:
+      context: repurposed
+      variants_per_clip: 2
+    depends_on: [extract-segments]
+    on_error: continue
+    timeout_seconds: 180
+
+  - id: add-captions
+    name: Generate captions for all clips
+    skill: caption-generate
+    params:
+      style: bold_centered
+      batch: true
+    depends_on: [extract-segments]
+    on_error: continue
+    timeout_seconds: 240
+    parallel: true
+
+  - id: format-all
+    name: Format for all platforms
+    skill: format-adapt
+    params:
+      platforms: [tiktok, reels, shorts]
+      batch: true
+    depends_on: [write-hooks, add-captions]
+    on_error: stop
+    timeout_seconds: 300
+
+  - id: review-batch
+    name: Director reviews all clips
+    agent: clip-director
+    action: batch-review
+    params:
+      checklist: [hook, caption, duration, format]
+    depends_on: [format-all]
+    on_error: stop
+    timeout_seconds: 120

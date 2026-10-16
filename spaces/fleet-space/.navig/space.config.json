@@ -1,0 +1,27 @@
+{
+  "name": "fleet-space",
+  "version": "1.0.0",
+  "description": "Multi-agent autonomous execution fleet — spawn, coordinate, and monitor agent swarms.",
+  "owner": "navig-run",
+  "tier": "labs",
+  "status": "labs",
+  "packages": [],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "tools",
+    "storage"
+  ],
+  "config_key": "formations.enabled",
+  "viral_hook": "Watch 7 agents solve a problem in parallel — then see the one that won",
+  "navig_files_used": [
+    "navig/formations/",
+    "navig/agent/nervous_system.py"
+  ],
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

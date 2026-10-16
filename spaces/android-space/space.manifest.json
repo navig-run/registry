@@ -1,0 +1,18 @@
+{
+  "space_id": "android-space",
+  "display_name": "Android Space",
+  "description": "Command hub for every Android device you own or manage — ADB bridge, app & APK ops, fleet inventory, debloat/privacy hardening, screen mirroring, and backup/restore.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "version": "1.0.0",
+  "created": "2026-07-10",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["android", "adb", "mobile", "devices", "fleet", "automation"],
+  "status": "active",
+  "agents": ["pixel", "bridge", "installer", "scrub", "mirror", "keeper"],
+  "formations": ["device-bridge", "app-ops", "fleet-patrol", "privacy-hardening", "backup-restore"],
+  "subspaces": []
+}

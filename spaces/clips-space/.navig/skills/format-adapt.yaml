@@ -1,0 +1,56 @@
+id: format-adapt
+name: Format Adapt
+version: "1.0.0"
+description: "Adapt a clip for multiple platform specs — resolution, duration, codec, and file size."
+category: editing
+platform: [windows, linux, macos]
+formation: clip-factory
+author: navig-run
+
+parameters:
+  - name: input
+    type: string
+    required: true
+    description: "Path to source clip"
+  - name: platforms
+    type: list
+    default: [tiktok, reels, shorts]
+    description: "Target platforms"
+  - name: output_dir
+    type: string
+    default: exports/
+    description: "Output directory for adapted clips"
+
+steps:
+  - id: adapt-tiktok
+    name: Adapt for TikTok
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 180 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/tiktok_clip.mp4"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 180 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/tiktok_clip.mp4"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 180 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/tiktok_clip.mp4"
+    condition: "'tiktok' in platforms"
+
+  - id: adapt-reels
+    name: Adapt for Instagram Reels
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 90 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/reels_clip.mp4"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 90 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/reels_clip.mp4"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 90 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/reels_clip.mp4"
+    condition: "'reels' in platforms"
+
+  - id: adapt-shorts
+    name: Adapt for YouTube Shorts
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 60 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/shorts_clip.mp4"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 60 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/shorts_clip.mp4"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -t 60 -c:v libx264 -crf 23 -c:a aac -b:a 128k "{{output_dir}}/shorts_clip.mp4"
+    condition: "'shorts' in platforms"

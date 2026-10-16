@@ -1,0 +1,66 @@
+name: trend-alert
+description: |
+  Trend monitoring and rapid response workflow. Runs twice daily to scan
+  for emerging trends. When a high-potential trend is detected, triggers
+  a fast-track clip production cycle.
+
+schedule:
+  cron: "0 8,14 * * *"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: trend-ride
+
+steps:
+  - id: scan-trends
+    name: Scan all platforms for trends
+    skill: trend-scan
+    params:
+      platforms: [tiktok, reels, shorts]
+      threshold: rising
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 180
+
+  - id: evaluate-trends
+    name: Evaluate trend potential
+    agent: trend-scout
+    action: evaluate
+    params:
+      criteria: [velocity, relevance, lifespan, competition]
+    depends_on: [scan-trends]
+    on_error: stop
+    timeout_seconds: 120
+
+  - id: match-sounds
+    name: Identify trending sounds
+    skill: sound-match
+    params:
+      platform: all
+      limit: 5
+    depends_on: [scan-trends]
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: generate-concepts
+    name: Generate clip concepts for top trends
+    agent: clip-director
+    action: trend-concepts
+    params:
+      max_concepts: 3
+    depends_on: [evaluate-trends, match-sounds]
+    on_error: stop
+    timeout_seconds: 90
+
+  - id: alert-team
+    name: Send trend alert to team
+    agent: trend-scout
+    action: send-alert
+    params:
+      channels: ["#clips", "#trends"]
+      include: [trends, sounds, concepts]
+    depends_on: [generate-concepts]
+    on_error: continue
+    timeout_seconds: 30

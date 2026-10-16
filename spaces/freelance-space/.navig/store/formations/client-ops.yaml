@@ -1,0 +1,41 @@
+id: client-ops
+name: Client Ops
+version: "1.0.0"
+description: >
+  Default formation for the freelance space. Handles day-to-day client
+  management, project oversight, and time tracking. Account Manager leads;
+  Timekeeper provides time data and billing triggers.
+
+agents:
+  lead: account-manager
+  supporting: [timekeeper]
+
+trigger_conditions:
+  - "New message in #clients"
+  - "Project milestone update request"
+  - "Weekly client-ops workflow"
+  - "Manual: activate the client-ops formation"
+
+action_scope:
+  - ALLOW: log-time
+  - ALLOW: write to .navig/memory/clients.json
+  - ALLOW: write to .navig/memory/projects.json
+  - ALLOW: write to .navig/memory/time-log.json
+  - DENY: create or modify invoices (route to billing-cycle)
+
+skills_used:
+  - log-time
+
+workflows_used:
+  - weekly-freelance-review
+
+communication:
+  inbox_channel: "#clients"
+  escalation: operator
+  notify_on:
+    - project_budget_cap_exceeded_20pct
+    - no_time_logged_in_7_days_for_active_project
+
+context_memory:
+  read: [clients.json, projects.json, time-log.json, space-context.json]
+  write: [clients.json, projects.json, time-log.json, space-context.json]

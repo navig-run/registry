@@ -1,0 +1,64 @@
+id: code-lint
+name: Code Lint
+version: "1.0.0"
+description: Run static analysis on JavaScript/TypeScript (ESLint) or Python (flake8) files.
+category: quality
+platform: [windows, linux, macos]
+formation: dev-workflow
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "File or directory to lint (relative path or glob)"
+    required: true
+  - name: output_format
+    type: enum
+    values: [table, json, stylish]
+    default: stylish
+
+steps:
+  - id: detect_language
+    name: "Detect Language"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      LINT_TARGET: "{{params.target}}"
+    script: |
+      $ext = [System.IO.Path]::GetExtension($env:LINT_TARGET)
+      if ($ext -in @('.js', '.ts', '.mjs', '.cjs')) { Write-Output "language=javascript" }
+      elseif ($ext -eq '.py') { Write-Output "language=python" }
+      else { Write-Output "language=unknown" }
+    script_linux: |
+      ext="${LINT_TARGET##*.}"
+      case "$ext" in js|ts|mjs|cjs) echo "language=javascript" ;; py) echo "language=python" ;; *) echo "language=unknown" ;; esac
+
+  - id: lint_javascript
+    name: "ESLint"
+    condition: "steps.detect_language.output.language == 'javascript'"
+    shell: auto
+    env:
+      LINT_TARGET: "{{params.target}}"
+      LINT_FORMAT: "{{params.output_format}}"
+    script: |
+      npx eslint "$env:LINT_TARGET" --format "$env:LINT_FORMAT"
+    script_linux: |
+      npx eslint "$LINT_TARGET" --format "$LINT_FORMAT"
+    on_error: continue
+
+  - id: lint_python
+    name: "flake8"
+    condition: "steps.detect_language.output.language == 'python'"
+    shell: auto
+    env:
+      LINT_TARGET: "{{params.target}}"
+    script: |
+      python -m flake8 "$env:LINT_TARGET"
+    script_linux: |
+      python3 -m flake8 "$LINT_TARGET"
+    on_error: continue
+
+outputs:
+  - name: result
+    from: lint_javascript
+    fallback: lint_python

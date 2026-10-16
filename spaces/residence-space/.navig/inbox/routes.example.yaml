@@ -1,0 +1,16 @@
+# Residence Space — Inbox Routes
+# Copy this file to routes.yaml (same folder) to enable inbox routing for the space.
+# Channel names match the inbox_route / inbox_channel / deliver_to values used by the
+# agents, formations and workflows under .navig/store/.
+version: "1.0"
+routes:
+  - channel: "#maintenance"
+    description: "Maintenance tasks, repairs needed, and service requests"
+    handlers: ["steward"]
+    default: true
+  - channel: "#home"
+    description: "Household items, inventory updates, organization and declutter tasks"
+    handlers: ["housekeeper", "organizer"]
+  - channel: "#medical"
+    description: "Medication changes, refills needed, and expiry alerts"
+    handlers: ["medic"]

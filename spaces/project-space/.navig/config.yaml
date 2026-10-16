@@ -1,0 +1,19 @@
+name: project-space
+version: "1.0.0"
+runtime: navig-space-2
+tier: work
+
+default_formation: sprint-cycle
+weekly_standup_day: monday
+blocker_escalation_after_days: 3
+stale_project_warning_days: 14
+require_done_state_on_kickoff: true
+max_active_projects: 7
+
+project_statuses:
+  - idea
+  - active
+  - paused
+  - blocked
+  - done
+  - archived

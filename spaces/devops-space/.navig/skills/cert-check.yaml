@@ -1,0 +1,71 @@
+id: cert-check
+name: Certificate Check
+version: "1.0.0"
+description: >
+  Check SSL/TLS certificate expiry for one or more domains. Alerts if any
+  certificate expires within the specified threshold.
+category: monitoring
+platform: [windows, linux, macos]
+formation: sre-ops
+author: navig-run
+
+parameters:
+  - name: domains
+    type: string
+    required: false
+    description: "Comma-separated list of domains to check. If omitted, reads from monitoring/domains.txt"
+  - name: alert_days
+    type: integer
+    required: false
+    default: "30"
+    description: "Alert if cert expires within this many days"
+
+steps:
+  - name: check-certs
+    description: Check certificate expiry for each domain
+    shell: auto
+    script: |
+      python3 - "{{domains}}" "{{alert_days}}" <<'EOF'
+      import ssl, socket, datetime, sys
+
+      # Values arrive as argv — never pasted into Python source.
+      domains_input = sys.argv[1]
+      alert_days = int(sys.argv[2] or 30)
+
+      if domains_input and domains_input != "":
+          domains = [d.strip() for d in domains_input.split(",") if d.strip()]
+      else:
+          try:
+              with open("monitoring/domains.txt") as f:
+                  domains = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+          except FileNotFoundError:
+              print("No domains provided and monitoring/domains.txt not found.")
+              sys.exit(1)
+
+      now = datetime.datetime.utcnow()
+      any_alert = False
+
+      for domain in domains:
+          try:
+              ctx = ssl.create_default_context()
+              with ctx.wrap_socket(socket.socket(), server_hostname=domain) as s:
+                  s.settimeout(5)
+                  s.connect((domain, 443))
+                  cert = s.getpeercert()
+              exp_str = cert["notAfter"]
+              exp = datetime.datetime.strptime(exp_str, "%b %d %H:%M:%S %Y %Z")
+              days_left = (exp - now).days
+              status = "✅" if days_left > alert_days else "⚠️ "
+              print(f"{status}  {domain:<40} expires in {days_left:>4} days  ({exp_str})")
+              if days_left <= alert_days:
+                  any_alert = True
+          except Exception as e:
+              print(f"❌  {domain:<40} ERROR: {e}")
+              any_alert = True
+
+      if any_alert:
+          print("\n⚠️  One or more certificates need attention.")
+          sys.exit(1)
+      else:
+          print("\n✅  All certificates OK.")
+      EOF

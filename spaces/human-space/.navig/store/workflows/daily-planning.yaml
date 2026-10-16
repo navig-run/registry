@@ -1,0 +1,47 @@
+name: daily-planning
+version: "2.0.0"
+description: Morning planning session — mood check, energy assessment, top 3 priorities, daily intention, and journal seed.
+schedule:
+  cron: "0 7 * * *"
+  timezone: "{{TIMEZONE}}"
+  enabled: false
+on_demand: true
+formation: morning-routine
+
+steps:
+  - name: mood-check
+    description: Log morning mood and energy level
+    skill: log-mood
+    params:
+      prompt_user: true
+
+  - name: log-yesterday
+    description: Prompt for yesterday's completion status and sleep hours
+    skill: log-health-metric
+    params:
+      metrics: [sleep, energy]
+    depends_on: mood-check
+
+  - name: generate-daily-brief
+    description: Generate morning planning brief with mood context
+    prompt: daily-planning
+    depends_on: log-yesterday
+
+  - name: activate-habits
+    description: Surface today's habit targets and streaks
+    skill: check-habit-streak
+    depends_on: generate-daily-brief
+
+  - name: renewal-glance
+    description: Quick check for any renewals due in next 7 days
+    skill: renewal-check
+    params:
+      days_ahead: 7
+    depends_on: generate-daily-brief
+
+  - name: journal-seed
+    description: Seed a journal entry for today with morning mood
+    skill: journal-entry
+    params:
+      mood: "{{steps.mood-check.output.mood}}"
+    depends_on: mood-check

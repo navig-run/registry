@@ -1,0 +1,25 @@
+id: pre-departure
+name: Pre-Departure
+version: "1.0.0"
+description: Run 24–48 hours before any trip. Ensures nothing is missing.
+space: travel
+steps:
+  - step: 1
+    name: Document Check
+    agent: document-keeper
+    command: "@document-keeper checklist --trip {slug}"
+    automated: true
+  - step: 2
+    name: Budget Final Status
+    agent: budget-watcher
+    command: "@budget-watcher summary --trip {slug}"
+    automated: true
+  - step: 3
+    name: Itinerary Review
+    agent: itinerary-builder
+    command: "@itinerary-builder export --trip {slug} --format markdown"
+    automated: true
+  - step: 4
+    name: Emergency Contacts
+    manual: true
+    description: Confirm emergency contacts saved offline and shared with someone at home

@@ -1,0 +1,88 @@
+id: adb-connect
+name: ADB Connect
+version: "1.0.0"
+description: Establish an ADB connection to an Android device over USB or Wi-Fi (tcpip:5555), authorize it, and confirm the transport is live.
+category: connectivity
+platform: [windows, linux, macos]
+formation: device-bridge
+author: navig-run
+
+parameters:
+  - name: mode
+    type: enum
+    values: [usb, wifi, auto]
+    default: auto
+  - name: host
+    type: string
+    description: "Device IP for Wi-Fi mode (e.g. 192.168.1.42)"
+    default: ""
+  - name: port
+    type: int
+    description: "Wireless debugging / tcpip port"
+    default: 5555
+  - name: restart_server
+    type: bool
+    description: "Kill and restart the adb server before connecting"
+    default: false
+
+steps:
+  - id: ensure_server
+    name: "Ensure adb server is running"
+    shell: auto
+    script_windows: |
+      if ("{{restart_server}}" -eq "true") { adb kill-server }
+      adb start-server
+      Write-Output "adb server ready"
+    script_linux: |
+      [ "{{restart_server}}" = "true" ] && adb kill-server
+      adb start-server
+      echo "adb server ready"
+    script_macos: |
+      [ "{{restart_server}}" = "true" ] && adb kill-server
+      adb start-server
+      echo "adb server ready"
+
+  - id: usb_connect
+    name: "USB transport — list authorized devices"
+    condition: "mode == 'usb' or mode == 'auto'"
+    shell: auto
+    script: |
+      adb devices -l
+
+  - id: wifi_connect
+    name: "Wi-Fi transport — connect over tcpip"
+    condition: "mode == 'wifi' or (mode == 'auto' and host != '')"
+    shell: auto
+    script: |
+      adb connect {{host}}:{{port}}
+
+  - id: verify
+    name: "Verify device state"
+    shell: auto
+    script_windows: |
+      $out = adb devices -l
+      $out
+      if ($out -match "unauthorized") {
+        Write-Warning "Device is UNAUTHORIZED — accept the RSA prompt on the device screen."
+      } elseif ($out -match "device ") {
+        Write-Output "[OK] Device connected and authorized."
+      } else {
+        Write-Warning "No device in 'device' state. Check cable / wireless debugging."
+      }
+    script_linux: |
+      out=$(adb devices -l); echo "$out"
+      echo "$out" | grep -q unauthorized && echo "[WARN] UNAUTHORIZED — accept RSA prompt on device"
+      echo "$out" | grep -qE "\sdevice( |$)" && echo "[OK] Device connected and authorized"
+
+output:
+  fields: [serial, state, model, transport]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Auto-detect and connect over USB"
+    command: "navig skill run adb-connect"
+  - description: "Connect to a device over Wi-Fi"
+    command: "navig skill run adb-connect --mode wifi --host 192.168.1.42"
+  - description: "Restart the adb server, then connect"
+    command: "navig skill run adb-connect --restart_server true"

@@ -1,0 +1,40 @@
+{
+  "space_id": "simulation-space",
+  "display_name": "Simulation Space",
+  "description": "Personal operating system simulator — debug habits, model agents, track probability trees, and run behavioral experiments on the self as system.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-12",
+  "updated": "2026-03-12",
+  "author": "navig-run",
+  "tier": "work",
+  "tags": [
+    "simulation",
+    "habits",
+    "probability",
+    "behavior",
+    "self-modeling",
+    "experiments"
+  ],
+  "status": "active",
+  "agents": [
+    "agent-modeler",
+    "debugger",
+    "habit-engine",
+    "probability-analyst"
+  ],
+  "formations": [
+    "agent-lab",
+    "debug-loop",
+    "habit-sim"
+  ],
+  "skills": [
+    "assess-probability",
+    "log-debug",
+    "run-habit",
+    "update-agent"
+  ],
+  "workflows": [
+    "weekly-simulation-review"
+  ]
+}

@@ -1,0 +1,45 @@
+id: production-draft
+name: Production Draft
+version: "1.0.0"
+description: >
+  Screenwriting production formation. Screenwriter authors Fountain-format scripts;
+  Editor reviews dialogue and structure; Content Strategist handles loglines,
+  pitch decks, and coverage summaries for producers or contests.
+
+agents:
+  lead: screenwriter
+  supporting:
+    - editor
+    - content-strategist
+
+trigger_conditions:
+  - "Keyword in #screen: scene, script, screenplay, beat, logline, coverage"
+  - "Workflow: first-draft (type=screenplay)"
+  - "Manual: @production-draft"
+
+action_scope:
+  - screenwriting/
+
+skills_used:
+  - outline-draft
+  - word-count
+
+workflows_used:
+  - first-draft
+  - editorial-review
+
+communication:
+  inbox_channel: "#screen"
+  escalation: operator
+  notify_on:
+    - outline_complete
+    - draft_locked
+    - coverage_ready
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/space-context.json
+
+example_invocation: "@production-draft outline --premise 'A heist gone wrong reveals a deeper conspiracy' --format feature --pages 110"

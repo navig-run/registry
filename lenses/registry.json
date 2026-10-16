@@ -1,0 +1,47 @@
+{
+  "version": "0.1",
+  "updated": "2026-10-10",
+  "description": "Index of NAVIG Lenses — Tampermonkey-compatible .user.js files that change a website, in every NAVIG browser (NAVIG OS, navig cdp, the Chrome extension). Canonical form is the <id>/lens.user.js folder. Install: `navig install add lens:navig-run/registry/lenses/<id>`; any of them also installs in Tampermonkey or Violentmonkey from its raw link. Installed Lenses are checked for updates daily, and an update is held for review — never applied unseen.",
+  "lenses": [
+    {
+      "id": "youtube-hide-shorts",
+      "name": "YouTube without Shorts",
+      "file": "youtube-hide-shorts/lens.user.js",
+      "description": "Hides Shorts shelves, the Shorts tab and Shorts in search and subscriptions.",
+      "version": "1.0.0",
+      "sites": ["www.youtube.com", "m.youtube.com"],
+      "grants": ["GM_addStyle"],
+      "install": "navig install add lens:navig-run/registry/lenses/youtube-hide-shorts"
+    },
+    {
+      "id": "github-full-width",
+      "name": "GitHub full width",
+      "file": "github-full-width/lens.user.js",
+      "description": "Lets code, diffs and pull requests use the whole window instead of a fixed column.",
+      "version": "1.0.0",
+      "sites": ["github.com"],
+      "grants": ["GM_addStyle"],
+      "install": "navig install add lens:navig-run/registry/lenses/github-full-width"
+    },
+    {
+      "id": "hn-readable",
+      "name": "Readable Hacker News",
+      "file": "hn-readable/lens.user.js",
+      "description": "Larger text, a comfortable reading width and roomier comment threads on Hacker News.",
+      "version": "1.0.0",
+      "sites": ["news.ycombinator.com"],
+      "grants": ["GM_addStyle"],
+      "install": "navig install add lens:navig-run/registry/lenses/hn-readable"
+    },
+    {
+      "id": "wikipedia-reading",
+      "name": "Wikipedia reading width",
+      "file": "wikipedia-reading/lens.user.js",
+      "description": "Keeps article text at a comfortable line length with a little more line spacing.",
+      "version": "1.0.0",
+      "sites": ["*.wikipedia.org"],
+      "grants": ["GM_addStyle"],
+      "install": "navig install add lens:navig-run/registry/lenses/wikipedia-reading"
+    }
+  ]
+}

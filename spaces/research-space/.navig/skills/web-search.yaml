@@ -1,0 +1,99 @@
+id: web-search
+name: Web Search
+version: "1.0.0"
+description: >
+  Run a web search for a topic and log the ranked results as candidate sources.
+  The capture is provider-agnostic — wire it to any search API or MCP web tool;
+  this skill records and ranks what comes back.
+category: discovery
+platform: [windows, linux, macos]
+formation: discovery-run
+author: research-space
+
+parameters:
+  - name: query
+    type: string
+    required: true
+    description: "The search query (e.g. 'open datasets of EV charging stations Europe')"
+  - name: topic
+    type: string
+    required: true
+    description: "The research topic this search belongs to — used to group sources"
+  - name: limit
+    type: string
+    required: false
+    default: "10"
+    description: "Max results to record"
+
+steps:
+  - id: record_search
+    name: "Record Search Results"
+    shell: auto
+    env:
+      NAVIG_PARAM_QUERY: "{{params.query}}"
+      NAVIG_PARAM_TOPIC: "{{params.topic}}"
+      NAVIG_PARAM_LIMIT: "{{params.limit}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      src_path = ".navig/memory/sources.json"
+      try:
+          with open(src_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "space": "research", "sources": []}
+
+      query = os.environ.get("NAVIG_PARAM_QUERY", "")
+      topic = os.environ.get("NAVIG_PARAM_TOPIC", "")
+      limit_raw = os.environ.get("NAVIG_PARAM_LIMIT", "") or "10"
+      try:
+          limit = int(limit_raw)
+      except ValueError:
+          print(f"ERROR: invalid limit {limit_raw!r} (expected an integer).")
+          raise SystemExit(1)
+
+      # Results are expected to arrive from a connected web-search tool/MCP and be
+      # piped in via RESULTS_JSON. When absent, log the query as a pending search.
+      raw = os.environ.get("RESULTS_JSON", "")
+      try:
+          results = json.loads(raw) if raw else []
+      except Exception:
+          results = []
+
+      existing = {s.get("url") for s in data["sources"]}
+      added = 0
+      for r in results[:limit]:
+          url = r.get("url")
+          if not url or url in existing:
+              continue
+          data["sources"].append({
+              "id": f"src_{len(data['sources']) + 1:04d}",
+              "topic": topic,
+              "title": r.get("title", url),
+              "url": url,
+              "status": "candidate",
+              "found_via": query,
+              "last_crawled": None,
+              "found_at": datetime.utcnow().isoformat() + "Z"
+          })
+          existing.add(url)
+          added += 1
+
+      os.makedirs(os.path.dirname(src_path), exist_ok=True)
+      with open(src_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+
+      if results:
+          print(f"Search '{query}' [{topic}]: {added} new candidate source(s), "
+                f"{len(data['sources'])} known total.")
+      else:
+          print(f"Search '{query}' [{topic}] recorded. Connect a web-search tool "
+                f"and pass results via RESULTS_JSON to populate sources.")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: record_search

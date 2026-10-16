@@ -1,0 +1,71 @@
+id: rollback
+name: Rollback
+version: "1.0.0"
+description: >
+  Roll a service back to its previous deployed version. Supports Kubernetes
+  (rollout undo), Docker Compose (re-tag and redeploy), and systemd services.
+category: deployment
+platform: [windows, linux, macos]
+formation: ci-pipeline
+author: navig-run
+
+parameters:
+  - name: service
+    type: string
+    required: true
+    description: "Service name to roll back"
+  - name: environment
+    type: string
+    required: false
+    default: "prod"
+    description: "Target environment"
+  - name: method
+    type: string
+    required: false
+    default: "kubernetes"
+    description: "Deployment method: kubernetes | compose | systemd"
+
+steps:
+  - name: confirm
+    description: Show current and previous version before proceeding
+    shell: auto
+
+  - name: rollback
+    description: Execute rollback for the chosen method
+    depends_on: confirm
+    shell: auto
+    script: |
+      case "{{method}}" in
+        kubernetes)
+          kubectl rollout undo deployment/{{service}} -n {{environment}}
+          kubectl rollout status deployment/{{service}} -n {{environment}} --timeout=120s
+          ;;
+        compose)
+          echo "Roll back via Git: git checkout HEAD~1 -- docker-compose.yml && docker compose up -d {{service}}"
+          ;;
+        systemd)
+          sudo systemctl stop {{service}}
+          sudo systemctl start {{service}}.previous || sudo systemctl start {{service}}
+          ;;
+        *)
+          echo "ERROR: Unknown method '{{method}}'"
+          exit 1
+          ;;
+      esac
+    script_windows: |
+      switch ("{{method}}") {
+        "kubernetes" {
+          kubectl rollout undo deployment/{{service}} -n {{environment}}
+          kubectl rollout status deployment/{{service}} -n {{environment}} --timeout=120s
+        }
+        default {
+          Write-Error "On Windows, use kubectl for Kubernetes rollbacks."
+          exit 1
+        }
+      }
+
+  - name: verify
+    description: Health probe after rollback
+    depends_on: rollback
+    shell: auto
+    script: navig skill run health-probe --service {{service}} --environment {{environment}}

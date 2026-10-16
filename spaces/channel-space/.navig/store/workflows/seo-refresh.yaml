@@ -1,0 +1,74 @@
+name: seo-refresh
+description: |
+  Periodic SEO refresh for existing videos. Audits titles,
+  descriptions, and tags across the library. Identifies
+  underperforming videos and recommends metadata updates.
+
+schedule:
+  cron: "0 10 1,15 * *"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: channel-growth
+
+steps:
+  - id: audit-library
+    name: Audit video library SEO
+    skill: seo-audit
+    params:
+      scope: all
+      min_age_days: 14
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 300
+
+  - id: check-retention
+    name: Pull retention for flagged videos
+    skill: retention-analysis
+    params:
+      only_below_average: true
+    depends_on: [audit-library]
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: generate-titles
+    name: Generate improved titles
+    skill: title-generator
+    params:
+      for_underperformers: true
+      variants: 3
+    depends_on: [audit-library]
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: generate-descriptions
+    name: Rewrite weak descriptions
+    skill: description-writer
+    params:
+      for_underperformers: true
+    depends_on: [audit-library]
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: optimise-tags
+    name: Refresh tags for flagged videos
+    skill: tag-optimizer
+    params:
+      recalculate: true
+    depends_on: [generate-titles]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: generate-report
+    name: SEO refresh report
+    skill: null
+    agent: growth-analyst
+    action: seo_refresh_report
+    params:
+      include_before_after: true
+    depends_on: [check-retention, generate-titles, generate-descriptions, optimise-tags]
+    on_error: abort
+    timeout_seconds: 60

@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "deploy-space",
+  "goals": [
+    {
+      "id": "deploy-visibility",
+      "title": "Full deploy visibility",
+      "description": "Every deploy logged and queryable within minutes of occurrence",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

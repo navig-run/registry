@@ -1,0 +1,16 @@
+{
+  "name": "example-space",
+  "version": "1.0.0",
+  "description": "Fully annotated reference space showing the canonical structure every space gets from navig space init.",
+  "owner": "navig-run",
+  "tier": "studio",
+  "status": "ready",
+  "packages": [],
+  "plans": ".navig/plans",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "state": ".navig/state",
+  "wiki": ".navig/wiki",
+  "created": "2026-06-22T19:59:36Z",
+  "crossplatform": true
+}

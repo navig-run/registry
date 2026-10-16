@@ -1,0 +1,12 @@
+{
+  "space": "residence",
+  "version": "1.0.0",
+  "last_updated": "2026-03-12",
+  "description": "Home management space for tracking household inventory, medications, and maintenance.",
+  "dwelling_type": "unknown",
+  "rooms_registered": 0,
+  "total_items": 0,
+  "active_medications": 0,
+  "open_maintenance_tasks": 0,
+  "notes": "Update dwelling_type (house/apartment/studio/other) and register rooms after onboarding."
+}

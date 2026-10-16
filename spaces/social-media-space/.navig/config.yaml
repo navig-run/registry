@@ -1,0 +1,7 @@
+space: social-media-space
+version: "1.0.1"
+description: "Unified social media command layer — brands, accounts, content pipelines, scheduling, analytics, and brand voice"
+default_formation: content-pipeline
+runtime: navig-space-2
+language: en
+timezone: UTC

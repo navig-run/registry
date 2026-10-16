@@ -1,0 +1,48 @@
+{
+  "spaceId": "social-circle-space",
+  "name": "Social Circle",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "tagline": "Your entire human network — mapped, searchable, and deeply personal",
+  "description": "A living relationship graph and personal contact network manager. Map every person across real life, work, and the internet in one unified interface. Not a CRM, not a social feed — a personal relationship layer.",
+  "crossplatform": true,
+  "capability_deps": [
+    "storage",
+    "agent",
+    "memory",
+    "tools"
+  ],
+  "config_key": null,
+  "ux_rules": {
+    "default_view": "graph",
+    "views": [
+      "graph",
+      "list",
+      "card",
+      "timeline"
+    ],
+    "entry_point": "circles"
+  },
+  "viral_hook": "Export a shareable profile card — let others add you with one tap",
+  "data": {
+    "storage_engine": "storage",
+    "primary_entities": [
+      "contact",
+      "circle",
+      "interaction",
+      "tag",
+      "connection"
+    ],
+    "import_formats": [
+      "csv",
+      "linkedin",
+      "google-contacts",
+      "twitter-handle",
+      "vcf"
+    ]
+  },
+  "agent_role": "Relationship intelligence assistant — surfaces who you should reach out to, summarizes past interactions, suggests circles for new contacts, and flags relationships going cold.",
+  "created": "2026-03-17",
+  "author": "navig-run"
+}

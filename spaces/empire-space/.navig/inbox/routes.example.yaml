@@ -1,0 +1,23 @@
+# Empire Space — Inbox Routes (example)
+# Copy to routes.yaml to activate routing: NAVIG loads .navig/inbox/routes.yaml.
+version: "1.0"
+routes:
+  - channel: "#ventures"
+    description: "New venture opportunities and updates"
+    handlers: ["venture-scout"]
+    default: true
+  - channel: "#revenue"
+    description: "Revenue events, anomalies, and milestones"
+    handlers: ["revenue-tracker"]
+  - channel: "#signals"
+    description: "Market signals and intelligence"
+    handlers: ["market-analyst"]
+  - channel: "#intel"
+    description: "Competitor intel and market research drops"
+    handlers: ["market-analyst"]
+  - channel: "#decisions"
+    description: "Portfolio-level decisions requiring logging"
+    handlers: ["portfolio-commander"]
+  - channel: "#empire"
+    description: "Portfolio briefs and empire-level requests"
+    handlers: ["portfolio-commander"]

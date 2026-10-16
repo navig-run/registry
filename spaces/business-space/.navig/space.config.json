@@ -1,0 +1,34 @@
+{
+  "id": "business-space",
+  "space": "business-space",
+  "name": "Business Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "runtime": "navig-space-2",
+  "agents": [
+    "growth-hacker",
+    "fulfillment-ops",
+    "finance-analyst",
+    "listing-optimizer",
+    "affiliate-manager"
+  ],
+  "formations": [
+    "ecommerce-ops",
+    "financial-review",
+    "launch-pipeline"
+  ],
+  "skills": [
+    "calculate-margins",
+    "audit-listings",
+    "generate-invoice",
+    "check-fees",
+    "track-affiliate"
+  ],
+  "workflows": [
+    "monthly-finance-review",
+    "listing-audit",
+    "product-launch"
+  ]
+}

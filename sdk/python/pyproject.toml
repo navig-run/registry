@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "navig-sdk"
+version = "2.17.0"
+description = "NAVIG plugin SDK: run a plugin with or without navig, bring your own AI, or build a stdio plugin"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "navig-run", email = "opensource@navig.run" }]
+requires-python = ">=3.10"
+keywords = ["navig", "plugin", "sdk", "cli", "automation"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Shells",
+]
+
+[project.urls]
+Homepage = "https://github.com/navig-run/registry"
+Documentation = "https://github.com/navig-run/registry/tree/main/sdk"
+Repository = "https://github.com/navig-run/registry"
+Issues = "https://github.com/navig-run/registry/issues"
+
+[tool.setuptools.packages.find]
+include = ["navig_sdk*"]
+
+[tool.setuptools.package-data]
+# navig's navig/net/ssrf.py and proactive/providers.py alias themselves to navig_sdk modules;
+# py.typed is what lets a type checker see through those aliases.
+navig_sdk = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --tb=short"

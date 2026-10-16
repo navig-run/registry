@@ -1,0 +1,69 @@
+id: mqtt-publish
+name: MQTT Publish
+version: "1.0.0"
+description: Publish a command or config payload to an MQTT topic on the bus.
+category: mqtt
+platform: [windows, linux, macos]
+formation: mqtt-ops
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    description: "Topic to publish to (e.g. cmnd/plug-office/POWER)"
+    required: true
+  - name: payload
+    type: string
+    description: "Message payload (e.g. ON, OFF, or a JSON string)"
+    required: true
+  - name: host
+    type: string
+    default: "{{config.mqtt_host}}"
+  - name: port
+    type: int
+    default: 1883
+  - name: qos
+    type: enum
+    values: ["0", "1", "2"]
+    default: "0"
+  - name: retain
+    type: bool
+    default: false
+
+steps:
+  - id: guard_system_topic
+    name: "Refuse publishing to $SYS topics"
+    shell: auto
+    script: |
+      case "{{topic}}" in
+        \$SYS/*) echo "BLOCKED: refusing to publish to a $SYS system topic"; exit 3 ;;
+        *) echo "topic ok: {{topic}}" ;;
+      esac
+    script_windows: |
+      if ("{{topic}}" -like '$SYS/*') { Write-Output "BLOCKED: refusing to publish to a `$SYS system topic"; exit 3 }
+      else { Write-Output "topic ok: {{topic}}" }
+
+  - id: publish
+    name: "Publish the message"
+    shell: auto
+    script: |
+      mosquitto_pub -h {{host}} -p {{port}} -t "{{topic}}" -m "{{payload}}" \
+        -q {{qos}} $( [ "{{retain}}" = "true" ] && echo "-r" )
+    script_windows: |
+      $retainArg = if ("{{retain}}" -eq "true") { "-r" } else { "" }
+      mosquitto_pub -h {{host}} -p {{port}} -t "{{topic}}" -m "{{payload}}" -q {{qos}} $retainArg
+
+  - id: confirm
+    name: "Confirm publish"
+    shell: auto
+    script: |
+      echo "Published to {{topic}} (qos={{qos}}, retain={{retain}}): {{payload}}"
+
+output:
+  fields: [topic, payload, qos, retain, result]
+
+examples:
+  - description: "Turn a Tasmota plug on"
+    command: "navig skill run mqtt-publish --topic cmnd/plug-office/POWER --payload ON"
+  - description: "Set a light's color via JSON, retained"
+    command: "navig skill run mqtt-publish --topic cmnd/lamp-living/Color --payload '{\"R\":255,\"G\":120,\"B\":0}' --retain true"

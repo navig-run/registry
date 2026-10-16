@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "space": "homelab",
+  "updated": "2026-02-26",
+  "operational_goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Complete device inventory",
+      "priority": "high",
+      "status": "pending",
+      "description": "Enumerate and register all physical and virtual machines in the space. Every device must have a complete entry in device-registry.json including IP, MAC, OS, role, and installed services.",
+      "success_criteria": "All devices visible via 'navig skill run network-scan', all registered in device-registry.json, all reachable via ssh-connect or WOL.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Establish automated morning sweep",
+      "priority": "high",
+      "status": "pending",
+      "description": "Configure the morning-sweep workflow to run automatically at 06:00 daily on the primary host. Results should be written to the wiki as a dated entry.",
+      "success_criteria": "Workflow runs on schedule, produces a readable summary, anomalies surface as entries in known-issues.json.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Document all physical cable runs",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Use cable-trace skill to document every physical network cable, KVM cable, USB hub connection, and power line in the homelab. Maintain cable-log.md in the wiki.",
+      "success_criteria": "cable-log.md fully populated. Any cable can be identified by port, length, purpose, and destination. No undocumented cables.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Configure automated config sync",
+      "priority": "medium",
+      "status": "pending",
+      "description": "Establish sync-configs workflow between primary-desktop and all secondary machines. Dotfiles, shell configs, editor configs, and SSH keys should propagate automatically on change.",
+      "success_criteria": "nightly-sync workflow runs without errors. New machines can be bootstrapped in under 5 minutes using sync-configs.",
+      "target_date": null
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Track disk health across all hosts",
+      "priority": "low",
+      "status": "pending",
+      "description": "Run the disk-health skill on every registered host weekly and record warnings (wear, temperature, unsafe shutdowns) in known-issues.json.",
+      "success_criteria": "Every host has a disk-health result less than 7 days old; any warning has a known-issues entry.",
+      "target_date": null
+    }
+  ]
+}

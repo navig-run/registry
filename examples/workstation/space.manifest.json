@@ -1,0 +1,43 @@
+{
+  "id": "workstation",
+  "display_name": "Workstation",
+  "description": "Cross-platform workstation ops hub — homelab, dev tools, daily automation",
+  "version": "1.0.0",
+  "category": "homelab",
+  "license": "MIT",
+  "navig_min_version": "2.0.0",
+  "author": {
+    "name": "navig-run",
+    "github": "navig-run"
+  },
+  "tags": [
+    "workstation",
+    "homelab",
+    "daily-ops",
+    "network",
+    "docker",
+    "devtools"
+  ],
+  "skills": [
+    {
+      "id": "network-scan"
+    },
+    {
+      "id": "system-health"
+    },
+    {
+      "id": "docker-ops"
+    },
+    {
+      "id": "security-audit"
+    },
+    {
+      "id": "git-ops"
+    }
+  ],
+  "formations": [
+    {
+      "id": "homelab-node"
+    }
+  ]
+}

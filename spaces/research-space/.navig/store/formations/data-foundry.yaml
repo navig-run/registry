@@ -1,0 +1,40 @@
+id: data-foundry
+name: Data Foundry
+version: "1.0.0"
+description: >
+  Build canonical datasets and load them into the database. Curator normalizes
+  and deduplicates raw extractions; Archivist ingests the result and keeps the
+  store healthy at scale.
+
+agents:
+  lead: curator
+  supporting: [archivist]
+
+trigger_conditions:
+  - "#data inbox activity"
+  - "New extractions present in crawls/"
+  - "A dataset schema change requires a migration"
+
+action_scope:
+  - ALLOW: build-dataset
+  - ALLOW: write to datasets/
+  - ALLOW: ingest into the research database
+  - ALLOW: write to .navig/memory/datasets.json
+
+skills_used:
+  - build-dataset
+  - db-query
+
+workflows_used:
+  - weekly-research-review
+
+communication:
+  inbox_channel: "#data"
+  escalation: archivist
+  notify_on:
+    - validation_failures_over_threshold
+    - dataset_promoted
+
+context_memory:
+  read: [datasets.json, sources.json]
+  write: [datasets.json]

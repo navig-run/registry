@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "space": "dev",
+  "updated": "2026-03-11",
+  "goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Complete userscript starter template",
+      "description": "Finalize starter-script.user.js with full metadata block and annotated implementation skeleton",
+      "priority": "high",
+      "status": "pending",
+      "assignee": "scripter"
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Complete Chrome extension MV3 starter",
+      "description": "Finalize manifest.json, background.js, content.js, popup UI with working messaging example",
+      "priority": "high",
+      "status": "pending",
+      "assignee": "scripter"
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Set up code-lint skill",
+      "description": "Configure linting to run ESLint/flake8 on workspace projects",
+      "priority": "medium",
+      "status": "pending",
+      "assignee": "coder"
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Wire run-tests workflow",
+      "description": "Configure test runner to detect and run test suites across registered projects",
+      "priority": "medium",
+      "status": "pending",
+      "assignee": "coder"
+    },
+    {
+      "id": "GOAL-005",
+      "title": "Register your first real project",
+      "description": "Add your first project to space-context.json and run code-lint and run-tests against it",
+      "priority": "low",
+      "status": "pending",
+      "assignee": "operator"
+    }
+  ]
+}

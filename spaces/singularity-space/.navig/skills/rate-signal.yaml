@@ -1,0 +1,86 @@
+id: rate-signal
+name: Rate Signal
+version: "1.0.0"
+description: >
+  Log a civilization-scale signal with domain, strength, relevance, and
+  operator commentary. Signals accumulate into a trackable long-arc picture.
+category: civilization-tracking
+platform: [windows, linux, macos]
+formation: signal-watch
+author: singularity-space
+
+parameters:
+  - name: signal
+    type: string
+    required: true
+    description: "Description of the event or development"
+  - name: domain
+    type: enum
+    values: [ai, biology, governance, energy, economics, society, technology, climate, other]
+    required: true
+  - name: strength
+    type: enum
+    values: [noise, weak, moderate, strong, transformative]
+    required: true
+    description: "How significant is this signal in its domain?"
+  - name: relevance
+    type: enum
+    values: [low, medium, high, critical]
+    required: true
+    description: "How relevant is this signal to the operator's trajectory?"
+  - name: notes
+    type: string
+    required: false
+    default: ""
+    description: "Operator commentary, implications, or trajectory connection"
+  - name: source
+    type: string
+    required: false
+    default: ""
+
+steps:
+  - id: log_signal
+    name: "Log Civilization Signal"
+    shell: auto
+    env:
+      NAVIG_PARAM_SIGNAL: "{{params.signal}}"
+      NAVIG_PARAM_DOMAIN: "{{params.domain}}"
+      NAVIG_PARAM_STRENGTH: "{{params.strength}}"
+      NAVIG_PARAM_RELEVANCE: "{{params.relevance}}"
+      NAVIG_PARAM_NOTES: "{{params.notes}}"
+      NAVIG_PARAM_SOURCE: "{{params.source}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      signals_path = ".navig/memory/civilization-signals.json"
+      try:
+          with open(signals_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"signals": []}
+
+      signal = {
+          "id": f"civ_{len(data['signals']) + 1:04d}",
+          "signal": os.environ.get("NAVIG_PARAM_SIGNAL", ""),
+          "domain": os.environ.get("NAVIG_PARAM_DOMAIN", ""),
+          "strength": os.environ.get("NAVIG_PARAM_STRENGTH", ""),
+          "relevance": os.environ.get("NAVIG_PARAM_RELEVANCE", ""),
+          "notes": os.environ.get("NAVIG_PARAM_NOTES", ""),
+          "source": os.environ.get("NAVIG_PARAM_SOURCE", ""),
+          "status": "active",
+          "destiny_linked": False,
+          "logged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data["signals"].append(signal)
+      os.makedirs(os.path.dirname(signals_path), exist_ok=True)
+      with open(signals_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Signal [{signal['id']}] | domain: {signal['domain']} | strength: {signal['strength']} | relevance: {signal['relevance']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: log_signal

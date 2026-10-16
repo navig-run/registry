@@ -1,0 +1,58 @@
+{
+  "id": "homelab-space",
+  "kind": "space",
+  "name": "Homelab Space",
+  "version": "1.2.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Command-and-control hub for all hardware, devices, and networks in a personal homelab environment.",
+  "agent": {
+    "default": "atlas",
+    "formation": "network-ops"
+  },
+  "agents": [
+    {"id": "atlas",    "role": "Infrastructure cartographer",      "formation": "network-ops"},
+    {"id": "sentinel", "role": "Security and anomaly watcher",      "formation": "security-watch"},
+    {"id": "wrench",   "role": "Maintenance automator",             "formation": "maintenance-crew"},
+    {"id": "herald",   "role": "Cross-platform command translator", "formation": "cross-platform-ops"},
+    {"id": "archivist","role": "Config and knowledge keeper",       "formation": "maintenance-crew"},
+    {"id": "pulse",    "role": "Hardware health monitor",           "formation": "hardware-patrol"}
+  ],
+  "formations": [
+    {"id": "network-ops",       "description": "Network scanning, topology mapping, cable documentation"},
+    {"id": "hardware-patrol",   "description": "GPU health, disk health, hardware inventory, thermal monitoring"},
+    {"id": "cross-platform-ops","description": "OS-specific command routing across Windows, Linux, macOS"},
+    {"id": "security-watch",    "description": "Port auditing, process investigation, intrusion detection"},
+    {"id": "maintenance-crew",  "description": "Disk clean, log rotation, update checking, config sync"}
+  ],
+  "skills": [
+    "network-scan",
+    "port-audit",
+    "cable-trace",
+    "hardware-inventory",
+    "gpu-health",
+    "disk-health",
+    "disk-clean",
+    "process-investigate",
+    "ssh-connect",
+    "wake-on-lan",
+    "sync-configs"
+  ],
+  "workflows": [
+    {"id": "morning-sweep",    "schedule": "daily"},
+    {"id": "deep-audit",       "schedule": "on-demand"},
+    {"id": "onboard-device",   "schedule": "on-demand"},
+    {"id": "cable-map-update", "schedule": "on-demand"},
+    {"id": "nightly-sync",     "schedule": "nightly"},
+    {"id": "weekly-review",    "schedule": "weekly"}
+  ],
+  "packages": [
+    {"id": "smartctl", "version": "7.5", "bin_windows": "smartctl", "bin_config_key": "homelab.smartctl_path"}
+  ],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": ["homelab", "infrastructure", "hardware", "networking", "automation", "devops"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

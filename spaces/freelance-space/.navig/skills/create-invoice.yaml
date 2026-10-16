@@ -1,0 +1,145 @@
+id: create-invoice
+name: Create Invoice
+version: "1.0.0"
+description: >
+  Generate an invoice from unbilled time entries for a client and period.
+  Creates an invoice record with line items, total, and payment due date.
+  Sets time entries as invoiced so they are not double-billed.
+category: billing
+platform: [windows, linux, macos]
+formation: billing-cycle
+author: freelance-space
+
+parameters:
+  - name: client
+    type: string
+    required: true
+    description: "Client ID or name"
+  - name: period
+    type: string
+    required: true
+    description: "Billing period in YYYY-MM format (e.g. 2026-03)"
+  - name: currency
+    type: string
+    required: false
+    default: "USD"
+    description: "Invoice currency (ISO 4217)"
+  - name: due_days
+    type: integer
+    required: false
+    default: 30
+    description: "Payment due days from invoice date"
+
+steps:
+  - id: build_invoice
+    name: "Build Invoice from Time Log"
+    shell: auto
+    env:
+      NAVIG_PARAM_CLIENT: "{{params.client}}"
+      NAVIG_PARAM_PERIOD: "{{params.period}}"
+      NAVIG_PARAM_CURRENCY: "{{params.currency}}"
+      NAVIG_PARAM_DUE_DAYS: "{{params.due_days}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime, date, timedelta
+
+      client_filter = os.environ.get("NAVIG_PARAM_CLIENT", "").lower()
+      period = os.environ.get("NAVIG_PARAM_PERIOD", "")
+      currency = os.environ.get("NAVIG_PARAM_CURRENCY", "")
+      due_days = int(os.environ.get("NAVIG_PARAM_DUE_DAYS") or 30)
+
+      time_path = ".navig/memory/time-log.json"
+      inv_path = ".navig/memory/invoices.json"
+      client_path = ".navig/memory/clients.json"
+
+      try:
+          with open(time_path, encoding="utf-8") as f:
+              time_data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          print("No time log found. Log time first.")
+          raise SystemExit(1)
+
+      try:
+          with open(client_path, encoding="utf-8") as f:
+              client_data = json.load(f)
+          client_record = next((c for c in client_data.get("clients", [])
+                                if c["id"].lower() == client_filter or c["name"].lower() == client_filter), None)
+          rate = float(client_record["rate"]) if client_record else 0.0
+      except Exception:
+          rate = 0.0
+
+      entries = [e for e in time_data.get("entries", [])
+                 if e.get("billable") and not e.get("invoiced")
+                 and (e.get("client", "").lower() == client_filter)
+                 and e.get("date", "").startswith(period)]
+
+      if not entries:
+          print(f"No unbilled time entries found for client '{client_filter}' in {period}.")
+          raise SystemExit(0)
+
+      line_items = []
+      total_hours = 0.0
+      for e in entries:
+          line_items.append({
+              "time_entry_id": e["id"],
+              "date": e.get("date"),
+              "description": e.get("task"),
+              "hours": e.get("hours", 0),
+              "rate": rate,
+              "amount": round(e.get("hours", 0) * rate, 2)
+          })
+          total_hours += e.get("hours", 0)
+
+      total = round(sum(li["amount"] for li in line_items), 2)
+      today = date.today()
+      due = today + timedelta(days=due_days)
+
+      try:
+          with open(inv_path, encoding="utf-8") as f:
+              inv_data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          inv_data = {"invoices": [], "last_updated": None}
+
+      invoice_id = f"inv_{len(inv_data['invoices']) + 1:04d}"
+      invoice = {
+          "id": invoice_id,
+          "client": os.environ.get("NAVIG_PARAM_CLIENT", ""),
+          "period": period,
+          "currency": currency,
+          "status": "draft",
+          "created_at": today.isoformat(),
+          "due_date": due.isoformat(),
+          "sent_at": None,
+          "paid_at": None,
+          "line_items": line_items,
+          "total_hours": round(total_hours, 2),
+          "total": total
+      }
+      inv_data["invoices"].append(invoice)
+      inv_data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+      os.makedirs(os.path.dirname(inv_path), exist_ok=True)
+      with open(inv_path, "w", encoding="utf-8") as f:
+          json.dump(inv_data, f, indent=2, ensure_ascii=False)
+
+      # Mark time entries as invoiced
+      for e in time_data["entries"]:
+          if e["id"] in [li["time_entry_id"] for li in line_items]:
+              e["invoiced"] = True
+              e["invoice_id"] = invoice_id
+      with open(time_path, "w", encoding="utf-8") as f:
+          json.dump(time_data, f, indent=2, ensure_ascii=False)
+
+      print(f"Invoice created: [{invoice_id}]")
+      print(f"  Client : {invoice['client']}")
+      print(f"  Period : {period}")
+      print(f"  Hours  : {total_hours:.2f}h")
+      print(f"  Total  : {currency} {total:,.2f}")
+      print(f"  Due    : {due.isoformat()}")
+      print(f"  Status : draft — mark as sent with billing-officer")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: invoice
+    from: build_invoice

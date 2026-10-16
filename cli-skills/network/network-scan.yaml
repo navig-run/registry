@@ -1,0 +1,76 @@
+name: Network Scan
+description: Discover LAN devices, check host reachability, and map open ports with nmap
+version: 1.1.0
+category: network
+license: MIT
+
+user_invocable: true
+risk_level: elevated
+
+requires:
+  - nmap   # apt install nmap | brew install nmap | choco install nmap
+
+commands:
+  - name: scan
+    syntax: navig skill run network-scan scan [--subnet <cidr>] [--fast] [--json]
+    description: >-
+      Discover all active devices on a subnet (default: auto-detect local subnet).
+      Add --fast for ping-only sweep; omit for full nmap host discovery.
+    risk: elevated
+
+  - name: check
+    syntax: navig skill run network-scan check --host <ip|hostname> [--ports <range>]
+    description: Check if a specific host is reachable and list its open ports
+    risk: elevated
+
+  - name: trace
+    syntax: navig skill run network-scan trace --host <ip|hostname>
+    description: Run a traceroute to a host and show each hop with latency
+    risk: safe
+
+  - name: watch
+    syntax: navig skill run network-scan watch [--subnet <cidr>] [--interval <sec>]
+    description: Monitor the subnet for new or disappearing devices (default interval=30s)
+    risk: elevated
+
+examples:
+  - title: Find all devices on the local network
+    user: What devices are on my network?
+    command: navig skill run network-scan scan
+
+  - title: Scan a specific subnet
+    user: Discover everything on 10.0.0.0/24
+    command: navig skill run network-scan scan --subnet 10.0.0.0/24
+
+  - title: Check if my NAS is online
+    user: Is my NAS at 192.168.1.50 reachable?
+    command: navig skill run network-scan check --host 192.168.1.50
+
+  - title: Trace a slow connection
+    user: Why is traffic to 8.8.8.8 slow?
+    command: navig skill run network-scan trace --host 8.8.8.8
+
+  - title: Alert when unknown devices join
+    user: Tell me if any new device appears on the network
+    command: navig skill run network-scan watch --interval 60
+
+agent_hints:
+  when_to_use: >
+    Use when the user asks about network devices, device discovery, host reachability,
+    open ports, or network monitoring. Trigger on: "who's on my network",
+    "is X online", "what's at this IP", "find devices", "network map",
+    "unknown device", "check connectivity".
+  output_format: >
+    scan: JSON array of { ip, hostname, mac, vendor, open_ports: [int], status: up|down }.
+    check: { ip, status, open_ports: [{ port, protocol, service }], latency_ms }.
+    trace: array of { hop, ip, hostname, latency_ms }.
+    watch: event stream of { timestamp, event: appeared|disappeared, ip, hostname }.
+  follow_up: >
+    After scan, offer a deep port scan on any unknown or unexpected IP.
+    After check, if ports are unexpectedly open, offer to run security-audit ports
+    on that host. After watch detects a new device, offer to identify it.
+
+platforms:
+  - linux
+  - mac
+  - windows

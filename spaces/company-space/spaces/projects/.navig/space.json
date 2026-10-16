@@ -1,0 +1,17 @@
+{
+  "id": "projects",
+  "name": "Projects",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Active company projects — specs, milestones, decisions, and delivery tracking.",
+  "author": "navig-run",
+  "license": "MIT",
+  "parent": "company-space",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

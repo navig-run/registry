@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "space": "scribe",
+  "updated": "2026-03-11",
+  "goals": [
+    {
+      "id": "GOAL-001",
+      "title": "Set up book-writing project structure",
+      "description": "Create chapter folders and populate outline-template.md for current book project",
+      "priority": "high",
+      "status": "pending",
+      "agent": "storyteller"
+    },
+    {
+      "id": "GOAL-002",
+      "title": "Configure editorial calendar",
+      "description": "Populate content-strategy/editorial-calendar.csv for Q2 content plan",
+      "priority": "high",
+      "status": "pending",
+      "agent": "content-strategist"
+    },
+    {
+      "id": "GOAL-003",
+      "title": "Adapt technical doc template",
+      "description": "Customize technical-writing/doc-template.md for your default documentation style",
+      "priority": "medium",
+      "status": "pending",
+      "agent": "tech-writer"
+    },
+    {
+      "id": "GOAL-004",
+      "title": "Customize screenwriting starter",
+      "description": "Replace placeholder Fountain script with your real project",
+      "priority": "medium",
+      "status": "pending",
+      "agent": "screenwriter"
+    }
+  ]
+}

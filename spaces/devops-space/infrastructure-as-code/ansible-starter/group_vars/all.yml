@@ -1,0 +1,13 @@
+---
+# Shared variables for all hosts
+timezone: "UTC"
+
+base_packages:
+  - curl
+  - wget
+  - git
+  - htop
+  - unzip
+  - ca-certificates
+  - gnupg
+  - ufw

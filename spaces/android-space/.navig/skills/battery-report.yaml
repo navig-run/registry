@@ -1,0 +1,79 @@
+id: battery-report
+name: Battery Report
+version: "1.0.0"
+description: >
+  Report battery level, health, temperature, charging state, and voltage via
+  `dumpsys battery`, plus per-app battery usage from `dumpsys batterystats`.
+  Flags degraded health and abnormal temperature against configurable thresholds.
+category: fleet
+platform: [windows, linux, macos]
+formation: fleet-patrol
+author: navig-run
+
+parameters:
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: warn_temp_c
+    type: int
+    description: "Battery temperature warning threshold (°C)"
+    default: 40
+  - name: warn_level_pct
+    type: int
+    description: "Low battery warning threshold (%)"
+    default: 20
+  - name: top_apps
+    type: int
+    description: "How many top battery-consuming apps to list"
+    default: 5
+
+steps:
+  - id: battery_stats
+    name: "Battery state (dumpsys battery)"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $raw = & adb $sel shell dumpsys battery
+      Write-Output "=== BATTERY STATE ==="
+      $level = ($raw | Select-String "level:").ToString().Split(":")[1].Trim()
+      $tempRaw = ($raw | Select-String "temperature:").ToString().Split(":")[1].Trim()
+      $tempC = [math]::Round([int]$tempRaw / 10, 1)
+      $health = ($raw | Select-String "health:").ToString().Split(":")[1].Trim()
+      Write-Output "Level        : $level %"
+      Write-Output "Temperature  : $tempC °C"
+      Write-Output "Health code  : $health (2=Good,3=Overheat,4=Dead,5=OverVoltage,6=Failure,7=Cold)"
+      ($raw | Select-String "status:|scale:|voltage:|technology:")
+      if ([int]$level -lt {{warn_level_pct}}) { Write-Warning "LOW BATTERY (<{{warn_level_pct}}%)" }
+      if ($tempC -ge {{warn_temp_c}})         { Write-Warning "HIGH BATTERY TEMP (>= {{warn_temp_c}}C)" }
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      raw=$(adb $sel shell dumpsys battery)
+      echo "=== BATTERY STATE ==="
+      level=$(echo "$raw" | grep "level:" | awk '{print $2}' | tr -d '\r')
+      tempraw=$(echo "$raw" | grep "temperature:" | awk '{print $2}' | tr -d '\r')
+      tempc=$(awk "BEGIN{printf \"%.1f\", $tempraw/10}")
+      echo "Level        : $level %"
+      echo "Temperature  : $tempc C"
+      echo "$raw" | grep -E "status:|health:|scale:|voltage:|technology:"
+      [ "$level" -lt {{warn_level_pct}} ] && echo "[WARN] LOW BATTERY (<{{warn_level_pct}}%)"
+      awk "BEGIN{exit !($tempc >= {{warn_temp_c}})}" && echo "[WARN] HIGH BATTERY TEMP (>= {{warn_temp_c}}C)"
+
+  - id: top_consumers
+    name: "Top battery-consuming apps"
+    shell: auto
+    script: |
+      echo "=== TOP BATTERY CONSUMERS ==="
+      adb {{#serial}}-s {{serial}}{{/serial}} shell dumpsys batterystats --charged | \
+        grep -iE "Estimated power use|uid" | head -{{top_apps}}
+
+output:
+  fields: [serial, level, temperature_c, health, top_apps]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Battery report for the connected device"
+    command: "navig skill run battery-report"
+  - description: "Stricter temperature threshold, top 10 apps"
+    command: "navig skill run battery-report --warn_temp_c 38 --top_apps 10"

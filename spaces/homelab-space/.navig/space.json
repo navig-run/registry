@@ -1,0 +1,20 @@
+{
+  "id": "homelab-space",
+  "name": "Homelab Space",
+  "version": "1.2.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Command-and-control hub for all hardware, devices, and networks in a personal homelab environment: network scan, port audit, hardware/GPU/disk health, SSH, Wake-on-LAN and config sync across Windows, Linux and macOS.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["atlas", "sentinel", "wrench", "herald", "archivist", "pulse"],
+  "formations": ["network-ops", "hardware-patrol", "cross-platform-ops", "security-watch", "maintenance-crew"],
+  "skills": [
+    "network-scan", "port-audit", "cable-trace", "hardware-inventory",
+    "gpu-health", "disk-health", "disk-clean", "process-investigate",
+    "ssh-connect", "wake-on-lan", "sync-configs"
+  ],
+  "workflows": ["morning-sweep", "deep-audit", "onboard-device", "cable-map-update", "nightly-sync", "weekly-review"],
+  "packages": ["smartctl"],
+  "subspaces": []
+}

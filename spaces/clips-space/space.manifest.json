@@ -1,0 +1,67 @@
+{
+  "space_id": "clips-space",
+  "display_name": "Clips Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "description": "Short-form video factory — create, optimise, and distribute TikTok, Instagram Reels, and YouTube Shorts at scale.",
+  "icon": "🎬",
+  "tags": [
+    "tiktok",
+    "reels",
+    "shorts",
+    "viral",
+    "hooks",
+    "trends",
+    "short-form",
+    "clips"
+  ],
+  "category": "content",
+  "agents": [
+    "clip-director",
+    "clip-editor",
+    "distributor",
+    "hook-writer",
+    "trend-scout"
+  ],
+  "formations": [
+    "batch-schedule",
+    "clip-factory",
+    "performance-review",
+    "repurpose-lab",
+    "trend-ride"
+  ],
+  "skills": [
+    "analytics-aggregate",
+    "batch-export",
+    "caption-generate",
+    "clip-trim",
+    "format-adapt",
+    "hashtag-optimize",
+    "hook-score",
+    "multi-post",
+    "sound-match",
+    "trend-scan"
+  ],
+  "workflows": [
+    "batch-week",
+    "daily-clip",
+    "morning-clips",
+    "repurpose-pipeline",
+    "trend-alert",
+    "weekly-analytics"
+  ],
+  "packages": [],
+  "meta": {
+    "crossplatform": true,
+    "primary_action": "navig formation run \"<request>\"",
+    "platform": [
+      "windows",
+      "linux",
+      "macos"
+    ]
+  },
+  "schema_version": "1.0",
+  "status": "active",
+  "author": "navig-run",
+  "license": "MIT"
+}

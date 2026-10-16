@@ -1,0 +1,21 @@
+{
+  "id": "lab-space",
+  "name": "Lab Space",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "planned",
+  "description": "Live command REPL — run, tweak, and share any Navig command.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "agent",
+    "tools",
+    "storage"
+  ]
+}

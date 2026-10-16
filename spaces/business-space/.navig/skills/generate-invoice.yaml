@@ -1,0 +1,75 @@
+id: generate-invoice
+name: Generate Invoice
+version: "1.0.0"
+description: Generate a Markdown invoice and save it to finance-ops/invoices/ (convert to PDF with any Markdown tool).
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+author: navig-run
+
+parameters:
+  - name: client
+    description: Client name
+    required: true
+  - name: amount
+    description: Invoice total in USD
+    required: true
+  - name: description
+    description: Line item description
+    required: true
+  - name: invoice_number
+    description: Invoice number (auto-generated if omitted)
+    required: false
+  - name: due_days
+    description: Payment due in N days from today
+    required: false
+    default: "30"
+
+steps:
+  - name: create-invoice-dir
+    description: Ensure output directory exists
+    script: |
+      import os
+      os.makedirs("finance-ops/invoices", exist_ok=True)
+      print("Invoice directory ready")
+    script_windows: |
+      New-Item -ItemType Directory -Force "finance-ops\invoices" | Out-Null
+      Write-Host "Invoice directory ready"
+
+  - name: generate-markdown
+    description: Write invoice markdown file
+    env:
+      NAVIG_PARAM_CLIENT: "{{client}}"
+      NAVIG_PARAM_AMOUNT: "{{amount}}"
+      NAVIG_PARAM_DESCRIPTION: "{{description}}"
+      NAVIG_PARAM_INVOICE_NUMBER: "{{invoice_number}}"
+      NAVIG_PARAM_DUE_DAYS: "{{due_days}}"
+    script: |
+      import datetime, re, sys, os
+      # Parameters arrive as environment variables, never pasted into the code.
+      client = os.environ.get("NAVIG_PARAM_CLIENT", "")
+      amount = os.environ.get("NAVIG_PARAM_AMOUNT", "")
+      description = os.environ.get("NAVIG_PARAM_DESCRIPTION", "")
+      inv_num = os.environ.get("NAVIG_PARAM_INVOICE_NUMBER", "") or f"INV-{datetime.date.today().strftime('%Y%m%d')}"
+      inv_num = re.sub(r"[^A-Za-z0-9._-]", "-", inv_num).lstrip(".") or "INV"  # it becomes a file name
+      due_days = int(os.environ.get("NAVIG_PARAM_DUE_DAYS") or 30)
+      due_date = (datetime.date.today() + datetime.timedelta(days=due_days)).isoformat()
+      out = f"""# Invoice {inv_num}
+
+      **Bill to**: {client}
+      **Date**: {datetime.date.today()}
+      **Due**: {due_date}
+
+      | Description | Amount |
+      |-------------|--------|
+      | {description} | ${amount} |
+
+      **Total: ${amount} USD**
+
+      Thank you for your business.
+      """
+      path = os.path.join("finance-ops", "invoices", f"{inv_num}.md")
+      with open(path, "w", encoding="utf-8") as f:
+          f.write(out)
+      print(f"Invoice written: {path}")
+    depends_on: create-invoice-dir

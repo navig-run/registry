@@ -1,0 +1,23 @@
+.env
+.env.*
+vault/
+secrets/
+*.private.*
+brands/*/credentials.json
+brands/*/tokens.json
+analytics/**/*.private.csv
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+*.pyc
+.navig/state/
+content/published/**/*.json
+node_modules/
+
+# Working state written by workflows (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml
+.navig/ops/*.json
+.navig/plans/briefs/*.md

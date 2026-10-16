@@ -1,0 +1,67 @@
+id: audio-edit
+name: "Audio Edit"
+version: "1.0.0"
+description: "Edit audio files — trim, splice, crossfade, and remove silence"
+category: editing
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: input_path
+    type: string
+    required: true
+    description: "Input audio file path"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output audio file path"
+  - name: start_time
+    type: string
+    default: "00:00:00"
+    description: "Start time for trim (HH:MM:SS)"
+  - name: end_time
+    type: string
+    default: ""
+    description: "End time for trim (HH:MM:SS, empty = end of file)"
+  - name: remove_silence
+    type: boolean
+    default: true
+    description: "Remove long silences (>2 seconds)"
+
+steps:
+  - id: trim-audio
+    env:
+      NAVIG_PARAM_END_TIME: "{{end_time}}"
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_START_TIME: "{{start_time}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Trim Audio"
+    shell: bash
+    script_linux: |
+      if [ -n "${NAVIG_PARAM_END_TIME}" ]; then
+        ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -ss "${NAVIG_PARAM_START_TIME}" -to "${NAVIG_PARAM_END_TIME}" -c copy "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav"
+      else
+        ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -ss "${NAVIG_PARAM_START_TIME}" -c copy "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav"
+      fi
+    script_windows: |
+      if ("$($env:NAVIG_PARAM_END_TIME)" -ne "") { ffmpeg -y -i "$($env:NAVIG_PARAM_INPUT_PATH)" -ss "$($env:NAVIG_PARAM_START_TIME)" -to "$($env:NAVIG_PARAM_END_TIME)" -c copy "$($env:NAVIG_PARAM_OUTPUT_PATH).trim.wav" } else { ffmpeg -y -i "$($env:NAVIG_PARAM_INPUT_PATH)" -ss "$($env:NAVIG_PARAM_START_TIME)" -c copy "$($env:NAVIG_PARAM_OUTPUT_PATH).trim.wav" }
+    script_macos: |
+      if [ -n "${NAVIG_PARAM_END_TIME}" ]; then
+        ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -ss "${NAVIG_PARAM_START_TIME}" -to "${NAVIG_PARAM_END_TIME}" -c copy "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav"
+      else
+        ffmpeg -y -i "${NAVIG_PARAM_INPUT_PATH}" -ss "${NAVIG_PARAM_START_TIME}" -c copy "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav"
+      fi
+
+  - id: remove-silence
+    env:
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Remove Long Silences"
+    shell: bash
+    condition: "{{remove_silence}} == true"
+    script_linux: |
+      ffmpeg -y -i "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav" -af "silenceremove=stop_periods=-1:stop_duration=2:stop_threshold=-50dB" "${NAVIG_PARAM_OUTPUT_PATH}"
+    script_windows: |
+      ffmpeg -y -i "$($env:NAVIG_PARAM_OUTPUT_PATH).trim.wav" -af "silenceremove=stop_periods=-1:stop_duration=2:stop_threshold=-50dB" "$($env:NAVIG_PARAM_OUTPUT_PATH)"
+    script_macos: |
+      ffmpeg -y -i "${NAVIG_PARAM_OUTPUT_PATH}.trim.wav" -af "silenceremove=stop_periods=-1:stop_duration=2:stop_threshold=-50dB" "${NAVIG_PARAM_OUTPUT_PATH}"

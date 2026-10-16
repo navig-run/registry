@@ -1,0 +1,9 @@
+space_id: showcase-space
+runtime: navig-space-2
+
+showcase:
+  gallery_enabled: true
+  preview_mode: true
+  one_click_install: true
+  rating_system: true
+  min_install_count_to_feature: 10

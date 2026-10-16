@@ -1,0 +1,16 @@
+{
+  "id": "devtools-space",
+  "name": "DevTools Space",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "planned",
+  "description": "Developer shell tools for Windows: one PowerShell engine behind navig skills, the AI agent and an optional per-user right-click menu (archives, git clone, folder-structure copy, downloads, ssh/upload, VirusTotal scan, file unlock). Most verbs still prompt interactively, so the space is not yet agent-safe.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": ["compress", "copy-structure", "dev", "download", "git-clone", "remote", "scan", "shell-menu", "unlock", "url"],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

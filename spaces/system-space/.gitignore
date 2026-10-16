@@ -1,0 +1,11 @@
+# navig system space
+.navig/logs/
+.navig/state/
+.navig/cache/
+.trash/
+*.log
+.env
+.DS_Store
+Thumbs.db
+desktop.ini
+__pycache__/

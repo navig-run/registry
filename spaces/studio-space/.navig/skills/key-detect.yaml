@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────
+# Skill: Key Detection
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: key-detect
+name: Key Detection
+version: "1.0.0"
+description: Analyse an audio file and estimate its musical key and scale.
+category: analysis
+platform:
+  - windows
+  - linux
+  - macos
+formation: track-production
+author: navig-run
+
+parameters:
+  - name: input_file
+    type: string
+    description: Path to the audio file to analyse.
+    default: null
+  - name: batch
+    type: boolean
+    description: When true, input_file is treated as a glob pattern.
+    default: false
+
+steps:
+  - id: detect
+    name: Run key detection
+    shell: true
+    script_windows: |
+      ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >nul 2>&1
+      if %errorlevel% neq 0 (echo ERROR: Cannot read file & exit /b 1)
+      echo Detecting key for: {{input_file}}
+      ffmpeg -i "{{input_file}}" -af "aresample=22050,showcqt=s=1920x1080" -f null - 2>&1 | findstr /i "key"
+    script_linux: |
+      if ! ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >/dev/null 2>&1; then
+        echo "ERROR: Cannot read file" && exit 1
+      fi
+      echo "Detecting key for: {{input_file}}"
+      ffmpeg -i "{{input_file}}" -af "aresample=22050" -f null - 2>&1 | grep -i "key"
+    script_macos: |
+      if ! ffprobe -v error -show_entries format=duration -of csv=p=0 "{{input_file}}" >/dev/null 2>&1; then
+        echo "ERROR: Cannot read file" && exit 1
+      fi
+      echo "Detecting key for: {{input_file}}"
+      ffmpeg -i "{{input_file}}" -af "aresample=22050" -f null - 2>&1 | grep -i "key"

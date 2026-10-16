@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "open-space",
+  "goals": [
+    {
+      "id": "forkable-everything",
+      "title": "Every session is forkable",
+      "description": "Every public build session produces a timeline artifact others can fork in one click",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

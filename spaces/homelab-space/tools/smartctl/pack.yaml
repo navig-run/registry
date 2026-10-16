@@ -1,0 +1,173 @@
+id: smartctl
+name: smartctl
+version: "1.0.0"
+description: >
+  Wraps smartmontools smartctl binary as a NAVIG tool.
+  Provides SMART health status, NVMe attributes (Percentage Used, spare,
+  temperature, power-on hours, unsafe shutdowns), and full attribute dumps
+  for any physical disk. Windows uses /dev/pdN device paths.
+author: navig-run
+navig_min_version: "2.0.0"
+category: hardware
+formation: hardware-patrol
+
+install:
+  windows:
+    method: winget
+    package: smartmontools.smartmontools
+    version: "7.5"
+    # The binary is resolved, in order, from the config key `homelab.smartctl_path`
+    # (.navig/config.yaml → smartctl_path), then `smartctl` on PATH, then the default
+    # smartmontools install folder. Nothing edits the machine PATH.
+    bin_path: "smartctl"
+    post_install: |
+      # Read-only check: report where smartctl resolves from. Never modifies PATH.
+      $c = Get-Command smartctl -ErrorAction SilentlyContinue
+      if ($c) { Write-Output "smartctl=$($c.Source)" }
+      else {
+        $default = Join-Path $env:ProgramFiles 'smartmontools\bin\smartctl.exe'
+        if (Test-Path -LiteralPath $default) { Write-Output "smartctl=$default (not on PATH — set smartctl_path in .navig/config.yaml or add the folder to your user PATH)" }
+        else { Write-Output "smartctl not found" }
+      }
+  linux:
+    method: package_manager
+    apt: smartmontools
+    dnf: smartmontools
+    pacman: smartmontools
+  macos:
+    method: homebrew
+    brew: smartmontools
+
+device_paths:
+  # Windows: /dev/pdN maps to PhysicalDriveN (disk index from Get-Disk)
+  # Use /dev/pd0 for disk 0 (the first physical disk)
+  windows: "/dev/pd{disk_index}"
+  # Linux: standard block device
+  linux: "/dev/{device}"
+  # macOS: disk node
+  macos: "/dev/{device}"
+
+discovery:
+  type: static
+  refresh_on_start: false
+
+tools:
+  - id: smartctl
+    name: smartctl
+    description: SMART disk health diagnostics via smartmontools
+    category: storage
+    icon: 💾
+    platform: [windows, linux, macos]
+    requires_elevation: false   # NVMe on Linux may need sudo
+    bin_windows: smartctl          # or the value of config key homelab.smartctl_path
+    bin_config_key: homelab.smartctl_path
+    bin_linux: smartctl
+    bin_macos: smartctl
+
+    commands:
+      - name: health
+        description: "Overall SMART health status (PASSED/FAILED)"
+        shell_windows: '"{bin}" -H /dev/pd{disk_index}'
+        shell_linux: 'smartctl -H /dev/{device}'
+        shell_macos: 'smartctl -H /dev/{device}'
+        args:
+          disk_index:
+            type: int
+            required: false
+            default: 0
+            description: "Physical disk index (Windows Get-Disk Number)"
+          device:
+            type: string
+            required: false
+            default: sda
+            description: "Device name without /dev/ (Linux/macOS)"
+
+      - name: nvme
+        description: "Full NVMe SMART attributes — percentage used, spare, temp, errors"
+        shell_windows: '"{bin}" -H -A /dev/pd{disk_index}'
+        shell_linux: 'smartctl -H -A /dev/{device}'
+        shell_macos: 'smartctl -H -A /dev/{device}'
+        args:
+          disk_index:
+            type: int
+            required: false
+            default: 0
+          device:
+            type: string
+            required: false
+            default: nvme0
+
+      - name: info
+        description: "Device identification — model, serial, firmware, NVMe version"
+        shell_windows: '"{bin}" -i /dev/pd{disk_index}'
+        shell_linux: 'smartctl -i /dev/{device}'
+        shell_macos: 'smartctl -i /dev/{device}'
+        args:
+          disk_index:
+            type: int
+            required: false
+            default: 0
+          device:
+            type: string
+            required: false
+            default: sda
+
+      - name: scan
+        description: "Scan and list all devices smartctl can access"
+        shell_windows: '"{bin}" --scan'
+        shell_linux: 'smartctl --scan'
+        shell_macos: 'smartctl --scan'
+        args: {}
+
+      - name: selftest_short
+        description: "Run a short SMART self-test (1-2 minutes)"
+        shell_windows: '"{bin}" -t short /dev/pd{disk_index}'
+        shell_linux: 'smartctl -t short /dev/{device}'
+        shell_macos: 'smartctl -t short /dev/{device}'
+        args:
+          disk_index:
+            type: int
+            required: false
+            default: 0
+          device:
+            type: string
+            required: false
+            default: sda
+
+      - name: selftest_results
+        description: "Show results of the most recent self-test"
+        shell_windows: '"{bin}" -l selftest /dev/pd{disk_index}'
+        shell_linux: 'smartctl -l selftest /dev/{device}'
+        shell_macos: 'smartctl -l selftest /dev/{device}'
+        args:
+          disk_index:
+            type: int
+            required: false
+            default: 0
+          device:
+            type: string
+            required: false
+            default: sda
+
+notes:
+  - "Windows NVMe devices must be accessed via /dev/pdN (e.g. /dev/pd0), NOT /dev/nvme0"
+  - "smartctl --scan returns empty on Windows; use /dev/pd0, /dev/pd1, etc. directly"
+  - "Percentage Used in NVMe output is the true wear indicator — Windows Get-StorageReliabilityCounter Wear field may report 0 incorrectly"
+  - "Temperature Sensor 1 = NAND; Temperature Sensor 2 = Controller (typically higher)"
+  - "Available Spare below threshold (10%) indicates the drive is near end-of-life"
+
+examples:
+  - description: "NVMe health on Windows disk 0"
+    command: "smartctl -H -A /dev/pd0"
+  - description: "Device info for Windows disk 0"
+    command: "smartctl -i /dev/pd0"
+  - description: "Linux NVMe health"
+    command: "smartctl -H -A /dev/nvme0"
+  - description: "Run short self-test on Windows disk 1"
+    command: "smartctl -t short /dev/pd1"
+  - description: "Through the space's skill (all platforms)"
+    command: "navig skill run disk-health"
+
+# Changelog
+# - 2026-03-01: created — wraps smartmontools 7.5 for the NAVIG homelab space
+# - 2026-10-16: binary resolved from PATH / config key; no machine PATH edits

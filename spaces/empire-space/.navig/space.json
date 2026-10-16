@@ -1,0 +1,16 @@
+{
+  "id": "empire-space",
+  "name": "Empire Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Multi-venture portfolio operations — track companies, revenue streams, decisions, market signals, and channel performance across a diversified business empire.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["portfolio-commander", "venture-scout", "revenue-tracker", "market-analyst"],
+  "formations": ["portfolio-ops", "venture-review", "market-watch"],
+  "skills": ["advance-stage", "log-decision", "track-revenue", "channel-audit"],
+  "workflows": ["weekly-portfolio-review", "monthly-empire-review"],
+  "packages": [],
+  "subspaces": []
+}

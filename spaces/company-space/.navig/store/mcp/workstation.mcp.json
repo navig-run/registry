@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "space": "company",
+  "description": "MCP tool integrations for company operations",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "workspace-fs",
+      "type": "local",
+      "provider": "workspace-fs",
+      "description": "Read/write files in docs/, inbox/, and ops/",
+      "config": {
+        "root": "."
+      }
+    }
+  ]
+}

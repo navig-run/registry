@@ -1,0 +1,63 @@
+name: invoice-cycle
+version: "1.0.0"
+description: >
+  End-to-end invoicing workflow — from optional quote generation through invoice
+  creation, delivery, payment tracking, and escalation reminders.
+schedule:
+  enabled: false
+on_demand: true
+formation: revenue-pipeline
+
+steps:
+  - name: generate-quote
+    description: Generate a quote for the client using the quote template
+    condition: "requires_quote"
+    skill: generate-quote
+
+  - name: quote-approval
+    description: Send quote to client for review and approval
+    condition: "requires_quote"
+    approval: manual
+    depends_on: generate-quote
+
+  - name: generate-invoice
+    description: Generate the invoice with sequential numbering
+    skill: generate-invoice
+    depends_on: quote-approval
+
+  - name: send-invoice
+    description: Deliver invoice to client via preferred channel (email/portal)
+    depends_on: generate-invoice
+
+  - name: payment-tracking
+    description: |
+      Monitor payment status at intervals:
+        - Day 15: Soft check
+        - Day 30: First reminder
+        - Day 45: Second reminder (escalate)
+        - Day 60: Final notice
+    depends_on: send-invoice
+
+  - name: reminder-30d
+    description: Send first payment reminder — friendly tone
+    condition: "days_outstanding >= 30 and not paid"
+    inbox_channel: "#finance"
+    depends_on: payment-tracking
+
+  - name: reminder-45d-escalate
+    description: Send second reminder — firmer tone, CC controller
+    condition: "days_outstanding >= 45 and not paid"
+    inbox_channel: "#finance"
+    escalation: controller
+    depends_on: reminder-30d
+
+  - name: final-notice-60d
+    description: Send formal final notice — legal language, CC chief
+    condition: "days_outstanding >= 60 and not paid"
+    inbox_channel: "#strategic"
+    escalation: chief
+    depends_on: reminder-45d-escalate
+
+  - name: mark-paid
+    description: Record payment, update finance/invoices/, close the cycle
+    depends_on: send-invoice

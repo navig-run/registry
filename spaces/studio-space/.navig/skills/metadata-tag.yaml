@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────
+# Skill: Metadata Tag
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: metadata-tag
+name: Metadata Tag
+version: "1.0.0"
+description: |
+  Embed ID3/Vorbis metadata (title, artist, album, genre, ISRC, artwork)
+  into an audio file using ffmpeg.
+category: utility
+platform:
+  - windows
+  - linux
+  - macos
+formation: release-pipeline
+author: navig-run
+
+parameters:
+  - name: input_file
+    type: string
+    description: Path to the audio file.
+    default: null
+  - name: title
+    type: string
+    description: Track title.
+    default: ""
+  - name: artist
+    type: string
+    description: Artist name.
+    default: ""
+  - name: album
+    type: string
+    description: Album name.
+    default: ""
+  - name: year
+    type: string
+    description: Release year.
+    default: ""
+  - name: genre
+    type: string
+    description: Genre tag.
+    default: ""
+  - name: isrc
+    type: string
+    description: International Standard Recording Code.
+    default: ""
+  - name: artwork
+    type: string
+    description: Path to cover artwork image. Leave empty to skip.
+    default: ""
+
+steps:
+  - id: tag
+    name: Embed metadata
+    shell: true
+    script_windows: |
+      set ARTWORK_FLAG=
+      if not "{{artwork}}"=="" set ARTWORK_FLAG=-i "{{artwork}}" -map 0:a -map 1:v -disposition:v attached_pic
+      ffmpeg -y -i "{{input_file}}" %ARTWORK_FLAG% ^
+        -metadata title="{{title}}" ^
+        -metadata artist="{{artist}}" ^
+        -metadata album="{{album}}" ^
+        -metadata date="{{year}}" ^
+        -metadata genre="{{genre}}" ^
+        -metadata ISRC="{{isrc}}" ^
+        -codec copy "{{input_file}}.tagged.tmp"
+      move /y "{{input_file}}.tagged.tmp" "{{input_file}}"
+    script_linux: |
+      ARTWORK_FLAGS=""
+      if [ -n "{{artwork}}" ] && [ -f "{{artwork}}" ]; then
+        ARTWORK_FLAGS="-i {{artwork}} -map 0:a -map 1:v -disposition:v attached_pic"
+      fi
+      ffmpeg -y -i "{{input_file}}" $ARTWORK_FLAGS \
+        -metadata title="{{title}}" \
+        -metadata artist="{{artist}}" \
+        -metadata album="{{album}}" \
+        -metadata date="{{year}}" \
+        -metadata genre="{{genre}}" \
+        -metadata ISRC="{{isrc}}" \
+        -codec copy "{{input_file}}.tagged.tmp"
+      mv "{{input_file}}.tagged.tmp" "{{input_file}}"
+    script_macos: |
+      ARTWORK_FLAGS=""
+      if [ -n "{{artwork}}" ] && [ -f "{{artwork}}" ]; then
+        ARTWORK_FLAGS="-i {{artwork}} -map 0:a -map 1:v -disposition:v attached_pic"
+      fi
+      ffmpeg -y -i "{{input_file}}" $ARTWORK_FLAGS \
+        -metadata title="{{title}}" \
+        -metadata artist="{{artist}}" \
+        -metadata album="{{album}}" \
+        -metadata date="{{year}}" \
+        -metadata genre="{{genre}}" \
+        -metadata ISRC="{{isrc}}" \
+        -codec copy "{{input_file}}.tagged.tmp"
+      mv "{{input_file}}.tagged.tmp" "{{input_file}}"

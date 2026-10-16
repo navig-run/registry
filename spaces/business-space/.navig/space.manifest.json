@@ -1,0 +1,16 @@
+{
+  "id": "business-space",
+  "space_id": "business-space",
+  "name": "Business Space",
+  "display_name": "Business Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "description": "E-commerce operations, FBA selling, affiliate marketing, and financial management",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-11",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "tags": ["ecommerce", "amazon-fba", "affiliate", "finance", "dropshipping"],
+  "status": "active"
+}

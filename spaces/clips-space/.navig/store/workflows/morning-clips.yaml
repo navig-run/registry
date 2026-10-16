@@ -1,0 +1,55 @@
+name: morning-clips
+description: |
+  Morning routine workflow for clips-space. Quick scan of overnight
+  performance, trending content, and today's production queue.
+
+schedule:
+  cron: "0 7 * * 1-5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: clip-factory
+
+steps:
+  - id: overnight-stats
+    name: Pull overnight performance stats
+    skill: analytics-aggregate
+    params:
+      period: 12h
+      platforms: [tiktok, reels, shorts]
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: trend-check
+    name: Morning trend scan
+    skill: trend-scan
+    params:
+      platforms: [tiktok, reels, shorts]
+      threshold: emerging
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: check-queue
+    name: Review today's production queue
+    agent: clip-director
+    action: check-queue
+    params:
+      date: today
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: morning-brief
+    name: Generate morning brief
+    agent: clip-director
+    action: morning-brief
+    params:
+      include: [overnight_stats, trends, queue]
+    depends_on: [overnight-stats, trend-check, check-queue]
+    on_error: stop
+    timeout_seconds: 60

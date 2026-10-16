@@ -1,0 +1,62 @@
+{
+  "id": "channel-space",
+  "name": "Channel Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "YouTube creator command center — video production, SEO, growth analytics, thumbnail testing, and community management.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": {
+    "default": "showrunner",
+    "formation": "video-production"
+  },
+  "agents": [
+    "art-director",
+    "editor",
+    "growth-analyst",
+    "scriptwriter",
+    "showrunner"
+  ],
+  "formations": [
+    "channel-growth",
+    "community-ops",
+    "content-planning",
+    "thumbnail-lab",
+    "video-production"
+  ],
+  "skills": [
+    "analytics-pull",
+    "competitor-scan",
+    "description-writer",
+    "hook-analyzer",
+    "retention-analysis",
+    "schedule-publish",
+    "seo-audit",
+    "tag-optimizer",
+    "thumbnail-score",
+    "title-generator"
+  ],
+  "workflows": [
+    "content-batch",
+    "morning-channel",
+    "seo-refresh",
+    "thumbnail-test",
+    "video-production",
+    "weekly-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "paths": {
+    "skills": ".navig/skills",
+    "agents": ".navig/store/agents",
+    "formations": ".navig/store/formations",
+    "workflows": ".navig/store/workflows",
+    "prompts": ".navig/store/prompts",
+    "mcp": ".navig/store/mcp",
+    "wiki": ".navig/wiki",
+    "memory": ".navig/memory",
+    "inbox": ".navig/inbox",
+    "plans": ".navig/plans"
+  }
+}

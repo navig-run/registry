@@ -1,0 +1,47 @@
+id: guest-booking
+name: "Guest Booking"
+version: "1.0.0"
+description: |
+  Guest pipeline from identification through booking and preparation.
+  Show-planner leads research and scheduling while community-manager
+  handles outreach and coordination.
+agents:
+  lead: show-planner
+  supporting:
+    - host
+    - community-manager
+trigger_conditions:
+  - "Guest spot available in calendar"
+  - "New guest candidate identified"
+  - "Guest confirmed — prep needed"
+action_scope:
+  ALLOW:
+    - Research potential guests
+    - Draft outreach messages
+    - Schedule recordings
+    - Prepare guest briefs
+  DENY:
+    - Book guests without host approval
+    - Share private contact information
+    - Confirm dates without checking host availability
+skills_used:
+  - guest-research
+  - episode-schedule
+  - show-notes-write
+workflows_used:
+  - guest-pipeline
+communication:
+  inbox_channel: "#planning"
+  escalation: host
+  notify_on:
+    - guest_identified
+    - guest_confirmed
+    - prep_complete
+context_memory:
+  read:
+    - space-context
+    - goals
+  write:
+    - space-context
+    - goals
+example_invocation: "Find and book 3 guests for next month's episodes on 'future of AI'"

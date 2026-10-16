@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "space": "human",
+  "description": "MCP tool integrations for personal life management",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "workspace-fs",
+      "type": "local",
+      "provider": "workspace-fs",
+      "description": "Read/write personal data files in spaces/health/ and spaces/growth/",
+      "config": {
+        "root": "."
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+id: export-pdf
+name: Export PDF
+version: "1.0.1"
+description: >
+  Export a Markdown or Fountain file to PDF (or DOCX/EPUB/HTML) via Pandoc.
+  Requires Pandoc to be installed locally.
+category: export
+platform:
+  - windows
+  - linux
+  - macos
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: file
+    type: string
+    required: true
+    description: Source file path (.md or .fountain)
+  - name: format
+    type: string
+    required: false
+    default: "pdf"
+    description: "Output format: pdf | docx | epub | html"
+  - name: template
+    type: string
+    required: false
+    description: Optional Pandoc template file
+
+steps:
+  - name: check-pandoc
+    description: Verify Pandoc is available
+    shell: auto
+    script: pandoc --version
+    script_windows: pandoc --version
+    on_error: "Print 'Pandoc not found. Install from https://pandoc.org/installing.html'"
+
+  - name: export
+    description: Run Pandoc export
+    depends_on: check-pandoc
+    shell: auto
+    env:
+      NAVIG_PARAM_FILE: "{{file}}"
+      NAVIG_PARAM_FORMAT: "{{format}}"
+      NAVIG_PARAM_TEMPLATE: "{{template}}"
+    script: |
+      FORMAT="${NAVIG_PARAM_FORMAT:-pdf}"
+      case "$FORMAT" in pdf|docx|epub|html) ;; *) echo "Unsupported format: $FORMAT" >&2; exit 1 ;; esac
+      OUTPUT="${NAVIG_PARAM_FILE%.*}.$FORMAT"
+      if [ -n "$NAVIG_PARAM_TEMPLATE" ]; then
+        pandoc "$NAVIG_PARAM_FILE" -o "$OUTPUT" --template="$NAVIG_PARAM_TEMPLATE"
+      else
+        pandoc "$NAVIG_PARAM_FILE" -o "$OUTPUT"
+      fi
+      echo "Exported: $OUTPUT"
+    script_windows: |
+      $format = if ($env:NAVIG_PARAM_FORMAT) { $env:NAVIG_PARAM_FORMAT } else { "pdf" }
+      if ($format -notin @("pdf", "docx", "epub", "html")) { Write-Error "Unsupported format: $format"; exit 1 }
+      $src  = $env:NAVIG_PARAM_FILE
+      $base = [System.IO.Path]::GetFileNameWithoutExtension($src)
+      $dir  = [System.IO.Path]::GetDirectoryName($src)
+      $out  = Join-Path $dir "$base.$format"
+      if ($env:NAVIG_PARAM_TEMPLATE) {
+        pandoc $src -o $out --template=$env:NAVIG_PARAM_TEMPLATE
+      } else {
+        pandoc $src -o $out
+      }
+      Write-Output "Exported: $out"

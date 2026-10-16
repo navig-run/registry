@@ -1,0 +1,132 @@
+name: onboard-device
+description: |
+  Interactive guided workflow for registering a new device into the homelab space.
+  Prompts for device metadata, tests connectivity, fingerprints hardware, updates the
+  device registry and wiki, then notifies the agent team.
+
+on_demand: true
+interactive: true
+formation: cross-platform-ops
+agent_lead: archivist
+
+steps:
+  - id: collect_metadata
+    name: "Collect Device Metadata"
+    type: interactive_prompt
+    prompt: |
+      Welcome to the device onboarding wizard. Please provide the following:
+
+      1. Device name (e.g., "desktop-01", "pi4-server"):
+      2. IP address (static preferred):
+      3. MAC address (format XX:XX:XX:XX:XX:XX):
+      4. Operating system [windows/linux/macos/embedded]:
+      5. Role [homelab/server/nas/iot/laptop/network-device]:
+      6. Physical location (e.g., "desk-left", "rack-unit-3", "living-room"):
+      7. Notes (optional):
+    collect:
+      - name: device_name
+      - name: device_ip
+      - name: device_mac
+        validate: "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+      - name: device_os
+        choices: [windows, linux, macos, embedded]
+      - name: device_role
+        choices: [homelab, server, nas, iot, laptop, network-device]
+      - name: device_location
+      - name: device_notes
+        required: false
+
+  - id: ping_test
+    name: "Ping Connectivity Test"
+    depends_on: [collect_metadata]
+    type: shell
+    command_windows: "ping -n 4 {{steps.collect_metadata.device_ip}}"
+    command_linux: "ping -c 4 {{steps.collect_metadata.device_ip}}"
+    command_macos: "ping -c 4 {{steps.collect_metadata.device_ip}}"
+    timeout_seconds: 30
+    on_error: warn   # warn but continue — device may be off at the moment
+
+  - id: ssh_test
+    name: "SSH Connectivity Test"
+    depends_on: [collect_metadata]
+    condition: "{{steps.collect_metadata.device_os}} in ['linux', 'macos', 'windows']"
+    skill: ssh-connect
+    params:
+      host: "{{steps.collect_metadata.device_ip}}"
+      test_only: true
+      timeout: 10
+    on_error: warn
+
+  - id: port_probe
+    name: "Port Probe"
+    depends_on: [collect_metadata]
+    skill: port-audit
+    params:
+      target: "{{steps.collect_metadata.device_ip}}"
+      scan_type: "sQ"        # quick scan, top 1000 ports
+      port_range: "top-1000"
+    timeout_seconds: 60
+    on_error: warn
+
+  - id: hardware_fingerprint
+    name: "Hardware Fingerprint"
+    depends_on: [ssh_test]
+    condition: "{{steps.ssh_test.status}} == 'success'"
+    skill: hardware-inventory
+    params:
+      target: "{{steps.collect_metadata.device_ip}}"
+      os: "{{steps.collect_metadata.device_os}}"
+    timeout_seconds: 60
+    on_error: warn
+
+  - id: confirm_and_write
+    name: "Confirm Data & Write Registry"
+    depends_on: [collect_metadata, ping_test, ssh_test, port_probe, hardware_fingerprint]
+    type: interactive_confirm
+    message: |
+      Ready to register the following device:
+
+      Name:     {{steps.collect_metadata.device_name}}
+      IP:       {{steps.collect_metadata.device_ip}}
+      MAC:      {{steps.collect_metadata.device_mac}}
+      OS:       {{steps.collect_metadata.device_os}}
+      Role:     {{steps.collect_metadata.device_role}}
+      Location: {{steps.collect_metadata.device_location}}
+      Ping:     {{steps.ping_test.status}}
+      SSH:      {{steps.ssh_test.status}}
+
+      Confirm registration? [Y/N]
+
+  - id: write_registry
+    name: "Write Device Registry Entry"
+    depends_on: [confirm_and_write]
+    condition: "{{steps.confirm_and_write.confirmed}} == true"
+    agent: archivist
+    action: append_device_registry
+    params:
+      entry:
+        name: "{{steps.collect_metadata.device_name}}"
+        ip: "{{steps.collect_metadata.device_ip}}"
+        mac: "{{steps.collect_metadata.device_mac}}"
+        os: "{{steps.collect_metadata.device_os}}"
+        role: "{{steps.collect_metadata.device_role}}"
+        location: "{{steps.collect_metadata.device_location}}"
+        notes: "{{steps.collect_metadata.device_notes}}"
+        hardware: "{{steps.hardware_fingerprint.output}}"
+        registered: "{{now_iso}}"
+        status: "active"
+
+  - id: update_wiki
+    name: "Update Devices Wiki"
+    depends_on: [write_registry]
+    agent: archivist
+    action: update_wiki_devices_table
+    params:
+      device: "{{steps.write_registry.entry}}"
+
+  - id: notify_agents
+    name: "Notify Agent Team"
+    depends_on: [write_registry]
+    type: broadcast
+    message: "New device registered: {{steps.collect_metadata.device_name}} ({{steps.collect_metadata.device_ip}}) — Pulse will begin monitoring in 15 min."
+    channels: ["#hardware", "#network", "#ops"]

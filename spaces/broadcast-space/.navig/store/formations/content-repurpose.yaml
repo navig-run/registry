@@ -1,0 +1,48 @@
+id: content-repurpose
+name: "Content Repurpose"
+version: "1.0.0"
+description: |
+  Convert full episodes into social clips, audiograms, and promotional
+  content. Clip-editor (sound-engineer) leads extraction while publisher
+  handles distribution of repurposed content.
+agents:
+  lead: sound-engineer
+  supporting:
+    - host
+    - publisher
+    - community-manager
+trigger_conditions:
+  - "Episode published — extract clips"
+  - "Repurpose request for specific episode"
+  - "Social content calendar needs filling"
+action_scope:
+  ALLOW:
+    - Extract audio clips from episodes
+    - Create audiograms
+    - Generate clip descriptions
+    - Schedule social posts
+  DENY:
+    - Alter episode meaning through selective clipping
+    - Post clips without approval
+    - Extract clips from unpublished episodes
+skills_used:
+  - clip-extract
+  - audio-edit
+  - loudness-normalize
+  - transcript-generate
+  - show-notes-write
+  - episode-schedule
+workflows_used:
+  - episode-production
+communication:
+  inbox_channel: "#audio"
+  escalation: host
+  notify_on:
+    - clips_extracted
+    - clips_scheduled
+context_memory:
+  read:
+    - space-context
+  write:
+    - space-context
+example_invocation: "Extract 3 best clips from episode 15 for social promotion"

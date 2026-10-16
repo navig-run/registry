@@ -1,0 +1,49 @@
+{
+  "space_id": "singularity-space",
+  "type": "personal",
+  "name": "Singularity",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "spaces_dir": "spaces",
+  "description": "Long-horizon self-tracking and civilization signal monitoring.",
+  "paths": [
+    "signals",
+    "journal",
+    "archive"
+  ],
+  "agents": [
+    "oracle",
+    "signal-tracker",
+    "destiny-keeper",
+    "ai-researcher"
+  ],
+  "formations": [
+    "signal-watch",
+    "destiny-mapping",
+    "ai-frontier"
+  ],
+  "skills": [
+    "snapshot-self",
+    "rate-signal",
+    "log-insight",
+    "tag-content"
+  ],
+  "meta": {
+    "tags": [
+      "singularity",
+      "self",
+      "future",
+      "ai",
+      "civilization"
+    ],
+    "platform": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ]
+  },
+  "author": "navig-run",
+  "tier": "personal",
+  "status": "active"
+}

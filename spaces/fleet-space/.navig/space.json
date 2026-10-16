@@ -1,0 +1,23 @@
+{
+  "id": "fleet-space",
+  "name": "Fleet Space",
+  "version": "1.0.0",
+  "tier": "labs",
+  "status": "labs",
+  "description": "Multi-agent autonomous execution fleet — spawn, coordinate, and monitor agent swarms.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "tools",
+    "storage"
+  ],
+  "config_key": "formations.enabled"
+}

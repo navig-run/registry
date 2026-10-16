@@ -1,0 +1,62 @@
+id: content-planning
+name: Content Planning
+version: "1.0.0"
+description: |
+  Content strategy and batch planning formation. Creates content
+  calendars, generates video ideas, writes outlines and scripts,
+  and coordinates the editorial pipeline weeks in advance.
+
+agents:
+  lead: scriptwriter
+  supporting:
+    - showrunner
+    - growth-analyst
+
+trigger_conditions:
+  - "content calendar"
+  - "plan content"
+  - "batch videos"
+  - "ideas"
+  - "editorial plan"
+
+action_scope:
+  ALLOW:
+    - create content calendars
+    - generate video ideas and topics
+    - write scripts and outlines
+    - schedule content pipeline
+    - research trending topics
+  DENY:
+    - publish or edit existing videos
+    - change channel branding
+    - modify analytics data
+
+skills_used:
+  - title-generator
+  - hook-analyzer
+  - seo-audit
+  - competitor-scan
+
+workflows_used:
+  - content-batch
+  - morning-channel
+
+communication:
+  inbox_channel: "#scripts"
+  escalation: showrunner
+  notify_on:
+    - calendar_ready
+    - script_complete
+    - deadline_approaching
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/wiki/content-strategy.md
+    - .navig/wiki/seo-guide.md
+  write:
+    - content/scripts/
+    - .navig/state/
+
+example_invocation: |
+  navig formation run "Plan the next 4 weeks of content at 2 videos per week"

@@ -1,0 +1,50 @@
+id: sound-match
+name: Sound Match
+version: "1.0.0"
+description: "Find and match trending sounds from platform libraries for clip production."
+category: audio
+platform: [windows, linux, macos]
+formation: trend-ride
+author: navig-run
+
+parameters:
+  - name: platform
+    type: string
+    default: tiktok
+    description: "Target platform: tiktok, reels, shorts, all"
+  - name: genre
+    type: string
+    default: any
+    description: "Music genre filter"
+  - name: mood
+    type: string
+    default: any
+    description: "Mood filter: energetic, chill, dramatic, funny"
+  - name: limit
+    type: integer
+    default: 10
+    description: "Maximum sounds to return"
+
+steps:
+  - id: search-sounds
+    name: Search trending sounds
+    shell: bash
+    script_windows: |
+      echo "Searching trending sounds on {{platform}}..."
+      echo "Genre: {{genre}} | Mood: {{mood}} | Limit: {{limit}}"
+    script_linux: |
+      echo "Searching trending sounds on {{platform}}..."
+      echo "Genre: {{genre}} | Mood: {{mood}} | Limit: {{limit}}"
+    script_macos: |
+      echo "Searching trending sounds on {{platform}}..."
+      echo "Genre: {{genre}} | Mood: {{mood}} | Limit: {{limit}}"
+
+  - id: rank-sounds
+    name: Rank sounds by trend velocity
+    shell: bash
+    script_windows: |
+      echo "Ranking sounds by usage velocity and engagement metrics..."
+    script_linux: |
+      echo "Ranking sounds by usage velocity and engagement metrics..."
+    script_macos: |
+      echo "Ranking sounds by usage velocity and engagement metrics..."

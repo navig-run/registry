@@ -1,0 +1,32 @@
+name: Git Clone
+description: Clone one or many GitHub repos (from clipboard or --url) into a folder, with a no-git ZIP fallback. Also opens a repo's remote in the browser.
+version: 1.0.0
+category: git
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+requires: [git]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: clone
+    syntax: navig skill run git-clone clone --target <dir> [--url <github-url>]
+    description: Clone repo(s) into <dir>. Without --url, reads GitHub URLs from the clipboard (one per line).
+    risk: safe
+  - name: open-repo
+    syntax: navig skill run git-clone open-repo --target <repo-dir>
+    description: Open the repo's git remote origin in the default browser
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use to clone GitHub repositories or open a repo's remote page. Trigger on
+    "clone this repo", "git clone", "download this github repo", "open the repo page".
+  output_format: >
+    Per-repo line: "<repo> -> <path>" on success, or a warning then a ZIP fallback.
+  follow_up: >
+    If git is missing the engine falls back to a codeload ZIP download and initializes
+    a git remote. Existing target folders are skipped, not overwritten.

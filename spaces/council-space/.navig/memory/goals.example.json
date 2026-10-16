@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "council-space",
+  "goals": [
+    {
+      "id": "decision-quality",
+      "title": "Higher-quality decisions through deliberation",
+      "description": "Every major decision reviewed with at least one strong contrary argument",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

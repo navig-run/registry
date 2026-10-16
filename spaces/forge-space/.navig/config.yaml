@@ -1,0 +1,8 @@
+space_id: forge-space
+runtime: navig-space-2
+
+forge:
+  dream_compiler_enabled: true
+  test_isolation: true
+  auto_scaffold: true
+  publish_target: community-store

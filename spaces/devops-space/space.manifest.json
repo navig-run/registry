@@ -1,0 +1,17 @@
+{
+  "space_id": "devops-space",
+  "display_name": "DevOps Space",
+  "description": "CI/CD, infrastructure-as-code, SRE ops, and incident response hub.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "version": "1.0.0",
+  "created": "2026-03-11",
+  "updated": "2026-10-16",
+  "author": "navig-run",
+  "license": "MIT",
+  "tier": "work",
+  "tags": ["devops", "ci-cd", "terraform", "ansible", "sre", "incident-response", "monitoring"],
+  "status": "active",
+  "agents": ["pipeline-engineer", "infra-architect", "site-reliability", "incident-commander"],
+  "formations": ["ci-pipeline", "infra-deploy", "incident-response", "sre-ops"]
+}

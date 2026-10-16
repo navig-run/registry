@@ -1,0 +1,90 @@
+id: body-metrics-report
+name: Body Metrics Report
+version: "2.0.0"
+description: Analyse body metrics from spaces/health/metrics.csv — weight trend, body fat, resting HR, sleep quality, and mood patterns over a configurable period.
+category: health
+platform: [windows, linux, macos]
+formation: health-ops
+author: navig-run
+
+parameters:
+  - name: period
+    description: "Analysis period: last-7-days | last-30-days | last-90-days | all (default: last-30-days)"
+    required: false
+    default: last-30-days
+
+steps:
+  - name: analyse-metrics
+    description: Read metrics CSV and generate summary report
+    env:
+      NAVIG_PARAM_PERIOD: "{{period}}"
+    script: |
+      import os, pathlib, csv, datetime, statistics
+      p = pathlib.Path("spaces/health/metrics.csv")
+      if not p.exists():
+          print("No metrics file found at spaces/health/metrics.csv")
+          print("Start logging with log-health-metric or log-mood skills.")
+          import sys; sys.exit(0)
+      with open(p, newline="", encoding="utf-8") as f:
+          rows = list(csv.DictReader(f))
+      if not rows:
+          print("Metrics file is empty."); import sys; sys.exit(0)
+
+      period = os.environ.get("NAVIG_PARAM_PERIOD", "") or "last-30-days"
+      today = datetime.date.today()
+      if period == "last-7-days":
+          cutoff = today - datetime.timedelta(days=7)
+      elif period == "last-90-days":
+          cutoff = today - datetime.timedelta(days=90)
+      elif period == "all":
+          cutoff = datetime.date(2000, 1, 1)
+      else:
+          cutoff = today - datetime.timedelta(days=30)
+
+      filtered = [r for r in rows if r.get("date", "") >= cutoff.isoformat()]
+      if not filtered:
+          print(f"No data in period {period}."); import sys; sys.exit(0)
+
+      print(f"═══ BODY METRICS REPORT ({period}, {len(filtered)} entries) ═══\n")
+
+      def summarise(label, key, unit=""):
+          vals = [float(r[key]) for r in filtered if r.get(key, "").strip()]
+          if not vals:
+              return
+          avg = statistics.mean(vals)
+          latest = vals[-1]
+          delta = latest - vals[0] if len(vals) > 1 else 0
+          arrow = "↑" if delta > 0 else "↓" if delta < 0 else "→"
+          print(f"  {label}: {latest}{unit} (avg {avg:.1f}{unit}, {arrow} {abs(delta):.1f}{unit})")
+
+      summarise("Weight", "weight_kg", " kg")
+      summarise("Body Fat", "body_fat_pct", "%")
+      summarise("Resting HR", "resting_hr", " bpm")
+      summarise("Sleep", "sleep_hours", " hrs")
+      summarise("Steps", "steps", "")
+      summarise("Mood", "mood_1_10", "/10")
+      summarise("HRV", "hrv", " ms")
+      print()
+
+      # Mood alert
+      moods = [float(r["mood_1_10"]) for r in filtered[-7:] if r.get("mood_1_10", "").strip()]
+      if len(moods) >= 3 and statistics.mean(moods[-3:]) <= 3:
+          print("  ⚠️  MOOD ALERT: Average mood ≤ 3 over last 3 entries. Consider reaching out for support.")
+      print()
+      print(f"  Data range: {filtered[0]['date']} → {filtered[-1]['date']}")
+    script_windows: |
+      $p = "spaces\health\metrics.csv"
+      if (-not (Test-Path $p)) { Write-Host "No metrics file found. Start logging with log-health-metric."; exit 0 }
+      $rows = Import-Csv $p
+      if (-not $rows) { Write-Host "Metrics file is empty."; exit 0 }
+      Write-Host "=== BODY METRICS REPORT ==="
+      $measures = @("weight_kg","body_fat_pct","resting_hr","sleep_hours","steps","mood_1_10","hrv")
+      foreach ($m in $measures) {
+          $vals = $rows | Where-Object { $_.$m -and $_.$m.Trim() } | Select-Object -ExpandProperty $m
+          if ($vals) {
+              $nums = $vals | ForEach-Object { [double]$_ }
+              $avg = ($nums | Measure-Object -Average).Average
+              $latest = $nums[-1]
+              Write-Host "  ${m}: $latest (avg $([math]::Round($avg,1)))"
+          }
+      }

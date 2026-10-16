@@ -1,0 +1,44 @@
+name: weekly-portfolio-review
+description: |
+  Weekly empire status check. Venture health, revenue trends, open signals,
+  and stagnant ventures. Delivers a portfolio brief to #empire inbox.
+
+schedule:
+  cron: "0 8 * * 1"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: portfolio-ops
+
+steps:
+  - id: portfolio_health
+    name: "Venture Portfolio Health"
+    agent: portfolio-commander
+    action: generate_portfolio_health
+    on_error: continue
+
+  - id: revenue_summary
+    name: "Revenue Summary"
+    agent: revenue-tracker
+    action: generate_revenue_summary
+    on_error: continue
+
+  - id: open_signals
+    name: "Open Market Signals"
+    agent: market-analyst
+    action: list_open_signals
+    params:
+      min_age_days: 0
+    on_error: continue
+
+  - id: portfolio_brief
+    name: "Deliver Portfolio Brief"
+    depends_on: [portfolio_health, revenue_summary, open_signals]
+    agent: portfolio-commander
+    action: generate_weekly_brief
+    params:
+      health: "{{steps.portfolio_health.output}}"
+      revenue: "{{steps.revenue_summary.output}}"
+      signals: "{{steps.open_signals.output}}"
+      deliver_to: "#empire"

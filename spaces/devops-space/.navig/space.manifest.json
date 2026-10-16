@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.1",
+  "space_id": "devops-space",
+  "space_type": "workspace",
+  "display_name": "DevOps Space",
+  "description": "CI/CD, infrastructure-as-code, SRE ops, and incident response hub.",
+  "runtime": "navig-space-2",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "created": "2026-03-11",
+  "updated": "2026-10-16",
+  "maintainers": ["navig-run"],
+  "tags": ["devops", "ci-cd", "terraform", "ansible", "sre", "incident-response", "monitoring"],
+  "assets": {
+    "agents": 4,
+    "formations": 4,
+    "skills": 5,
+    "workflows": 3,
+    "prompts": 5
+  }
+}

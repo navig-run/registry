@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "freelance",
+  "goals": [
+    {
+      "id": "cash-flow",
+      "title": "Consistent cash flow",
+      "description": "No invoice overdue >30 days. Monthly revenue predictable.",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "rate-protection",
+      "title": "Rate discipline",
+      "description": "No below-rate work accepted without explicit decision log.",
+      "status": "active",
+      "priority": "medium"
+    }
+  ]
+}

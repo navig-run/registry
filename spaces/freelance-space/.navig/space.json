@@ -1,0 +1,16 @@
+{
+  "id": "freelance-space",
+  "name": "Freelance Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Freelance business operations — client management, time tracking, invoicing, project scoping, and revenue visibility for independent operators.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["account-manager", "billing-officer", "timekeeper", "strategist"],
+  "formations": ["client-ops", "billing-cycle", "project-scope"],
+  "skills": ["log-time", "create-invoice", "calculate-rate", "track-overdue"],
+  "workflows": ["weekly-freelance-review", "monthly-billing-run", "monthly-strategy-review"],
+  "packages": [],
+  "subspaces": []
+}

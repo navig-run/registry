@@ -1,0 +1,59 @@
+id: strategic-planning
+name: Strategic Planning
+version: "1.0.0"
+description: |
+  Quarterly and yearly strategic planning sessions. Chief directs, all agents
+  contribute domain-specific insights. Produces OKRs, budget allocations,
+  positioning decisions, and go-to-market adjustments.
+
+agents:
+  lead: chief
+  supporting:
+    - controller
+    - sales
+    - ops-manager
+    - project-lead
+
+trigger_conditions:
+  - Quarterly planning due (last week of quarter)
+  - Yearly planning due (December)
+  - Strategic decision needed (partnership, pricing, positioning)
+  - Market shift detected
+  - Revenue milestone reached
+
+action_scope:
+  - Quarterly OKR setting and review
+  - Annual business plan update
+  - Budget allocation across projects and services
+  - Pricing strategy review
+  - Service portfolio evaluation
+  - Product roadmap alignment
+  - Market positioning adjustments
+  - Partnership evaluation and approval
+  - Resource allocation optimization
+
+skills_used: []
+
+workflows_used:
+  - quarterly-review
+
+communication:
+  channels:
+    - "#strategic"
+  escalation: operator
+  notify_on:
+    - OKR target at risk
+    - budget reallocation needed
+    - strategic decision pending >7 days
+
+context_memory:
+  read:
+    - .navig/config.yaml
+    - .navig/memory/goals.json
+    - .navig/memory/space-context.json
+    - finance/reports/
+    - reports/
+    - clients/
+  write:
+    - .navig/plans/briefs/
+    - reports/

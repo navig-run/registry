@@ -1,0 +1,30 @@
+[
+  {
+    "id": "GOAL-001",
+    "goal": "Establish content pipeline: every brand has at least 5 approved drafts in queue at all times",
+    "agent": "content-strategist",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-002",
+    "goal": "Achieve consistent posting cadence: at least 3 posts per platform per week per active brand",
+    "agent": "scheduler",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-003",
+    "goal": "No post ships with voice score < 7 — enforce brand-guardian gate 100% of the time",
+    "agent": "brand-guardian",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-004",
+    "goal": "Weekly analytics review every Monday — close the learn loop on last week's content",
+    "agent": "analytics-watcher",
+    "status": "active",
+    "target_date": "ongoing"
+  }
+]

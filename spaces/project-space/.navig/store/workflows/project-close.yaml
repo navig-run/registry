@@ -1,0 +1,32 @@
+id: project-close
+name: Project Close
+version: "1.0.0"
+description: Formal project closure. Validates done-state and captures outcomes.
+space: project
+steps:
+  - step: 1
+    name: Done-State Verification
+    agent: project-planner
+    description: Is the done-state actually met? Confirm explicitly — yes or no.
+    manual: true
+  - step: 2
+    name: Write Close Document
+    manual: true
+    description: |
+      Write projects/{slug}/close.md:
+      - What was built/achieved
+      - What worked well
+      - What would you do differently
+      - What was surprising
+      - What did you learn
+  - step: 3
+    name: Resolve Open Blockers
+    agent: blocker-resolver
+    command: "@blocker-resolver open --project {slug}"
+    description: Resolve or document any remaining open blockers
+    manual: true
+  - step: 4
+    name: Mark Complete and Archive
+    agent: project-planner
+    command: "@project-planner close --project {slug}"
+    automated: true

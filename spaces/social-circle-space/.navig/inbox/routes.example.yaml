@@ -1,0 +1,12 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+version: "1.0"
+routes:
+  - channel: "#contacts"
+    description: "New contacts and contact updates"
+    default: true
+  - channel: "#interactions"
+    description: "Interaction logs and follow-up notes"
+  - channel: "#warmth"
+    description: "Relationship warming alerts — people to reach out to"
+  - channel: "#circles"
+    description: "Circle changes and membership updates"

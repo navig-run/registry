@@ -1,0 +1,77 @@
+name: content-batch
+description: |
+  Batch content planning workflow. Generates a multi-week content
+  calendar, creates video ideas based on trending topics and SEO
+  opportunities, and drafts outlines for upcoming videos.
+
+schedule:
+  cron: "0 9 * * 1"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: content-planning
+
+steps:
+  - id: trend-research
+    name: Research trending topics
+    skill: competitor-scan
+    params:
+      focus: trending_topics
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: keyword-research
+    name: Keyword opportunity scan
+    skill: seo-audit
+    params:
+      mode: opportunity
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: generate-ideas
+    name: Generate video ideas
+    skill: title-generator
+    params:
+      count: 10
+      use_trends: true
+    depends_on: [trend-research, keyword-research]
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: create-calendar
+    name: Create content calendar
+    skill: null
+    agent: scriptwriter
+    action: create_calendar
+    params:
+      weeks: 4
+      videos_per_week: 2
+    depends_on: [generate-ideas]
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: draft-outlines
+    name: Draft video outlines
+    skill: null
+    agent: scriptwriter
+    action: draft_outlines
+    params:
+      detail_level: brief
+    depends_on: [create-calendar]
+    on_error: continue
+    timeout_seconds: 120
+
+  - id: review-calendar
+    name: Showrunner calendar review
+    skill: null
+    agent: showrunner
+    action: review_calendar
+    params:
+      require_approval: true
+    depends_on: [draft-outlines]
+    on_error: abort
+    timeout_seconds: 30

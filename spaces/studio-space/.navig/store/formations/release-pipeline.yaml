@@ -1,0 +1,48 @@
+id: release-pipeline
+name: Release Pipeline
+version: "1.0.0"
+description: >
+  From final master to live on all platforms. Handles metadata, format conversion,
+  distributor validation, and upload packaging.
+
+agents:
+  lead: release-manager
+  supporting: [mix-engineer, session-planner]
+
+trigger_conditions:
+  - "Master approved by producer"
+  - "Release date within 7 days"
+  - "Manual invocation: navig formation run release-pipeline"
+
+action_scope:
+  - ALLOW: metadata-tag, format-convert, upload-distro, loudness-check
+  - ALLOW: write to releases/
+  - ALLOW: read from sessions/
+  - DENY: audio content modification
+  - DENY: session deletion
+
+skills_used:
+  - metadata-tag
+  - format-convert
+  - upload-distro
+  - loudness-check
+
+workflows_used:
+  - release-cycle
+
+communication:
+  inbox_channel: "#releases"
+  escalation: producer
+  notify_on:
+    - metadata_validated
+    - package_ready
+    - upload_complete
+    - release_live
+
+context_memory:
+  read: [space-context.json]
+  write: [space-context.json]
+
+example_invocation: |
+  navig formation run release-pipeline
+  # release-manager will: validate metadata → convert formats → build packages → upload

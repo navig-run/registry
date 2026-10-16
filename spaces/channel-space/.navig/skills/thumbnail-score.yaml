@@ -1,0 +1,48 @@
+id: thumbnail-score
+name: Thumbnail Score
+version: "1.0.0"
+description: Scores a thumbnail image for CTR potential based on contrast, text readability, face detection, and visual clarity.
+category: design
+platform: [windows, linux, macos]
+formation: thumbnail-lab
+author: navig-run
+
+parameters:
+  - name: image_path
+    type: string
+    required: true
+    description: Path to thumbnail image file
+  - name: min_score
+    type: integer
+    required: false
+    default: 6
+    description: Minimum acceptable score (1-10)
+
+steps:
+  - id: check-deps
+    name: Verify ImageMagick installed
+    shell: true
+    script_windows: "where magick >nul 2>&1 && echo OK || echo MISSING"
+    script_linux: "which convert >/dev/null 2>&1 && echo OK || echo MISSING"
+    script_macos: "which magick >/dev/null 2>&1 && echo OK || echo MISSING"
+
+  - id: check-dimensions
+    name: Verify thumbnail dimensions
+    shell: true
+    script_windows: "magick identify -format \"%%wx%%h\" \"{{image_path}}\""
+    script_linux: "identify -format '%wx%h' '{{image_path}}'"
+    script_macos: "magick identify -format '%wx%h' '{{image_path}}'"
+
+  - id: check-filesize
+    name: Check file size
+    shell: true
+    script_windows: "powershell -NoProfile -Command \"(Get-Item '{{image_path}}').Length / 1KB | ForEach-Object { '{0:N1} KB' -f $_ }\""
+    script_linux: "du -h '{{image_path}}' | cut -f1"
+    script_macos: "du -h '{{image_path}}' | cut -f1"
+
+  - id: check-contrast
+    name: Measure image contrast
+    shell: true
+    script_windows: "magick \"{{image_path}}\" -colorspace Gray -format \"%%[fx:standard_deviation]\" info:"
+    script_linux: "convert '{{image_path}}' -colorspace Gray -format '%[fx:standard_deviation]' info:"
+    script_macos: "magick '{{image_path}}' -colorspace Gray -format '%[fx:standard_deviation]' info:"

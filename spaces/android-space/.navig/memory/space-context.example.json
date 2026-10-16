@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "space": "android",
+  "updated": "2026-07-10",
+  "purpose": "Command hub for every Android device you own or manage — ADB bridge, app & APK ops, fleet inventory, debloat/privacy hardening, screen mirroring, and backup/restore",
+  "owner": {
+    "handle": "operator",
+    "timezone": "UTC",
+    "primary_OS": "Windows",
+    "primary_shell": "PowerShell"
+  },
+  "device_count": 0,
+  "platforms": ["Windows", "Linux", "macOS"],
+  "adb": {
+    "adb_path": "",
+    "fastboot_path": "",
+    "default_transport": "tcpip:5555",
+    "wireless_debug_port": 5555
+  },
+  "scrcpy": {
+    "scrcpy_path": "",
+    "max_size": 1024,
+    "bit_rate": "8M",
+    "max_fps": 60
+  },
+  "backup_location": {
+    "type": "local",
+    "media_path": "devices/media",
+    "backup_path": "devices/backups",
+    "apk_path": "devices/apks"
+  },
+  "active_formations": [
+    "device-bridge",
+    "app-ops",
+    "fleet-patrol",
+    "privacy-hardening",
+    "backup-restore"
+  ],
+  "active_agents": ["pixel", "bridge", "installer", "scrub", "mirror", "keeper"],
+  "skills_installed": [
+    "adb-connect",
+    "device-inventory",
+    "apk-install",
+    "apk-extract",
+    "app-debloat",
+    "permission-audit",
+    "screen-mirror",
+    "logcat-capture",
+    "battery-report",
+    "file-transfer",
+    "wireless-debug",
+    "app-backup"
+  ],
+  "notes": "Edit this file after completing initial device onboarding. Update device_count, leave adb/scrcpy paths empty to resolve from PATH or $ANDROID_HOME, and set backup_location to match your environment."
+}

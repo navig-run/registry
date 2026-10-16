@@ -1,0 +1,17 @@
+{
+  "id": "{{space-name}}",
+  "name": "{{display name}}",
+  "version": "0.1.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "{{one-line description}}",
+  "author": "{{owner}}",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "created": "{{ISO-8601 date}}"
+}

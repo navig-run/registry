@@ -1,0 +1,43 @@
+id: infra-deploy
+name: Infrastructure Deploy
+version: "1.0.0"
+description: >
+  Governs IaC authoring, review, and safe application. Infra Architect leads;
+  Site Reliability validates pre- and post-deploy health. All applies require
+  operator approval when plans include resource destruction.
+
+agents:
+  lead: infra-architect
+  supporting:
+    - site-reliability
+
+trigger_conditions:
+  - "Keyword in #infra: terraform, ansible, pulumi, provision, deploy, plan, apply"
+  - "infra-deploy workflow signal"
+
+action_scope:
+  - infrastructure-as-code/
+
+skills_used:
+  - deploy-validate
+  - health-probe
+  - rollback
+
+workflows_used:
+  - deploy-check
+
+communication:
+  inbox_channel: "#infra"
+  escalation: operator
+  notify_on:
+    - plan_ready
+    - apply_complete
+    - apply_failed
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/space-context.json
+
+example_invocation: "@infra-deploy plan --dir infrastructure-as-code/terraform-starter"

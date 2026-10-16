@@ -1,0 +1,94 @@
+id: assess-probability
+name: Assess Probability
+version: "1.0.0"
+description: >
+  Log or update a probability assessment for an uncertain outcome.
+  Track confidence, update with new information, and score accuracy on resolution.
+category: probability-tracking
+platform: [windows, linux, macos]
+formation: debug-loop
+author: simulation-space
+
+parameters:
+  - name: claim
+    type: string
+    required: true
+    description: "The uncertain claim in falsifiable form (e.g. 'Client X will renew contract')"
+  - name: probability
+    type: string
+    required: true
+    description: "Probability estimate 0.0–1.0 (e.g. 0.7 = 70%)"
+  - name: confidence
+    type: enum
+    values: [low, medium, high]
+    required: true
+    description: "Confidence in the probability estimate itself"
+  - name: resolve_by
+    type: string
+    required: false
+    default: ""
+    description: "Expected resolution date YYYY-MM-DD"
+  - name: context
+    type: string
+    required: false
+    default: ""
+    description: "Why this probability? What evidence supports it?"
+
+steps:
+  - id: log_probability
+    name: "Log Probability Assessment"
+    shell: auto
+    env:
+      NAVIG_PARAM_CLAIM: "{{params.claim}}"
+      NAVIG_PARAM_PROBABILITY: "{{params.probability}}"
+      NAVIG_PARAM_CONFIDENCE: "{{params.confidence}}"
+      NAVIG_PARAM_RESOLVE_BY: "{{params.resolve_by}}"
+      NAVIG_PARAM_CONTEXT: "{{params.context}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      prob_path = ".navig/memory/probability-trees.json"
+      try:
+          with open(prob_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"assessments": []}
+
+      prob_raw = os.environ.get("NAVIG_PARAM_PROBABILITY", "")
+      try:
+          p = float(prob_raw)
+      except ValueError:
+          print(f"ERROR: invalid probability {prob_raw!r} (expected a number between 0.0 and 1.0)")
+          raise SystemExit(1)
+      if not 0.0 <= p <= 1.0:
+          print("ERROR: probability must be between 0.0 and 1.0")
+          raise SystemExit(1)
+
+      assessment = {
+          "id": f"prb_{len(data['assessments']) + 1:04d}",
+          "claim": os.environ.get("NAVIG_PARAM_CLAIM", ""),
+          "probability": p,
+          "confidence": os.environ.get("NAVIG_PARAM_CONFIDENCE", ""),
+          "context": os.environ.get("NAVIG_PARAM_CONTEXT", ""),
+          "resolve_by": os.environ.get("NAVIG_PARAM_RESOLVE_BY", ""),
+          "status": "open",
+          "outcome": None,
+          "score": None,
+          "logged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data["assessments"].append(assessment)
+      os.makedirs(os.path.dirname(prob_path), exist_ok=True)
+      with open(prob_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      pct = round(p * 100, 1)
+      resolve = f" | resolve by: {assessment['resolve_by']}" if assessment['resolve_by'] else ""
+      print(f"Probability [{assessment['id']}]: {pct}% ({assessment['confidence']} confidence){resolve}")
+      print(f"Claim: {assessment['claim']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: log_probability

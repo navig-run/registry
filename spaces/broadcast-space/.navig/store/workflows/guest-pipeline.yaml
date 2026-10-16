@@ -1,0 +1,74 @@
+name: guest-pipeline
+description: |
+  Guest management pipeline from identification through booking,
+  preparation, and post-interview follow-up. Ensures every guest
+  interaction is professional and well-prepared.
+schedule:
+  cron: null
+  timezone: "UTC"
+  enabled: false
+on_demand: true
+formation: guest-booking
+
+steps:
+  - id: identify-guests
+    name: "Identify Guest Candidates"
+    skill: guest-research
+    params:
+      count: 5
+      criteria: ["relevance", "audience_size", "availability"]
+    depends_on: []
+    on_error: "pause"
+    timeout_seconds: 600
+
+  - id: host-approval
+    name: "Host Reviews Candidates"
+    agent: host
+    action: "Review guest candidates and approve top picks"
+    params:
+      min_approved: 2
+    depends_on: ["identify-guests"]
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: outreach
+    name: "Send Guest Outreach"
+    agent: community-manager
+    action: "Draft and send outreach to approved guests"
+    params:
+      template: "guest-outreach"
+      follow_up_days: 5
+    depends_on: ["host-approval"]
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: schedule-recording
+    name: "Schedule Recording Session"
+    skill: episode-schedule
+    params:
+      buffer_days: 7
+    depends_on: ["outreach"]
+    on_error: "pause"
+    timeout_seconds: 300
+    condition: "outreach.confirmed == true"
+
+  - id: prep-brief
+    name: "Prepare Guest Brief"
+    skill: guest-research
+    params:
+      depth: "thorough"
+      output: "guest-brief"
+    depends_on: ["schedule-recording"]
+    on_error: "pause"
+    timeout_seconds: 600
+
+  - id: post-follow-up
+    name: "Post-Interview Follow-Up"
+    agent: community-manager
+    action: "Send thank-you and share episode link after publishing"
+    params:
+      template: "guest-follow-up"
+      delay_days: 2
+    depends_on: ["prep-brief"]
+    on_error: "skip"
+    timeout_seconds: 300

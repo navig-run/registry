@@ -1,0 +1,42 @@
+id: savings-strategy
+name: Savings Strategy
+version: "1.0.0"
+description: >
+  Multi-goal savings optimization formation. Reviews total savings capacity
+  from monthly close data, allocates amounts to active goals in priority order,
+  and surfaces reallocation opportunities when savings exceed all targets.
+
+space: finance
+lead: savings-coach
+supporting:
+  - budget-analyst
+
+trigger_conditions:
+  - Monthly close completes
+  - Savings goal milestone reached
+  - Savings rate significantly above or below target
+
+skills:
+  - project-cashflow
+  - budget-variance
+
+workflows:
+  - monthly-close
+
+steps:
+  - stage: capacity-check
+    owner: savings-coach
+    action: Pull net savings from last monthly close
+  - stage: goal-allocation
+    owner: savings-coach
+    action: Distribute available savings across active goals by priority
+  - stage: projection-update
+    owner: savings-coach
+    action: Update projected completion dates for all active goals
+  - stage: surplus-alert
+    owner: savings-coach
+    action: If savings > all goal targets, surface reallocation recommendation
+
+escalation:
+  on_goal_behind_2mo: savings-coach via #goals
+  on_milestone: savings-coach via #goals

@@ -1,0 +1,111 @@
+id: advance-stage
+name: Advance Stage
+version: "1.0.0"
+description: >
+  Advance a venture from its current stage to the next in the pipeline:
+  idea → validation → growth → scaling → exit | archived.
+  Requires explicit evidence. Appends to decision log automatically.
+category: venture-management
+platform: [windows, linux, macos]
+formation: venture-review
+author: empire-space
+
+parameters:
+  - name: venture
+    type: string
+    required: true
+    description: "Venture ID or name"
+  - name: new_stage
+    type: enum
+    values: [validation, growth, scaling, exit, archived]
+    required: true
+    description: "Target stage"
+  - name: evidence
+    type: string
+    required: true
+    description: "Evidence justifying this stage advancement (required)"
+  - name: notes
+    type: string
+    required: false
+    default: ""
+    description: "Additional context"
+
+steps:
+  - id: advance_venture_stage
+    name: "Advance Venture Stage"
+    shell: auto
+    env:
+      NAVIG_PARAM_VENTURE: "{{params.venture}}"
+      NAVIG_PARAM_NEW_STAGE: "{{params.new_stage}}"
+      NAVIG_PARAM_EVIDENCE: "{{params.evidence}}"
+      NAVIG_PARAM_NOTES: "{{params.notes}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      ventures_path = ".navig/memory/ventures.json"
+      decisions_path = ".navig/memory/decisions.json"
+      # Parameters arrive as environment variables, never pasted into the code.
+      venture_arg = os.environ.get("NAVIG_PARAM_VENTURE", "")
+      venture_filter = venture_arg.lower()
+      new_stage = os.environ.get("NAVIG_PARAM_NEW_STAGE", "")
+      evidence = os.environ.get("NAVIG_PARAM_EVIDENCE", "")
+      notes = os.environ.get("NAVIG_PARAM_NOTES", "")
+
+      try:
+          with open(ventures_path, encoding="utf-8") as f:
+              vdata = json.load(f)
+      except Exception:
+          print("ERROR: ventures.json not found. Add ventures first.")
+          raise SystemExit(1)
+
+      venture = next((v for v in vdata.get("ventures", [])
+                      if v.get("id", "").lower() == venture_filter or v.get("name", "").lower() == venture_filter), None)
+      if not venture:
+          print(f"ERROR: Venture '{venture_arg}' not found in portfolio.")
+          raise SystemExit(1)
+
+      old_stage = venture.get("stage", "unknown")
+      allowed_stages = ["idea", "validation", "growth", "scaling", "exit", "archived"]
+      if new_stage not in allowed_stages:
+          print(f"ERROR: Unknown stage '{new_stage}'. Use one of: {', '.join(allowed_stages[1:])}")
+          raise SystemExit(1)
+      if old_stage in allowed_stages and allowed_stages.index(new_stage) < allowed_stages.index(old_stage):
+          print(f"WARNING: Advancing from '{old_stage}' → '{new_stage}' is a regression. Writing with flag.")
+
+      venture["stage"] = new_stage
+      venture["stage_changed_at"] = datetime.utcnow().isoformat() + "Z"
+      with open(ventures_path, "w", encoding="utf-8") as f:
+          json.dump(vdata, f, indent=2, ensure_ascii=False)
+
+      # Log to decisions
+      try:
+          with open(decisions_path, encoding="utf-8") as f:
+              ddata = json.load(f)
+      except Exception:
+          ddata = {"decisions": []}
+
+      decision = {
+          "id": f"dec_{len(ddata['decisions']) + 1:04d}",
+          "type": "stage-advancement",
+          "venture": venture.get("id", venture.get("name")),
+          "from_stage": old_stage,
+          "to_stage": new_stage,
+          "evidence": evidence,
+          "notes": notes,
+          "timestamp": datetime.utcnow().isoformat() + "Z",
+          "outcome": "pending"
+      }
+      ddata["decisions"].append(decision)
+      with open(decisions_path, "w", encoding="utf-8") as f:
+          json.dump(ddata, f, indent=2, ensure_ascii=False)
+
+      print(f"Stage advanced: {venture.get('name', venture_arg)} → {new_stage}")
+      print(f"Decision logged: [{decision['id']}]")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: advance_venture_stage

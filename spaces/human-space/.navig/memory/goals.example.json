@@ -1,0 +1,58 @@
+[
+  {
+    "id": "GOAL-001",
+    "goal": "Complete morning routine ≥5 days/week consistently for 90 days",
+    "agent": "daily-planner",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-002",
+    "goal": "Track at least 3 health metrics weekly for 8 consecutive weeks",
+    "agent": "wellness-tracker",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-003",
+    "goal": "Build and maintain 2 keystone habits with ≥80% adherence over 60 days",
+    "agent": "habit-coach",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-004",
+    "goal": "Complete weekly retrospective every Sunday without breaking streak",
+    "agent": "daily-planner",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-005",
+    "goal": "Track mood daily for 30 consecutive days to establish baseline",
+    "agent": "wellness-tracker",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-006",
+    "goal": "Complete 1 book or course per month and log notes",
+    "agent": "growth-tracker",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-007",
+    "goal": "Zero overdue document renewals — all tracked with 30-day advance alerts",
+    "agent": "bureau-manager",
+    "status": "active",
+    "target_date": "ongoing"
+  },
+  {
+    "id": "GOAL-008",
+    "goal": "Write evening journal entry ≥4 days/week",
+    "agent": "daily-planner",
+    "status": "active",
+    "target_date": "ongoing"
+  }
+]

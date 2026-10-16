@@ -1,0 +1,60 @@
+id: multi-post
+name: Multi-Post
+version: "1.0.0"
+description: "Publish a clip to multiple platforms simultaneously with platform-specific metadata."
+category: publishing
+platform: [windows, linux, macos]
+formation: batch-schedule
+author: navig-run
+
+parameters:
+  - name: clip_path
+    type: string
+    required: true
+    description: "Path to the clip to publish"
+  - name: platforms
+    type: list
+    default: [tiktok, reels, shorts]
+    description: "Target platforms"
+  - name: caption
+    type: string
+    required: true
+    description: "Caption text"
+  - name: hashtags
+    type: list
+    default: []
+    description: "Hashtags to include"
+  - name: schedule_time
+    type: string
+    default: now
+    description: "Publishing time (ISO 8601 or 'now')"
+
+steps:
+  - id: prepare-metadata
+    name: Prepare platform-specific metadata
+    shell: bash
+    script_windows: |
+      echo "Preparing metadata for platforms: {{platforms}}"
+      echo "Caption: {{caption}}"
+      echo "Hashtags: {{hashtags}}"
+    script_linux: |
+      echo "Preparing metadata for platforms: {{platforms}}"
+      echo "Caption: {{caption}}"
+      echo "Hashtags: {{hashtags}}"
+    script_macos: |
+      echo "Preparing metadata for platforms: {{platforms}}"
+      echo "Caption: {{caption}}"
+      echo "Hashtags: {{hashtags}}"
+
+  - id: upload-distribute
+    name: Upload to all platforms
+    shell: bash
+    script_windows: |
+      echo "Publishing {{clip_path}} to {{platforms}} at {{schedule_time}}..."
+      echo "[Connect platform APIs for actual upload]"
+    script_linux: |
+      echo "Publishing {{clip_path}} to {{platforms}} at {{schedule_time}}..."
+      echo "[Connect platform APIs for actual upload]"
+    script_macos: |
+      echo "Publishing {{clip_path}} to {{platforms}} at {{schedule_time}}..."
+      echo "[Connect platform APIs for actual upload]"

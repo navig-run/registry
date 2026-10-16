@@ -1,0 +1,31 @@
+{
+  "space_id": "finance",
+  "currency": "USD",
+  "fiscal_year_start": "January",
+  "active_accounts": [],
+  "budget_categories": [
+    "income",
+    "housing",
+    "food",
+    "transport",
+    "utilities",
+    "health",
+    "entertainment",
+    "clothing",
+    "education",
+    "savings",
+    "investments",
+    "taxes",
+    "miscellaneous"
+  ],
+  "savings_rate_target_pct": 20,
+  "emergency_fund_months_target": 6,
+  "budget_warning_threshold_pct": 80,
+  "investment_rebalance_threshold_pct": 5,
+  "tax_year_current": 2026,
+  "tax_filing_deadline": "2027-04-15",
+  "thresholds": {
+    "large_transaction_alert_usd": 500,
+    "unusual_category_spike_pct": 50
+  }
+}

@@ -1,0 +1,70 @@
+id: caption-generate
+name: Caption Generate
+version: "1.0.0"
+description: "Generate and overlay captions on video using speech-to-text and text rendering."
+category: content
+platform: [windows, linux, macos]
+formation: clip-factory
+author: navig-run
+
+parameters:
+  - name: input
+    type: string
+    required: true
+    description: "Path to input video file"
+  - name: output
+    type: string
+    required: true
+    description: "Path to output video with captions"
+  - name: style
+    type: string
+    default: bold_centered
+    description: "Caption style: bold_centered, subtitle, minimal"
+  - name: font_size
+    type: integer
+    default: 42
+    description: "Font size for captions"
+  - name: color
+    type: string
+    default: "#FFFFFF"
+    description: "Caption text colour (hex)"
+
+steps:
+  - id: extract-audio
+    name: Extract audio for transcription
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{{input}}.wav"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{{input}}.wav"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{{input}}.wav"
+
+  - id: generate-srt
+    name: Generate SRT captions
+    shell: bash
+    script_windows: |
+      echo "Generating SRT from audio transcription..."
+      echo "1" > "{{input}}.srt"
+      echo "00:00:00,000 --> 00:00:03,000" >> "{{input}}.srt"
+      echo "[Caption placeholder — connect speech-to-text service]" >> "{{input}}.srt"
+    script_linux: |
+      echo "Generating SRT from audio transcription..."
+      echo "1" > "{{input}}.srt"
+      echo "00:00:00,000 --> 00:00:03,000" >> "{{input}}.srt"
+      echo "[Caption placeholder — connect speech-to-text service]" >> "{{input}}.srt"
+    script_macos: |
+      echo "Generating SRT from audio transcription..."
+      echo "1" > "{{input}}.srt"
+      echo "00:00:00,000 --> 00:00:03,000" >> "{{input}}.srt"
+      echo "[Caption placeholder — connect speech-to-text service]" >> "{{input}}.srt"
+
+  - id: burn-captions
+    name: Burn captions onto video
+    shell: bash
+    script_windows: |
+      ffmpeg -y -i "{{input}}" -vf "subtitles='{{input}}.srt':force_style='FontSize={{font_size}},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Alignment=2'" -c:a copy "{{output}}"
+    script_linux: |
+      ffmpeg -y -i "{{input}}" -vf "subtitles='{{input}}.srt':force_style='FontSize={{font_size}},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Alignment=2'" -c:a copy "{{output}}"
+    script_macos: |
+      ffmpeg -y -i "{{input}}" -vf "subtitles='{{input}}.srt':force_style='FontSize={{font_size}},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Alignment=2'" -c:a copy "{{output}}"

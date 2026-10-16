@@ -1,0 +1,65 @@
+[
+  {
+    "id": "GOAL-001",
+    "title": "Inbox Zero SLA",
+    "description": "All inbox items triaged or delegated within 48 hours",
+    "agent": "ops-manager",
+    "status": "active",
+    "metric": "overdue_count == 0",
+    "review": "weekly"
+  },
+  {
+    "id": "GOAL-002",
+    "title": "Project Done-Criteria Enforcement",
+    "description": "No project starts without explicit done criteria and budget defined",
+    "agent": "project-lead",
+    "status": "active",
+    "metric": "all active projects have done_criteria AND budget",
+    "review": "per-project"
+  },
+  {
+    "id": "GOAL-003",
+    "title": "Decision Log Hygiene",
+    "description": "Every significant decision has an ADR with rationale, financial impact, and reversibility",
+    "agent": "ops-manager",
+    "status": "active",
+    "metric": "decisions_without_adr == 0",
+    "review": "monthly"
+  },
+  {
+    "id": "GOAL-004",
+    "title": "Financial Tracking Accuracy",
+    "description": "All invoices sequential (no gaps), all expenses categorized, monthly close within 5 business days",
+    "agent": "controller",
+    "status": "active",
+    "metric": "monthly_close_on_time AND invoice_gaps == 0",
+    "review": "monthly"
+  },
+  {
+    "id": "GOAL-005",
+    "title": "Client Pipeline Health",
+    "description": "All leads qualified within 48h, pipeline value and conversion tracked monthly",
+    "agent": "sales",
+    "status": "active",
+    "metric": "unqualified_leads_older_48h == 0",
+    "review": "weekly"
+  },
+  {
+    "id": "GOAL-006",
+    "title": "Tax Compliance",
+    "description": "Quarterly declarations submitted on time, revenue thresholds monitored monthly",
+    "agent": "controller",
+    "status": "active",
+    "metric": "declarations_on_time AND threshold_monitored",
+    "review": "quarterly"
+  },
+  {
+    "id": "GOAL-007",
+    "title": "Monthly Auto-Close",
+    "description": "Financial close runs automatically on 1st of each month with P&L report",
+    "agent": "controller",
+    "status": "active",
+    "metric": "monthly_close_automated",
+    "review": "monthly"
+  }
+]

@@ -1,0 +1,87 @@
+# NAVIG Registry — master discovery index
+# Machine-readable map of every pillar in github.com/navig-run/registry.
+# (Filename kept for compatibility: NAVIG locates the registry by it.)
+
+name: navig-registry
+version: 3.0.0
+updated: 2026-10-16
+license: MIT
+repository: https://github.com/navig-run/registry
+
+pillars:
+  cli-skills:
+    description: "YAML command skills for one tool each (git, docker, network, security, system)"
+    registry: cli-skills/registry.json
+    install_pattern: "navig skill install github:navig-run/registry/cli-skills/{category}/{id}"
+
+  ai-skills:
+    description: "AI instruction skills — pulled in by the agent when a task matches their description"
+    registry: ai-skills/registry.json
+    install_pattern: "navig skill install github:navig-run/registry/ai-skills/{id}"
+
+  spaces:
+    description: "Whole workshops — agents, skills, workflows, plans and example memory for one domain"
+    registry: spaces/registry.json
+    schema: spaces/schema.yaml
+    install_pattern: "navig space install github:navig-run/registry/spaces/{id}"
+
+  personas:
+    description: "Personas — persona.yaml + soul file: the voice and manner the agent speaks in"
+    registry: personas/registry.json
+    install_pattern: "navig install add github:navig-run/registry/personas/{id}"
+
+  blocks:
+    description: "Blocks — installable, executable, verifiable outcomes ('apply an outcome'). First-party only during preview."
+    registry: blocks/registry.json
+    schema: blocks/schema.yaml
+    preview: true
+    install_pattern: "navig install add block:navig-run/registry/blocks/{id}"
+    apply_pattern: "navig apply {id}"
+
+  lenses:
+    description: "Lenses — Tampermonkey-compatible .user.js files that change a website, in every NAVIG browser. Each also installs in Tampermonkey / Violentmonkey from its raw link. Updates are checked daily and held for review."
+    registry: lenses/registry.json
+    install_pattern: "navig install add lens:navig-run/registry/lenses/{id}"
+
+  plugins:
+    description: "Plugins — extend NAVIG itself (each wires into navig AND/OR runs standalone). They install from their NATIVE channel (pip / npm): `pip install navig-<name>`, or `npm i -g navig-menu`. Every entry records whether the package is actually on the index; one that is not carries no install command."
+    registry: plugins/registry.json
+    format: navig-plugin-index
+    generated_by: scripts/gen_plugin_registry.py
+    install_pattern: "pip install navig-{id}"
+    note: "`navig plugin add` is for GIT-installable Claude-Code-compatible plugins only (a repo whose root has .claude-plugin/plugin.json); it git-clones and cannot install a pip or npm distribution, which is why .claude-plugin/marketplace.json lists none of these."
+  library:
+    description: "Copy-and-adapt templates: formations, prompts, app configs, host configs"
+    paths:
+      formations: library/formations/
+      prompts: library/prompts/
+      apps: library/apps/
+      hosts: library/hosts/
+
+  sdk:
+    description: "Plugin SDK — Python (navig-sdk on PyPI) and TypeScript/Node.js (navig-sdk on npm)"
+    python:
+      path: sdk/python/
+      package: navig-sdk
+      install: "pip install navig-sdk"
+    typescript:
+      path: sdk/typescript/
+      package: navig-sdk
+      install: "npm install navig-sdk"
+
+  contributors:
+    description: "Contributor profiles and the curated showcase"
+    showcase: SHOWCASE.md
+    contributors: contributors/
+    contributor_template: _template.yaml
+
+quick_install:
+  - label: "Homelab monitoring space"
+    command: "navig space install github:navig-run/registry/spaces/homelab-space"
+  - label: "Developer workflow space"
+    command: "navig space install github:navig-run/registry/spaces/dev-space"
+  - label: "Git skill"
+    command: "navig skill install github:navig-run/registry/cli-skills/developer/git-ops"
+  - label: "System health skill"
+    command: "navig skill install github:navig-run/registry/cli-skills/system/system-health"
+

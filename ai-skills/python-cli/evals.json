@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "id": "table-output",
+      "prompt": "Add a `navig widget list` command that prints installed widgets. Show the NAVIG house style.",
+      "expect": {
+        "contains": ["Typer", "Rich", "table", "--json", "console_helper"],
+        "excludes": ["print("]
+      }
+    },
+    {
+      "id": "logging-discipline",
+      "prompt": "How should a navig CLI command emit diagnostics and logs?",
+      "expect": { "contains": ["loguru"], "excludes": [] }
+    },
+    {
+      "id": "column-discipline",
+      "prompt": "How should I size the columns in a navig status table so a narrow terminal degrades well?",
+      "expect": { "contains": ["no_wrap"], "excludes": [] }
+    }
+  ]
+}

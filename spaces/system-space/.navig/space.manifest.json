@@ -1,0 +1,48 @@
+{
+  "space_id": "system-space",
+  "type": "space",
+  "name": "System",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "active",
+  "created_at": "2026-06-24",
+  "description": "OS & filesystem operator: deep Windows + filesystem knowledge, safe bulk inventory, migration, trash-not-delete and long-path purge. CLI-driven and navig-wired. Built from real, hard-won operations (long-path purges, robocopy patterns, lock-breaking, size-based classification).",
+  "paths": [
+    "bin",
+    "tools",
+    "docs",
+    "tests"
+  ],
+  "agents": [
+    "inspector",
+    "organizer",
+    "mover",
+    "converter"
+  ],
+  "formations": [
+    "organize-pipeline",
+    "safe-migration"
+  ],
+  "skills": [],
+  "subspaces": [],
+  "meta": {
+    "tags": [
+      "windows",
+      "filesystem",
+      "ntfs",
+      "robocopy",
+      "powershell",
+      "organization",
+      "migration",
+      "dedupe",
+      "long-paths",
+      "conversion",
+      "automation"
+    ],
+    "platform": [
+      "Windows"
+    ]
+  }
+}

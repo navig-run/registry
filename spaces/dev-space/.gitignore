@@ -1,0 +1,109 @@
+# NAVIG Dev Space — .gitignore
+# Safe to commit: skills, formations, agents, workflows, prompts, wiki structure,
+#                 memory schema, MCP config (no secrets), store assets.
+# NOT safe:       vault data, local credentials, build artifacts, secrets.
+
+# ─────────────────────────────────────────────
+# NAVIG vault & secrets — NEVER commit these
+# ─────────────────────────────────────────────
+.navig/vault/
+.navig/vault.yaml
+.navig/*.key
+.navig/*.pem
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets.*
+**/credentials.*
+
+# ─────────────────────────────────────────────
+# Logs and audit trails
+# ─────────────────────────────────────────────
+.navig/logs/
+*.log
+*.log.*
+logs/
+
+# ─────────────────────────────────────────────
+# NAVIG runtime state (local-only)
+# ─────────────────────────────────────────────
+.navig/.lock
+.navig/session/
+.navig/cache/
+.navig/tmp/
+
+# ─────────────────────────────────────────────
+# Extension build artifacts
+# ─────────────────────────────────────────────
+dist/
+*.crx
+*.zip
+*.vsix
+node_modules/
+__pycache__/
+*.pyc
+
+# ─────────────────────────────────────────────
+# SSH keys and credentials
+# ─────────────────────────────────────────────
+**/*.pem
+**/*.key
+**/*.ppk
+**/id_rsa
+**/id_ed25519
+
+# ─────────────────────────────────────────────
+# OS junk
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ─────────────────────────────────────────────
+# Editor junk
+# ─────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ─────────────────────────────────────────────
+# Temporary / scratch files
+# ─────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+scratch/
+temp/
+tmp/
+
+# ─────────────────────────────────────────────
+# NAVIG space pack artifacts
+# ─────────────────────────────────────────────
+*.navig-space
+*.space.zip
+*.space.tar.gz
+
+# ─────────────────────────────────────────────
+# What IS committed (override safety nets above)
+# ─────────────────────────────────────────────
+!.navig/skills/
+!.navig/store/formations/
+!.navig/store/agents/
+!.navig/store/prompts/
+!.navig/store/workflows/
+!.navig/wiki/
+!.navig/memory/*.example.json
+!.navig/inbox/routes.example.yaml
+!space.manifest.json
+!README.md
+!PREVIEW.md
+!CHANGELOG.md
+!LICENSE
+!screenshots/
+!.navig/config.yaml
+!.navig/context.md

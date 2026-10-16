@@ -1,0 +1,13 @@
+{
+  "name": "business-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NAVIG space for e-commerce operations, financial management, and affiliate marketing",
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": "https://github.com/navig-run/registry",
+  "navig": {
+    "space": "business-space",
+    "runtime": "navig-space-2"
+  }
+}

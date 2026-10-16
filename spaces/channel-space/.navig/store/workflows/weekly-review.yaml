@@ -1,0 +1,74 @@
+name: weekly-review
+description: |
+  Weekly channel performance review. Pulls analytics for the past
+  7 days, analyses retention and CTR, reviews competitor activity,
+  and generates a summary report with recommendations.
+
+schedule:
+  cron: "0 18 * * 5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: channel-growth
+
+steps:
+  - id: pull-analytics
+    name: Pull weekly analytics
+    skill: analytics-pull
+    params:
+      period: last_7_days
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 120
+
+  - id: retention-check
+    name: Analyse retention curves
+    skill: retention-analysis
+    params:
+      compare_previous: true
+    depends_on: [pull-analytics]
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: seo-check
+    name: SEO performance review
+    skill: seo-audit
+    params:
+      scope: recent_uploads
+    depends_on: [pull-analytics]
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: competitor-scan
+    name: Competitor activity scan
+    skill: competitor-scan
+    params:
+      top_n: 5
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: generate-report
+    name: Generate weekly report
+    skill: null
+    agent: growth-analyst
+    action: generate_weekly_report
+    params:
+      include_recommendations: true
+    depends_on: [retention-check, seo-check, competitor-scan]
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: share-report
+    name: Share report with showrunner
+    skill: null
+    agent: growth-analyst
+    action: share_report
+    params:
+      recipients: [showrunner]
+    depends_on: [generate-report]
+    on_error: continue
+    timeout_seconds: 15

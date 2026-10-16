@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "space": "scribe",
+  "updated": "2026-03-11",
+  "issues": [
+    {"id": "ISS-001", "title": "Sub-workspace templates contain placeholder content", "description": "All sub-workspaces contain starter templates that need to be customised for real projects", "severity": "info", "status": "open", "detected_by": "editor"},
+    {"id": "ISS-002", "title": "No active projects registered", "description": "project_count is 0 in space-context.json — update after adding real writing projects", "severity": "info", "status": "open", "detected_by": "editor"}
+  ]
+}

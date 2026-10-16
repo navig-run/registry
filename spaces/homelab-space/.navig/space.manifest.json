@@ -1,0 +1,30 @@
+{
+  "space_id": "homelab-space",
+  "type": "lab",
+  "name": "Homelab Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.2.0",
+  "tier": "work",
+  "status": "active",
+  "created_at": "2026-03-05",
+  "description": "Command-and-control hub for all hardware, devices, and networks in a personal homelab environment.",
+  "paths": {
+    "docs": "docs",
+    "skills": ".navig/skills",
+    "scripts": "scripts",
+    "tests": "tests",
+    "tools": "tools"
+  },
+  "agents": ["atlas", "sentinel", "wrench", "herald", "archivist", "pulse"],
+  "formations": ["network-ops", "hardware-patrol", "cross-platform-ops", "security-watch", "maintenance-crew"],
+  "skills": [
+    "network-scan", "port-audit", "cable-trace", "hardware-inventory",
+    "gpu-health", "disk-health", "disk-clean", "process-investigate",
+    "ssh-connect", "wake-on-lan", "sync-configs"
+  ],
+  "meta": {
+    "tags": ["homelab", "infrastructure", "hardware", "networking", "automation", "devops"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

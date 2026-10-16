@@ -1,0 +1,44 @@
+id: check-fees
+name: Check Platform Fees
+version: "1.0.0"
+description: Report current platform fees for one or more selling channels, flagging any increase vs. the prior period.
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+author: navig-run
+
+parameters:
+  - name: platforms
+    description: "Comma-separated platforms: amazon,ebay,etsy,all"
+    required: false
+    default: all
+  - name: mode
+    description: "Output mode: snapshot | delta (vs. prior period)"
+    required: false
+    default: snapshot
+
+steps:
+  - name: load-fee-data
+    description: Load fee snapshots from finance-ops/fees/
+    script: |
+      import os, glob
+      fee_dir = os.path.join("finance-ops", "fees")
+      os.makedirs(fee_dir, exist_ok=True)
+      files = glob.glob(os.path.join(fee_dir, "*.csv"))
+      if not files:
+          print("INFO: No fee snapshot CSVs in finance-ops/fees/. Create snapshots manually or connect platform API.")
+      else:
+          print(f"Loaded {len(files)} fee snapshot(s)")
+    script_windows: |
+      $feeDir = "finance-ops\fees"
+      New-Item -ItemType Directory -Force $feeDir | Out-Null
+      $files = Get-ChildItem "$feeDir\*.csv" -ErrorAction SilentlyContinue
+      if (-not $files) { Write-Host "INFO: No fee snapshots found in $feeDir" }
+      else { Write-Host "Loaded $($files.Count) fee snapshot(s)" }
+
+  - name: report-fees
+    description: Print fee summary or delta report
+    script: |
+      # Placeholder — real implementation pulls from Amazon SP-API, eBay Fees API, Etsy API
+      print("Fee data requires platform API credentials. See .navig/store/mcp/workstation.mcp.json.")
+    depends_on: load-fee-data

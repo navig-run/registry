@@ -1,0 +1,94 @@
+name: Git Ops
+description: Inspect, summarize, and manage Git repositories without leaving NAVIG
+version: 1.0.0
+category: developer
+license: MIT
+
+user_invocable: true
+risk_level: elevated
+
+requires:
+  - git
+
+commands:
+  - name: status
+    syntax: navig skill run git-ops status [--path <dir>]
+    description: Show working tree status — changed, staged, and untracked files
+    risk: safe
+
+  - name: log
+    syntax: navig skill run git-ops log [--n <count>] [--author <name>] [--since <date>] [--path <dir>]
+    description: Compact commit history with author, date, and subject (default N=20)
+    risk: safe
+
+  - name: diff
+    syntax: navig skill run git-ops diff [--staged] [--commit <sha>] [--path <dir>]
+    description: Show diff of working tree or staged changes; compare to specific commit
+    risk: safe
+
+  - name: branches
+    syntax: navig skill run git-ops branches [--remote] [--path <dir>]
+    description: List local branches (add --remote for remote-tracking branches)
+    risk: safe
+
+  - name: stash
+    syntax: navig skill run git-ops stash <save|pop|list> [--message <msg>]
+    description: Save, restore, or list stashed changes
+    risk: elevated
+
+  - name: sync
+    syntax: navig skill run git-ops sync [--branch <name>] [--rebase] [--path <dir>]
+    description: Fetch, pull (or rebase) the current or named branch from origin
+    risk: elevated
+
+  - name: tag
+    syntax: navig skill run git-ops tag <name> [--message <msg>] [--push]
+    description: Create an annotated tag and optionally push it to origin
+    risk: elevated
+
+  - name: summary
+    syntax: navig skill run git-ops summary [--path <dir>]
+    description: AI-friendly one-page repo summary — recent commits, open branches, uncommitted changes
+    risk: safe
+
+examples:
+  - title: See what's changed
+    user: What files have I changed since the last commit?
+    command: navig skill run git-ops status
+
+  - title: Review recent history
+    user: Show me the last 10 commits on this repo
+    command: navig skill run git-ops log --n 10
+
+  - title: What did I change today?
+    user: Summarise all commits I made today
+    command: navig skill run git-ops log --author me --since today
+
+  - title: Quick repo overview before a PR
+    user: Give me a summary of the current state of this repo
+    command: navig skill run git-ops summary
+
+  - title: Pull the latest from main
+    user: Sync my branch with main
+    command: navig skill run git-ops sync --branch main
+
+agent_hints:
+  when_to_use: >
+    Use when the user asks about Git, commit history, branch status, uncommitted
+    changes, or needs to prepare a code review or release. Trigger on: "what changed",
+    "git log", "last commit", "open branches", "sync with main", "show diff",
+    "repo status", "check git".
+  output_format: >
+    status: { staged: [file], unstaged: [file], untracked: [file] }.
+    log: array of { sha, author, date, subject }.
+    diff: unified diff text.
+    summary: markdown block with sections: Recent Commits | Branches | Uncommitted Changes.
+  follow_up: >
+    After status, offer to show the diff for staged or unstaged files.
+    After log, offer to summarise changes since a given commit.
+    After summary, offer to draft a PR description based on recent commits.
+
+platforms:
+  - linux
+  - mac
+  - windows

@@ -1,0 +1,34 @@
+{
+  "name": "dev-space",
+  "version": "1.0.0",
+  "description": "NAVIG space — code authoring, userscript and browser extension development",
+  "private": true,
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/dev-space"
+  },
+  "scripts": {
+    "validate":   "navig space doctor --no-interactive",
+    "skills":     "navig skill list",
+    "lint":       "navig skill run code-lint --target .",
+    "scaffold":   "navig skill run scaffold-project",
+    "doctor":     "navig space doctor --no-interactive && navig skill list"
+  },
+  "navig": {
+    "type": "space",
+    "min_navig_version": "2.0.0",
+    "skills_dir": ".navig/skills",
+    "entry_workflow": "daily-standup"
+  },
+  "keywords": [
+    "navig",
+    "space",
+    "dev",
+    "userscripts",
+    "chrome-extensions",
+    "browser-automation"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "goals": [
+    {
+      "id": "G001",
+      "description": "Maintain ≥70% finish rate on started courses and books",
+      "metric": "completed / (completed + abandoned) >= 0.70",
+      "status": "active"
+    },
+    {
+      "id": "G002",
+      "description": "Capture at least 3 insights per book or course completed",
+      "metric": "Average insights per completed item >= 3",
+      "status": "active"
+    },
+    {
+      "id": "G003",
+      "description": "Complete weekly review every week",
+      "metric": "Weekly review streak >= 4 weeks",
+      "status": "active"
+    },
+    {
+      "id": "G004",
+      "description": "Reach 'proficient' on 2 skill areas per quarter",
+      "metric": "Skills at level proficient or above: +2 per quarter",
+      "status": "active"
+    }
+  ]
+}

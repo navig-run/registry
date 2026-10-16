@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "social-circle",
+  "goals": [
+    {
+      "id": "no-cold-relationships",
+      "title": "No important relationship goes cold",
+      "description": "Everyone in inner-circle touched at least once per 30 days. No important contact >90 days without contact.",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "network-mapped",
+      "title": "Full network mapped",
+      "description": "Every significant person in your life has a contact record with at least one circle and interaction",
+      "status": "active",
+      "priority": "medium"
+    }
+  ]
+}

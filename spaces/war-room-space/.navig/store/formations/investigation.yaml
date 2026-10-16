@@ -1,0 +1,50 @@
+id: investigation
+name: Investigation
+version: "1.0.0"
+description: >
+  Full case formation: open-case → collect → enrich → corroborate → findings → report.
+  Case Manager leads and owns the case end-to-end and the final intelligence product;
+  OSINT Analyst supports collection and graph enrichment; Forensics Investigator
+  supports evidence, artifacts, and timelines with chain of custody.
+
+agents:
+  lead: case-manager
+  supporting: [osint-analyst, forensics-investigator]
+
+trigger_conditions:
+  - "open-case skill invoked"
+  - "New investigation requested"
+  - "Evidence submitted for analysis"
+  - "Case status change or report due"
+  - "Manual: activate the investigation formation"
+
+action_scope:
+  - ALLOW: open-case
+  - ALLOW: add-entity
+  - ALLOW: log-finding
+  - ALLOW: advance-status
+  - ALLOW: write to .navig/memory/cases.json
+  - ALLOW: write to .navig/memory/findings.json
+  - ALLOW: write to .navig/memory/entities.json
+  - DENY: authorize active recon or offensive action — route through legal-counsel and the engagement gate
+  - DENY: assert a finding without corroboration (>=2 independent sources) and confidence
+  - DENY: alter original evidence — forensic work is hash-first, read-only
+
+skills_used:
+  - open-case
+  - add-entity
+  - log-finding
+  - advance-status
+
+communication:
+  inbox_channel: "#cases"
+  escalation: strategist
+  notify_on:
+    - corroborated_finding_logged
+    - case_status_advanced
+    - chain_of_custody_gap_detected
+    - report_ready_for_review
+
+context_memory:
+  read: [cases.json, findings.json, entities.json, intel-log.json]
+  write: [cases.json, findings.json, entities.json]

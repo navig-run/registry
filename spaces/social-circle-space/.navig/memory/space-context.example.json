@@ -1,0 +1,9 @@
+{
+  "space": "social-circle",
+  "version": "1.0",
+  "status": "ready",
+  "total_contacts": 0,
+  "total_circles": 0,
+  "total_interactions": 0,
+  "default_circles": ["inner-circle", "work", "family", "friends", "community", "online"]
+}

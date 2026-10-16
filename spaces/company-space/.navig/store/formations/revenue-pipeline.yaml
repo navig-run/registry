@@ -1,0 +1,55 @@
+id: revenue-pipeline
+name: Revenue Pipeline
+version: "1.0.0"
+description: |
+  End-to-end revenue flow from quote generation through invoicing to payment collection.
+  Sales owns the front (quote request), controller owns the back (invoice + collection).
+
+agents:
+  lead: controller
+  supporting:
+    - sales
+
+trigger_conditions:
+  - Quote requested by sales or client
+  - Quote approved → invoice generation
+  - Invoice sent → payment tracking
+  - Payment overdue → reminder cycle
+  - Revenue report requested
+
+action_scope:
+  - Quote generation ({{QUOTE_PREFIX}}-YYYY-NNN format)
+  - Quote → invoice conversion
+  - Invoice generation ({{INVOICE_PREFIX}}-YYYY-NNN format)
+  - Payment tracking and status updates
+  - Late payment reminders (30 days, 45 days, 60 days)
+  - Revenue reporting (monthly, quarterly, yearly)
+
+skills_used:
+  - generate-quote
+  - generate-invoice
+  - revenue-report
+
+workflows_used:
+  - invoice-cycle
+
+communication:
+  channels:
+    - "#finance"
+    - "#sales"
+  escalation: chief
+  notify_on:
+    - invoice unpaid >30 days
+    - revenue target miss >10%
+    - tax threshold proximity
+
+context_memory:
+  read:
+    - .navig/config.yaml
+    - finance/invoices/
+    - finance/quotes/
+    - clients/
+  write:
+    - finance/invoices/
+    - finance/quotes/
+    - finance/reports/

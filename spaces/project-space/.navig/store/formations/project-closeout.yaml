@@ -1,0 +1,9 @@
+id: project-closeout
+name: Project Closeout
+version: "1.0.0"
+description: Formal project close — outcomes, lessons learned, archive.
+space: project
+lead: project-planner
+supporting: [milestone-keeper]
+trigger_conditions: [done-state met, manual trigger]
+workflows: [project-close]

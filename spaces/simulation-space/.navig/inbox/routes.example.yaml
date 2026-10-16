@@ -1,0 +1,17 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+# Simulation Space — Inbox Routes
+version: "1.0"
+routes:
+  - channel: "#debug"
+    description: "Behavioral bugs, failure patterns, and anomalies to investigate"
+    handlers: ["debugger"]
+    default: true
+  - channel: "#habits"
+    description: "Habit run logs and tracking events"
+    handlers: ["habit-engine"]
+  - channel: "#agents"
+    description: "Internal agent observations and model updates"
+    handlers: ["agent-modeler"]
+  - channel: "#probability"
+    description: "Decision outcomes and probability tree updates"
+    handlers: ["probability-analyst"]

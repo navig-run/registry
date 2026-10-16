@@ -1,0 +1,34 @@
+space: channel-space
+version: "1.0.0"
+
+content_dir: content/
+thumbnails_dir: thumbnails/
+analytics_dir: content/analytics/
+scripts_dir: content/scripts/
+
+video_defaults:
+  resolution: "1920x1080"
+  fps: 30
+  format: mp4
+  codec: h264
+  thumbnail_size: "1280x720"
+
+upload_defaults:
+  platform: youtube
+  visibility: private
+  category: null
+  language: en
+
+path_config:
+  skills_dir: .navig/skills/
+  formations_dir: .navig/store/formations/
+  agents_dir: .navig/store/agents/
+  workflows_dir: .navig/store/workflows/
+  prompts_dir: .navig/store/prompts/
+  wiki_dir: .navig/wiki/
+  memory_dir: .navig/memory/
+
+agent_defaults:
+  escalation: operator
+
+log_level: info

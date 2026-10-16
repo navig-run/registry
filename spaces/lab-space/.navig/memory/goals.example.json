@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "space": "lab-space",
+  "goals": [
+    {
+      "id": "share-first",
+      "title": "Every useful sequence shareable",
+      "description": "Any command sequence that works should be one click from being shared as a URL",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

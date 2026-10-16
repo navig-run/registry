@@ -1,0 +1,63 @@
+name: rss-maintenance
+description: |
+  RSS feed validation, repair, and maintenance workflow. Ensures
+  the podcast feed meets Apple Podcasts requirements and all
+  platforms are receiving correct data.
+schedule:
+  cron: "0 8 * * 3"
+  timezone: "UTC"
+  enabled: true
+on_demand: true
+formation: episode-production
+
+steps:
+  - id: validate-feed
+    name: "Validate RSS Feed"
+    skill: rss-generate
+    params:
+      mode: "validate"
+      standard: "apple_podcasts"
+    depends_on: []
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: check-episodes
+    name: "Check Episode Entries"
+    agent: publisher
+    action: "Verify all published episodes have correct metadata in feed"
+    params:
+      check_fields: ["title", "description", "duration", "enclosure_url", "pub_date"]
+    depends_on: ["validate-feed"]
+    on_error: "continue"
+    timeout_seconds: 300
+
+  - id: fix-issues
+    name: "Fix Feed Issues"
+    skill: rss-generate
+    params:
+      mode: "repair"
+      auto_fix: true
+    depends_on: ["check-episodes"]
+    on_error: "pause"
+    timeout_seconds: 300
+    condition: "validate-feed.errors > 0 or check-episodes.issues > 0"
+
+  - id: revalidate
+    name: "Re-validate After Fixes"
+    skill: rss-generate
+    params:
+      mode: "validate"
+      strict: true
+    depends_on: ["fix-issues"]
+    on_error: "pause"
+    timeout_seconds: 300
+
+  - id: maintenance-report
+    name: "Generate Maintenance Report"
+    agent: publisher
+    action: "Report feed health status and any actions taken"
+    params:
+      template: "rss-report"
+    depends_on: ["revalidate"]
+    on_error: "continue"
+    timeout_seconds: 300

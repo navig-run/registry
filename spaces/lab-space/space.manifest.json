@@ -1,0 +1,24 @@
+{
+  "space_id": "lab-space",
+  "display_name": "Lab Space",
+  "description": "Live command REPL — run, tweak, and share any Navig command.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "tags": [
+    "lab",
+    "repl",
+    "experiment",
+    "commands",
+    "play"
+  ],
+  "capability_deps": [
+    "agent",
+    "tools",
+    "storage"
+  ]
+}

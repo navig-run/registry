@@ -1,0 +1,33 @@
+id: new-project
+name: New Project
+version: "1.0.0"
+description: Full project kickoff — scope, done-state, milestones, first tasks.
+space: project
+steps:
+  - step: 1
+    name: Project Definition
+    agent: project-planner
+    description: |
+      Define: project name, done-state (specific), type, target completion date
+      Done-state must be a specific sentence: "X is complete when Y is true"
+    manual: true
+  - step: 2
+    name: Create Project Structure
+    agent: project-planner
+    command: "@project-planner new --name {name} --done '{done_state}'"
+    automated: true
+  - step: 3
+    name: Define Milestones
+    agent: milestone-keeper
+    description: 3–7 named checkpoints. Each must be a concrete deliverable.
+    manual: true
+  - step: 4
+    name: First Tasks
+    agent: task-tracker
+    description: Most important 3 tasks to start. Each must be completable in one session.
+    manual: true
+  - step: 5
+    name: Identify Known Blockers
+    agent: blocker-resolver
+    description: Any known dependencies or blockers? Log them now.
+    manual: true

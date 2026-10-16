@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "space": "residence",
+  "description": "MCP server configuration for the residence space — scoped file access and shell tools for inventory and maintenance management",
+  "updated": "2026-03-12",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Read/write access to residence space directories",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/rooms",
+          "{workspace_root}/pharmacy",
+          "{workspace_root}/maintenance",
+          "{workspace_root}/.navig/memory"
+        ],
+        "read_only_roots": [],
+        "max_file_size_mb": 5,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Scoped shell access for inventory and export operations",
+      "config": {
+        "allowed_commands": ["python", "python3", "py"],
+        "working_dir": "{workspace_root}",
+        "timeout_seconds": 30
+      }
+    }
+  ]
+}

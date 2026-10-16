@@ -1,0 +1,43 @@
+name: monthly-finance-review
+description: >
+  Monthly P&L close: aggregate revenue and cost data, compute margins per channel,
+  reconcile platform fees, update cash flow forecast, and send summary brief.
+schedule:
+  cron: "0 8 2 * *"
+  timezone: UTC
+  enabled: true
+on_demand: true
+formation: financial-review
+
+params:
+  - name: period
+    description: Month to review in YYYY-MM format (defaults to prior month)
+    required: false
+
+steps:
+  - name: collect-revenue-data
+    description: Pull gross revenue from all active channels for the period
+    skill: check-fees
+    params:
+      platforms: all
+      mode: revenue
+
+  - name: calculate-margins
+    description: Compute gross and net margin per channel and in aggregate
+    skill: calculate-margins
+    depends_on: collect-revenue-data
+
+  - name: generate-pnl-report
+    description: Generate P&L summary using the p-and-l-review prompt
+    prompt: p-and-l-review
+    depends_on: calculate-margins
+
+  - name: update-cash-flow
+    description: Update the 90-day cash flow forecast in finance-ops/
+    skill: calculate-margins
+    params:
+      mode: cashflow
+
+  - name: save-report
+    description: Save monthly report to finance-ops/reports/<period>-pnl.md
+    depends_on: [generate-pnl-report, update-cash-flow]

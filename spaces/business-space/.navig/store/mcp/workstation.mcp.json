@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "space": "business",
+  "description": "MCP tool integrations for business operations — spreadsheets, accounting, and e-commerce data",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "spreadsheet-fs",
+      "type": "local",
+      "provider": "workspace-fs",
+      "description": "Read/write CSV and XLSX files in finance-ops/ and sub-workspaces",
+      "config": {
+        "root": "./finance-ops"
+      }
+    },
+    {
+      "id": "amazon-sp-api",
+      "type": "remote",
+      "provider": "amazon-sp-api",
+      "description": "Amazon Selling Partner API — inventory, orders, fees",
+      "config": {
+        "auth": "vault:amazon_sp_api_credentials"
+      }
+    },
+    {
+      "id": "currency-rates",
+      "type": "remote",
+      "provider": "exchangerate-api",
+      "description": "Live currency exchange rates for multi-currency P&L",
+      "config": {
+        "base_currency": "USD"
+      }
+    },
+    {
+      "id": "pdf-generator",
+      "type": "local",
+      "provider": "pandoc",
+      "description": "Generate PDF invoices and reports from markdown templates",
+      "config": {
+        "output_dir": "./finance-ops/invoices"
+      }
+    }
+  ]
+}

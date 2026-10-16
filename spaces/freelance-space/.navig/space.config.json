@@ -1,0 +1,22 @@
+{
+  "id": "freelance-space",
+  "space_id": "freelance-space",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Freelance Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "spaces_dir": "spaces",
+  "description": "Freelance business ops — clients, time, invoices, projects.",
+  "paths": ["clients", "invoices", "projects"],
+  "agents": ["account-manager", "timekeeper", "billing-officer", "strategist"],
+  "formations": ["client-ops", "billing-cycle", "project-scope"],
+  "skills": ["log-time", "create-invoice", "calculate-rate", "track-overdue"],
+  "meta": {
+    "tags": ["freelance", "clients", "invoicing", "time"],
+    "platform": ["Windows", "Linux", "macOS"]
+  }
+}

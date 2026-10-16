@@ -1,0 +1,27 @@
+{
+  "space_id": "broadcast",
+  "domain": "podcast-and-streaming",
+  "platforms": ["apple_podcasts", "spotify", "youtube", "rss"],
+  "content_defaults": {
+    "format": "interview",
+    "target_duration_minutes": 45,
+    "audio_format": "wav",
+    "export_format": "mp3",
+    "export_bitrate": "192k",
+    "target_lufs": -16
+  },
+  "publishing_defaults": {
+    "release_day": "tuesday",
+    "release_time": "06:00",
+    "timezone": "UTC",
+    "social_clips_per_episode": 3
+  },
+  "active_workflows": [
+    "episode-production",
+    "guest-pipeline",
+    "live-show",
+    "weekly-planning",
+    "monthly-review",
+    "rss-maintenance"
+  ]
+}

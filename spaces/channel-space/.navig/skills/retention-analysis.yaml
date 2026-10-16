@@ -1,0 +1,46 @@
+id: retention-analysis
+name: Retention Analysis
+version: "1.0.0"
+description: Analyses audience retention curves to identify drop-off points and engagement patterns.
+category: analytics
+platform: [windows, linux, macos]
+formation: channel-growth
+author: navig-run
+
+parameters:
+  - name: video_url
+    type: string
+    required: false
+    description: Specific video URL to analyse
+  - name: compare_previous
+    type: boolean
+    required: false
+    default: false
+    description: Compare with previous period
+  - name: output_dir
+    type: string
+    required: false
+    default: content/analytics
+    description: Analytics output directory
+
+steps:
+  - id: ensure-dir
+    name: Ensure analytics directory
+    shell: true
+    script_windows: "if not exist \"{{output_dir}}\" mkdir \"{{output_dir}}\""
+    script_linux: "mkdir -p '{{output_dir}}'"
+    script_macos: "mkdir -p '{{output_dir}}'"
+
+  - id: fetch-data
+    name: Fetch retention data
+    shell: true
+    script_windows: "echo Retention analysis for {{video_url}} > \"{{output_dir}}\\retention.txt\" && echo Compare: {{compare_previous}} >> \"{{output_dir}}\\retention.txt\""
+    script_linux: "echo 'Retention analysis for {{video_url}}' > '{{output_dir}}/retention.txt'"
+    script_macos: "echo 'Retention analysis for {{video_url}}' > '{{output_dir}}/retention.txt'"
+
+  - id: identify-dropoffs
+    name: Identify drop-off points
+    shell: true
+    script_windows: "echo [Agent analyses retention curve and identifies key drop-off timestamps] >> \"{{output_dir}}\\retention.txt\""
+    script_linux: "echo '[Agent analyses retention curve and identifies key drop-off timestamps]' >> '{{output_dir}}/retention.txt'"
+    script_macos: "echo '[Agent analyses retention curve and identifies key drop-off timestamps]' >> '{{output_dir}}/retention.txt'"

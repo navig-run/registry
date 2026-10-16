@@ -1,0 +1,48 @@
+id: household-ops
+name: Household Ops
+version: "1.0.0"
+description: >
+  Default formation for the residence space. Active for all household inventory
+  management, room organization, and general home operations. Combines Housekeeper
+  and Organizer for the full item-tracking and categorization loop.
+
+agents:
+  lead: housekeeper
+  supporting: [organizer]
+
+trigger_conditions:
+  - "New item log request in #home"
+  - "Room summary requested"
+  - "Weekly home review workflow starts"
+  - "Manual: navig formation run household-ops"
+
+action_scope:
+  - ALLOW: log-item, inventory-export
+  - ALLOW: write to .navig/memory/inventory.json
+  - ALLOW: write to .navig/memory/room-registry.json
+  - ALLOW: write to .navig/memory/space-context.json
+  - DENY: modify medication-log.json (route to medical-watch)
+  - DENY: modify maintenance-log.json (route to maintenance-crew)
+
+skills_used:
+  - log-item
+  - inventory-export
+
+workflows_used:
+  - weekly-home-review
+  - monthly-inventory-audit
+
+communication:
+  inbox_channel: "#home"
+  escalation: operator
+  notify_on:
+    - unknown_condition_item_count_exceeds_10
+    - room_inventory_count_exceeds_200
+
+context_memory:
+  read: [inventory.json, room-registry.json, space-context.json]
+  write: [inventory.json, space-context.json]
+
+example_invocation: |
+  navig formation run household-ops
+  # housekeeper will: review open #home tasks → log new items → run organizer review if triggered

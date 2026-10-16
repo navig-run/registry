@@ -1,0 +1,52 @@
+name: weekly-reliability-review
+description: >
+  Scheduled weekly reliability review. Probes service health, checks certificate
+  expiry, reviews SLO burn rates, and produces a summary report for the team.
+
+schedule:
+  cron: "0 9 * * MON"
+  timezone: "UTC"
+  enabled: true
+
+on_demand: true
+formation: sre-ops
+
+params:
+  - name: services
+    description: "Comma-separated list of services to review"
+    required: false
+    default: "all"
+
+steps:
+  - name: health-check-all
+    description: Run health probe across all monitored services
+    shell: auto
+    script: navig skill run health-probe --service {{services}} --environment prod
+
+  - name: cert-check
+    description: Check SSL certificate expiry for all domains
+    shell: auto
+    script: navig skill run cert-check --alert-days 30
+
+  - name: review-slo-burn
+    description: Pull SLO burn rates from your Prometheus / Grafana and flag breaches
+    depends_on: health-check-all
+    manual: true
+
+  - name: check-open-incidents
+    description: List open incidents and stale postmortem action items from .navig/memory/known-issues.json
+    depends_on: health-check-all
+    manual: true
+
+  - name: produce-report
+    description: Compile all results into a weekly reliability report
+    depends_on:
+      - cert-check
+      - review-slo-burn
+      - check-open-incidents
+    manual: true
+
+  - name: post-report
+    description: Post report to #sre channel
+    depends_on: produce-report
+    manual: true

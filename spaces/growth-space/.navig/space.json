@@ -1,0 +1,16 @@
+{
+  "id": "growth-space",
+  "name": "Personal Growth",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "Learning, habit formation, and self-improvement — courses, reading logs, skill targets, and reflection. Structure and runbooks only; agents are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "simulation",
+  "goals": [
+    {
+      "id": "behavior-clarity",
+      "title": "Behavioral transparency",
+      "description": "All significant habits and behaviors tracked with consistent data",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "debug-discipline",
+      "title": "Debug discipline",
+      "description": "Every recurring failure traced to root cause, not repeated",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

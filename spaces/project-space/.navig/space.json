@@ -1,0 +1,16 @@
+{
+  "id": "project-space",
+  "name": "Project Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Own every project from idea to done — plan, track, unblock.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["project-planner", "task-tracker", "milestone-keeper", "blocker-resolver"],
+  "formations": ["project-kickoff", "sprint-cycle", "project-closeout"],
+  "skills": [],
+  "workflows": ["new-project", "weekly-standup", "project-close"],
+  "packages": ["project-management", "task-tracking", "milestone-tracking", "blocker-management"],
+  "subspaces": []
+}

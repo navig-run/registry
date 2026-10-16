@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#design"
+    description: "Persona design notes and refinements"
+    default: true
+  - channel: "#versions"
+    description: "Persona version checkpoints and diffs"
+  - channel: "#gallery"
+    description: "Community persona contributions and forks"

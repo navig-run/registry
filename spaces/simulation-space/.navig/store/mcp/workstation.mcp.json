@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "space": "simulation",
+  "description": "MCP server configuration for simulation space",
+  "updated": "2026-03-12",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/experiments",
+          "{workspace_root}/models",
+          "{workspace_root}/.navig/memory"
+        ],
+        "max_file_size_mb": 5,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_commands": ["python", "python3", "py"],
+        "working_dir": "{workspace_root}",
+        "timeout_seconds": 30
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+id: mosquitto
+name: mosquitto
+version: "1.0.0"
+description: >
+  Wraps the Eclipse Mosquitto MQTT client (and broker) binaries as a NAVIG tool.
+  Provides publish, subscribe, broker health ($SYS), and topic-tree inspection for
+  the IoT message bus. Windows uses the mosquitto_sub.exe / mosquitto_pub.exe binaries.
+author: navig-run
+navig_min_version: "2.0.0"
+category: mqtt
+formation: mqtt-ops
+
+install:
+  windows:
+    method: winget
+    package: EclipseFoundation.Mosquitto
+    version: "2.0"
+    # The clients are resolved, in order, from the config key `iot.mosquitto_bin`
+    # (.navig/config.yaml → mosquitto_bin, the folder holding mosquitto_sub/pub), then
+    # PATH, then the default install folder. Nothing edits the machine PATH.
+    bin_path: "mosquitto_sub"
+    post_install: |
+      # Read-only check: report where mosquitto_sub resolves from. Never modifies PATH.
+      $c = Get-Command mosquitto_sub -ErrorAction SilentlyContinue
+      if ($c) { Write-Output "mosquitto_sub=$($c.Source)" }
+      else {
+        $default = Join-Path $env:ProgramFiles 'mosquitto\mosquitto_sub.exe'
+        if (Test-Path -LiteralPath $default) { Write-Output "mosquitto_sub=$default (not on PATH — set mosquitto_bin in .navig/config.yaml or add the folder to your user PATH)" }
+        else { Write-Output "mosquitto_sub not found" }
+      }
+  linux:
+    method: package_manager
+    apt: mosquitto-clients
+    dnf: mosquitto
+    pacman: mosquitto
+  macos:
+    method: homebrew
+    brew: mosquitto
+
+discovery:
+  type: static
+  refresh_on_start: false
+
+tools:
+  - id: mosquitto
+    name: mosquitto
+    description: MQTT publish/subscribe and broker inspection via Eclipse Mosquitto
+    category: mqtt
+    icon: 📡
+    platform: [windows, linux, macos]
+    requires_elevation: false
+    bin_windows: mosquitto_sub     # or <iot.mosquitto_bin>\mosquitto_sub.exe
+    bin_config_key: iot.mosquitto_bin
+    bin_linux: mosquitto_sub
+    bin_macos: mosquitto_sub
+
+    commands:
+      - name: sub
+        description: "Subscribe to a topic filter and print messages"
+        shell_windows: 'mosquitto_sub -h {host} -p {port} -t "{topic}" -v -W {duration}'
+        shell_linux: 'mosquitto_sub -h {host} -p {port} -t "{topic}" -v -W {duration}'
+        shell_macos: 'mosquitto_sub -h {host} -p {port} -t "{topic}" -v -W {duration}'
+        args:
+          host: { type: string, required: false, default: "192.168.1.10" }
+          port: { type: int, required: false, default: 1883 }
+          topic: { type: string, required: false, default: "#" }
+          duration: { type: int, required: false, default: 15, description: "Max seconds to listen" }
+
+      - name: pub
+        description: "Publish a payload to a topic"
+        shell_windows: 'mosquitto_pub -h {host} -p {port} -t "{topic}" -m "{message}" -q {qos}'
+        shell_linux: 'mosquitto_pub -h {host} -p {port} -t "{topic}" -m "{message}" -q {qos}'
+        shell_macos: 'mosquitto_pub -h {host} -p {port} -t "{topic}" -m "{message}" -q {qos}'
+        args:
+          host: { type: string, required: false, default: "192.168.1.10" }
+          port: { type: int, required: false, default: 1883 }
+          topic: { type: string, required: true }
+          message: { type: string, required: true }
+          qos: { type: int, required: false, default: 0 }
+
+      - name: health
+        description: "Read broker health from $SYS topics"
+        shell_windows: 'mosquitto_sub -h {host} -p {port} -t "$SYS/broker/#" -v -W 3'
+        shell_linux: 'mosquitto_sub -h {host} -p {port} -t "$SYS/broker/#" -v -W 3'
+        shell_macos: 'mosquitto_sub -h {host} -p {port} -t "$SYS/broker/#" -v -W 3'
+        args:
+          host: { type: string, required: false, default: "192.168.1.10" }
+          port: { type: int, required: false, default: 1883 }
+
+      - name: tree
+        description: "Snapshot the full topic tree (wildcard subscribe)"
+        shell_windows: 'mosquitto_sub -h {host} -p {port} -t "#" -v -W {duration}'
+        shell_linux: 'mosquitto_sub -h {host} -p {port} -t "#" -v -W {duration}'
+        shell_macos: 'mosquitto_sub -h {host} -p {port} -t "#" -v -W {duration}'
+        args:
+          host: { type: string, required: false, default: "192.168.1.10" }
+          port: { type: int, required: false, default: 1883 }
+          duration: { type: int, required: false, default: 20 }
+
+notes:
+  - "On Windows the client binaries live in C:\\Program Files\\mosquitto and are named mosquitto_sub.exe / mosquitto_pub.exe"
+  - "Use -u/-P (or a config) for authenticated brokers — anonymous access should be disabled in production"
+  - "$SYS topics are read-only broker internals; never publish to them"
+  - "-W caps listen time; -C caps message count — combine to avoid hanging subscriptions"
+  - "For TLS use port 8883 and add --cafile / --cert / --key"
+
+examples:
+  - description: "Watch all telemetry for 30s"
+    command: "mosquitto_sub -h <broker> -t 'tele/#' -v -W 30"
+  - description: "Turn a plug on"
+    command: "mosquitto_pub -h <broker> -t cmnd/plug-office/POWER -m ON"
+  - description: "Check broker health"
+    command: "mosquitto_sub -h <broker> -t '$SYS/broker/uptime' -C 1 -W 5"
+  - description: "Through the space's skills"
+    command: "navig skill run mqtt-subscribe --topic 'tele/#' --duration 30"
+
+# Changelog
+# - 2026-07-10: created — wraps Eclipse Mosquitto 2.0 clients for the NAVIG iot space;
+#               sub/pub/health/tree commands for the MQTT message bus
+# - 2026-10-16: binaries resolved from PATH / config key; no machine PATH edits

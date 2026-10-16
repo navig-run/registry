@@ -1,0 +1,45 @@
+{
+  "id": "human-space",
+  "name": "Human Space",
+  "version": "2.0.0",
+  "tier": "personal",
+  "status": "active",
+  "description": "Personal life operating system — health, habits, daily rhythm, journal, growth, and administrative life.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "bureau-manager",
+    "daily-planner",
+    "growth-tracker",
+    "habit-coach",
+    "wellness-tracker"
+  ],
+  "formations": [
+    "bureau-ops",
+    "evening-reflection",
+    "growth-ops",
+    "health-ops",
+    "morning-routine"
+  ],
+  "skills": [
+    "body-metrics-report",
+    "check-habit-streak",
+    "generate-habit-design",
+    "journal-entry",
+    "log-health-metric",
+    "log-mood",
+    "renewal-check",
+    "sleep-analysis",
+    "track-learning"
+  ],
+  "workflows": [
+    "daily-planning",
+    "evening-reflection",
+    "monthly-growth-review",
+    "quarterly-life-review",
+    "weekly-health-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "morning-routine"
+}

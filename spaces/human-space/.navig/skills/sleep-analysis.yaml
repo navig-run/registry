@@ -1,0 +1,111 @@
+id: sleep-analysis
+name: Sleep Analysis
+version: "2.0.0"
+description: Analyse sleep patterns from spaces/health/metrics.csv — duration trends, consistency score, deficit detection, and recommendations.
+category: health
+platform: [windows, linux, macos]
+formation: health-ops
+author: navig-run
+
+parameters:
+  - name: period
+    description: "Analysis period: last-7-days | last-14-days | last-30-days (default: last-14-days)"
+    required: false
+    default: last-14-days
+  - name: target
+    description: "Target sleep hours (default: 7.5)"
+    required: false
+    default: "7.5"
+
+steps:
+  - name: analyse-sleep
+    description: Read metrics CSV and analyse sleep patterns
+    env:
+      NAVIG_PARAM_PERIOD: "{{period}}"
+      NAVIG_PARAM_TARGET: "{{target}}"
+    script: |
+      import os, pathlib, csv, datetime, statistics
+      p = pathlib.Path("spaces/health/metrics.csv")
+      if not p.exists():
+          print("No metrics file found. Start logging sleep with log-health-metric.")
+          import sys; sys.exit(0)
+      with open(p, newline="", encoding="utf-8") as f:
+          rows = list(csv.DictReader(f))
+
+      period = os.environ.get("NAVIG_PARAM_PERIOD", "") or "last-14-days"
+      target_raw = os.environ.get("NAVIG_PARAM_TARGET", "") or "7.5"
+      try:
+          target = float(target_raw)
+      except ValueError:
+          print(f"Invalid 'target' value: {target_raw!r} (expected a number of hours, e.g. 7.5)")
+          import sys; sys.exit(1)
+      today = datetime.date.today()
+      days_map = {"last-7-days": 7, "last-14-days": 14, "last-30-days": 30}
+      cutoff = today - datetime.timedelta(days=days_map.get(period, 14))
+
+      sleep_data = []
+      for r in rows:
+          if r.get("date", "") >= cutoff.isoformat() and r.get("sleep_hours", "").strip():
+              try:
+                  sleep_data.append((r["date"], float(r["sleep_hours"])))
+              except ValueError:
+                  pass
+
+      if not sleep_data:
+          print(f"No sleep data in the last {days_map.get(period, 14)} days.")
+          import sys; sys.exit(0)
+
+      hours = [s[1] for s in sleep_data]
+      avg = statistics.mean(hours)
+      std = statistics.stdev(hours) if len(hours) > 1 else 0
+      deficit = sum(max(0, target - h) for h in hours)
+      surplus = sum(max(0, h - target) for h in hours)
+
+      print(f"═══ SLEEP ANALYSIS ({period}, {len(sleep_data)} nights) ═══\n")
+      print(f"  Average:      {avg:.1f} hrs/night (target: {target})")
+      print(f"  Range:        {min(hours):.1f} – {max(hours):.1f} hrs")
+      print(f"  Consistency:  σ = {std:.2f} hrs {'(good)' if std < 0.5 else '(variable)' if std < 1.0 else '(inconsistent)'}")
+      print(f"  Total deficit: {deficit:.1f} hrs below target")
+      print()
+
+      # Streak of meeting target
+      streak = 0
+      for _, h in reversed(sleep_data):
+          if h >= target:
+              streak += 1
+          else:
+              break
+      print(f"  Current streak meeting target: {streak} nights")
+
+      # Recommendations
+      print(f"\n  Recommendations:")
+      if avg < target - 0.5:
+          print(f"    → Average is {target - avg:.1f} hrs below target. Prioritise earlier bedtime.")
+      if std >= 1.0:
+          print(f"    → High variability (σ={std:.1f}). Aim for consistent bed/wake times.")
+      if deficit > 5:
+          print(f"    → Accumulated sleep debt of {deficit:.0f} hrs. Consider catch-up naps or earlier nights.")
+      if avg >= target and std < 0.5:
+          print(f"    → Excellent sleep consistency. Maintain current routine.")
+
+      print(f"\n  Period: {sleep_data[0][0]} → {sleep_data[-1][0]}")
+    script_windows: |
+      $p = "spaces\health\metrics.csv"
+      if (-not (Test-Path $p)) { Write-Host "No metrics file found. Start logging sleep."; exit 0 }
+      $rows = Import-Csv $p | Where-Object { $_.sleep_hours -and $_.sleep_hours.Trim() }
+      if (-not $rows) { Write-Host "No sleep data found."; exit 0 }
+      $target = 7.5
+      if ($env:NAVIG_PARAM_TARGET) {
+          if (-not [double]::TryParse($env:NAVIG_PARAM_TARGET, [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$target)) {
+              Write-Host "Invalid 'target' value: $($env:NAVIG_PARAM_TARGET) (expected a number of hours, e.g. 7.5)"; exit 1
+          }
+      }
+      $hours = $rows | ForEach-Object { [double]$_.sleep_hours }
+      $avg = ($hours | Measure-Object -Average).Average
+      $min = ($hours | Measure-Object -Minimum).Minimum
+      $max = ($hours | Measure-Object -Maximum).Maximum
+      Write-Host "=== SLEEP ANALYSIS ==="
+      Write-Host "  Average: $([math]::Round($avg,1)) hrs (target: $target)"
+      Write-Host "  Range: $min - $max hrs"
+      $deficit = ($hours | ForEach-Object { [math]::Max(0, $target - $_) } | Measure-Object -Sum).Sum
+      Write-Host "  Deficit: $([math]::Round($deficit,1)) hrs below target"

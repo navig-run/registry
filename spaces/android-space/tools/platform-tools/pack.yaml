@@ -1,0 +1,187 @@
+id: platform-tools
+name: platform-tools
+version: "1.0.0"
+description: >
+  Wraps the Android SDK Platform-Tools (adb + fastboot) as a NAVIG tool.
+  adb provides device connectivity, shell, install/uninstall, pull/push, logcat,
+  and backup; fastboot provides bootloader-level operations (opt-in, high-risk).
+  This is the foundational tool every android-space skill depends on.
+author: navig-run
+navig_min_version: "2.0.0"
+category: connectivity
+formation: device-bridge
+
+install:
+  windows:
+    method: winget
+    package: Google.PlatformTools
+    version: "35.0.2"
+    # adb is resolved, in order, from the config key `android.adb_path`
+    # (.navig/config.yaml → adb_path), then PATH, then $ANDROID_HOME/platform-tools
+    # (or $ANDROID_SDK_ROOT/platform-tools). Nothing edits the machine PATH.
+    bin_path: "adb"
+    post_install: |
+      # Read-only check: report where adb resolves from. Never modifies PATH.
+      $c = Get-Command adb -ErrorAction SilentlyContinue
+      if ($c) { Write-Output "adb=$($c.Source)" }
+      else {
+        $sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { $env:ANDROID_SDK_ROOT }
+        $cand = if ($sdk) { Join-Path $sdk 'platform-tools\adb.exe' } else { '' }
+        if ($cand -and (Test-Path -LiteralPath $cand)) { Write-Output "adb=$cand (not on PATH — set adb_path in .navig/config.yaml or add the folder to your user PATH)" }
+        else { Write-Output "adb not found — install Platform-Tools and set ANDROID_HOME or adb_path" }
+      }
+  linux:
+    method: package_manager
+    apt: android-tools-adb android-tools-fastboot
+    dnf: android-tools
+    pacman: android-tools
+  macos:
+    method: homebrew
+    brew: android-platform-tools
+
+discovery:
+  type: dynamic
+  refresh_on_start: true
+  # adb tracks devices live; re-scan on start so newly plugged devices appear
+  command: "adb devices -l"
+
+tools:
+  - id: adb
+    name: adb
+    description: Android Debug Bridge — device connectivity and control
+    category: connectivity
+    icon: 🤖
+    platform: [windows, linux, macos]
+    requires_elevation: false
+    bin_windows: adb               # or the value of config key android.adb_path
+    bin_config_key: android.adb_path
+    bin_linux: adb
+    bin_macos: adb
+
+    commands:
+      - name: devices
+        description: "List connected / paired devices"
+        shell_windows: '"{bin}" devices -l'
+        shell_linux: 'adb devices -l'
+        shell_macos: 'adb devices -l'
+        args: {}
+
+      - name: connect
+        description: "Connect to a device over Wi-Fi (tcpip)"
+        shell_windows: '"{bin}" connect {host}:{port}'
+        shell_linux: 'adb connect {host}:{port}'
+        shell_macos: 'adb connect {host}:{port}'
+        args:
+          host:
+            type: string
+            required: true
+            description: "Device IP address"
+          port:
+            type: int
+            required: false
+            default: 5555
+
+      - name: install
+        description: "Install an APK (reinstall keeping data, grant permissions)"
+        shell_windows: '"{bin}" install -r -g "{apk}"'
+        shell_linux: 'adb install -r -g "{apk}"'
+        shell_macos: 'adb install -r -g "{apk}"'
+        args:
+          apk:
+            type: string
+            required: true
+            description: "Path to the .apk file"
+
+      - name: shell
+        description: "Run a shell command on the device"
+        shell_windows: '"{bin}" {sel} shell {cmd}'
+        shell_linux: 'adb {sel} shell {cmd}'
+        shell_macos: 'adb {sel} shell {cmd}'
+        args:
+          sel:
+            type: string
+            required: false
+            default: ""
+            description: "Transport selector, e.g. -s <serial>"
+          cmd:
+            type: string
+            required: true
+            description: "Shell command to run"
+
+      - name: logcat
+        description: "Dump the device log at a given priority"
+        shell_windows: '"{bin}" logcat -d *:{priority}'
+        shell_linux: 'adb logcat -d *:{priority}'
+        shell_macos: 'adb logcat -d *:{priority}'
+        args:
+          priority:
+            type: string
+            required: false
+            default: W
+            description: "Min priority: V D I W E F"
+
+      - name: tcpip
+        description: "Switch the USB device to wireless (tcpip) mode"
+        shell_windows: '"{bin}" tcpip {port}'
+        shell_linux: 'adb tcpip {port}'
+        shell_macos: 'adb tcpip {port}'
+        args:
+          port:
+            type: int
+            required: false
+            default: 5555
+
+  - id: fastboot
+    name: fastboot
+    description: Bootloader-level operations — DANGEROUS, opt-in only
+    category: connectivity
+    icon: ⚠️
+    platform: [windows, linux, macos]
+    requires_elevation: false
+    bin_windows: fastboot          # or the value of config key android.fastboot_path
+    bin_config_key: android.fastboot_path
+    bin_linux: fastboot
+    bin_macos: fastboot
+
+    commands:
+      - name: devices
+        description: "List devices in fastboot mode"
+        shell_windows: '"{bin}" devices'
+        shell_linux: 'fastboot devices'
+        shell_macos: 'fastboot devices'
+        args: {}
+
+      - name: getvar
+        description: "Read a bootloader variable (e.g. unlocked, product)"
+        shell_windows: '"{bin}" getvar {var}'
+        shell_linux: 'fastboot getvar {var}'
+        shell_macos: 'fastboot getvar {var}'
+        args:
+          var:
+            type: string
+            required: false
+            default: all
+
+notes:
+  - "adb is required by EVERY skill in this space — install this pack first"
+  - "On Android 11+, wireless debugging uses `adb pair host:port` before `adb connect`"
+  - "A device showing `unauthorized` means the RSA prompt hasn't been accepted on-screen"
+  - "fastboot flash / unlock / -w commands are BLOCKED by the MCP policy — they can brick a device"
+  - "Use `adb -s <serial>` to target a specific device when more than one is attached"
+
+examples:
+  - description: "List connected devices"
+    command: "adb devices -l"
+  - description: "Connect to a device over Wi-Fi"
+    command: "adb connect 192.168.1.42:5555"
+  - description: "Install an APK"
+    command: "adb install -r app-release.apk"
+  - description: "Dump errors from the device log"
+    command: "adb logcat -d *:E"
+  - description: "Through the space's skills"
+    command: "navig skill run adb-connect"
+
+# Changelog
+# - 2026-07-10: created — wraps Android SDK Platform-Tools (adb + fastboot)
+#               as the foundational connectivity tool for the android space
+# - 2026-10-16: binaries resolved from PATH / $ANDROID_HOME / config key; no machine PATH edits

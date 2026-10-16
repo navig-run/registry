@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ISS-001",
+    "title": "FBA storage fees spike Q4",
+    "description": "Amazon long-term storage fees apply for inventory older than 365 days. Review aged inventory before October each year.",
+    "severity": "medium",
+    "status": "open",
+    "detected_by": "fulfillment-ops"
+  },
+  {
+    "id": "ISS-002",
+    "title": "Platform fees not consolidated yet",
+    "description": "Example: fees from each marketplace live in different places. Snapshot them into finance-ops/fees/ (see finance-ops/README.md) so check-fees can compare periods.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "finance-analyst"
+  }
+]

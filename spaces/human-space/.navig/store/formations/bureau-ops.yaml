@@ -1,0 +1,43 @@
+id: bureau-ops
+name: Bureau Operations
+version: "1.0.0"
+description: Administrative life management — document renewals, subscription tracking, appointment management.
+
+agents:
+  lead: bureau-manager
+  supporting:
+    - daily-planner
+
+trigger_conditions:
+  - Monthly bureau review (1st of month)
+  - Renewal approaching (within alert window)
+  - Manual check request
+
+action_scope:
+  - Check upcoming document and subscription renewals
+  - Generate renewal alert report
+  - Subscription cost summary
+  - Appointment reminders
+  - Document inventory status
+
+skills_used:
+  - renewal-check
+
+workflows_used: []
+
+communication:
+  inbox_channel: "#bureau"
+  escalation: daily-planner
+  notify_on:
+    - renewal within 30 days
+    - overdue renewal
+    - new subscription added without end date
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - spaces/bureau/renewals.csv
+  write:
+    - spaces/bureau/
+
+example_invocation: "@bureau-ops monthly-check"

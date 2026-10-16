@@ -1,0 +1,58 @@
+id: trend-ride
+name: Trend Ride
+version: "1.0.0"
+description: |
+  Rapid trend response formation. Detects trending sounds, formats, or
+  challenges and spins up a fast clip production cycle to capitalise
+  before the trend peaks. Target: concept to publish in under 4 hours.
+
+agents:
+  lead: trend-scout
+  supporting:
+    - clip-director
+    - hook-writer
+    - clip-editor
+    - distributor
+
+trigger_conditions:
+  - "trend alert"
+  - "trending"
+  - "viral"
+  - "ride trend"
+
+action_scope:
+  ALLOW:
+    - trend analysis and reporting
+    - rapid clip creation
+    - sound/format matching
+    - fast-track publishing
+  DENY:
+    - account settings modification
+    - deleting existing clips
+    - API credential changes
+
+skills_used:
+  - trend-scan
+  - hook-score
+  - sound-match
+  - clip-trim
+  - format-adapt
+  - multi-post
+  - hashtag-optimize
+
+workflows_used:
+  - trend-alert
+
+communication:
+  inbox_channel: "#trends"
+  escalation: clip-director
+  notify_on: [completed, failed]
+
+context_memory:
+  read:
+    - memory/space-context.json
+  write:
+    - memory/space-context.json
+
+example_invocation: |
+  navig formation run "Ride this trend: <trend URL>"

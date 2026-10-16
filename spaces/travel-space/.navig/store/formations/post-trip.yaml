@@ -1,0 +1,9 @@
+id: post-trip
+name: Post Trip
+version: "1.0.0"
+description: Debrief, budget reconciliation, and archival within 48 hours of return.
+space: travel
+lead: trip-planner
+supporting: [budget-watcher]
+trigger_conditions: [trip end date reached, manual trigger]
+workflows: [trip-debrief]

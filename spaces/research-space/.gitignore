@@ -1,0 +1,45 @@
+# Regenerable / large pipeline outputs
+crawls/*
+!crawls/.gitkeep
+out/*
+!out/.gitkeep
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# Logs
+.navig/logs/*
+!.navig/logs/.gitkeep
+
+# Secrets & env
+.env
+.navig/memory/secrets.json
+
+# Node / Python
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime state — your own data. Only the shipped seeds and READMEs are tracked.
+.navig/memory/*
+!.navig/memory/README.md
+!.navig/memory/.gitkeep
+!.navig/memory/*.example.*
+.navig/state/*
+!.navig/state/.gitkeep
+.navig/inbox/*
+!.navig/inbox/.gitkeep
+!.navig/inbox/README.md
+!.navig/inbox/*.example.*
+!.navig/inbox/docs/
+!.navig/inbox/shortcuts/
+.navig/logs/*
+!.navig/logs/.gitkeep

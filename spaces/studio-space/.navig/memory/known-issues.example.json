@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "space": "studio-space",
+  "updated": "2026-04-05",
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "No DAW projects indexed yet",
+      "severity": "info",
+      "status": "open",
+      "detected": "2026-04-05",
+      "detected_by": "session-planner",
+      "description": "The session catalog is empty. Run daw-project-scan to discover and index all DAW project files in the sessions directory.",
+      "resolution": "Run 'navig skill run daw-project-scan --path sessions/' to populate the catalog.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-002",
+      "title": "Sample library not cataloged",
+      "severity": "info",
+      "status": "open",
+      "detected": "2026-04-05",
+      "detected_by": "sound-designer",
+      "description": "The sample catalog is empty. Samples directory needs to be scanned and indexed with BPM, key, and type tags.",
+      "resolution": "Run 'navig skill run sample-catalog --path samples/' to build the index.",
+      "resolved": null
+    },
+    {
+      "id": "ISS-003",
+      "title": "Loudness standard not configured",
+      "severity": "info",
+      "status": "open",
+      "detected": "2026-04-05",
+      "detected_by": "mix-engineer",
+      "description": "Default loudness standard is set to 'streaming' (-14 LUFS). Confirm this matches your primary distribution target.",
+      "resolution": "Edit .navig/config.yaml and set loudness_standard to streaming, broadcast, or club.",
+      "resolved": null
+    }
+  ]
+}

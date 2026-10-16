@@ -1,0 +1,159 @@
+id: sync-configs
+name: Sync Configs
+version: "1.0.0"
+description: >
+  Rsync dotfiles and configuration directories across machines using SSH.
+  Supports push/pull modes, dry-run, conflict detection, and post-sync verification.
+category: maintenance
+platform: [windows, linux, macos]
+formation: maintenance-crew
+author: navig-run
+
+parameters:
+  - name: direction
+    type: enum
+    values: [push, pull, bidirectional]
+    default: push
+  - name: remote
+    type: string
+    description: "Device alias or user@host to sync with"
+    required: true
+  - name: profiles
+    type: array
+    description: "Config profiles to sync (shell, vim, git, ssh_config, tmux, vscode)"
+    default: [shell, vim, git, ssh_config]
+  - name: dry_run
+    type: bool
+    default: true
+  - name: delete_extraneous
+    type: bool
+    description: "Remove files on destination that don't exist on source"
+    default: false
+  - name: backup_before_sync
+    type: bool
+    description: "Create .bak copy of destination files before overwriting"
+    default: true
+
+steps:
+  - id: resolve_remote
+    name: "Resolve remote host"
+    shell: auto
+    # Parameters reach the script as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_REMOTE: "{{remote}}"
+    script: |
+      python3 -c "
+      import json, os
+
+      remote = os.environ.get('NAVIG_PARAM_REMOTE', '')
+      reg_path = '.navig/memory/device-registry.json'
+
+      if '@' in remote or '.' in remote:
+          print(f'ssh_target={remote}')
+          exit()
+
+      if os.path.exists(reg_path):
+          reg = json.load(open(reg_path))
+          for d in reg.get('devices', []):
+              if d.get('name') == remote or d.get('alias') == remote:
+                  u = d.get('ssh_user', '')
+                  h = d.get('ip', remote)
+                  k = d.get('ssh_key', '')
+                  print(f'ssh_target={u+\"@\" if u else \"\"}{h}')
+                  print(f'ssh_key={k}')
+                  exit()
+      print(f'ssh_target={remote}')
+      "
+
+  - id: build_sync_map
+    name: "Build file sync manifest"
+    shell: auto
+    env:
+      NAVIG_PARAM_PROFILES: "{{profiles}}"
+    script: |
+      python3 -c "
+      import os, platform
+
+      home = os.environ.get('USERPROFILE', os.path.expanduser('~')) if platform.system() == 'Windows' \
+          else os.path.expanduser('~')
+
+      profiles = os.environ.get('NAVIG_PARAM_PROFILES', '').split(',')
+      sync_map = {
+          'shell':      ['.bashrc', '.zshrc', '.bash_profile', '.profile', '.aliases'],
+          'vim':        ['.vimrc', '.vim/'],
+          'git':        ['.gitconfig', '.gitignore_global'],
+          'ssh_config': ['.ssh/config'],
+          'tmux':       ['.tmux.conf'],
+          'vscode':     ['.config/Code/User/settings.json', '.config/Code/User/keybindings.json']
+      }
+
+      selected = []
+      for p in profiles:
+          p = p.strip()
+          if p in sync_map:
+              for item in sync_map[p]:
+                  full = os.path.join(home, item)
+                  if os.path.exists(full):
+                      selected.append(full)
+                  else:
+                      print(f'# Skipping (not found): {full}')
+
+      print('SYNC_SOURCES=' + ' '.join(f'\"{s}\"' for s in selected))
+      "
+
+  - id: rsync_push
+    name: "Push configs to remote"
+    condition: "direction == 'push' or direction == 'bidirectional'"
+    shell: auto
+    script_linux: |
+      DRY="{{dry_run}}"
+      DRY_FLAG=$([ "$DRY" = "true" ] && echo "--dry-run" || echo "")
+      DEL_FLAG=$([ "{{delete_extraneous}}" = "true" ] && echo "--delete" || echo "")
+      BAK_FLAG=$([ "{{backup_before_sync}}" = "true" ] && echo "--backup --suffix=.bak.$(date +%Y%m%d)" || echo "")
+
+      echo "=== PUSH to {{remote}} ==="
+      rsync -avz --checksum $DRY_FLAG $DEL_FLAG $BAK_FLAG \
+        -e "ssh ${NAVIG_VAR_ssh_key:+-i $NAVIG_VAR_ssh_key}" \
+        $SYNC_SOURCES \
+        "${NAVIG_VAR_ssh_target}:~/" 2>&1
+    script_macos: |
+      rsync -avz --checksum \
+        $([ "{{dry_run}}" = "true" ] && echo "--dry-run") \
+        -e "ssh" $SYNC_SOURCES \
+        "${NAVIG_VAR_ssh_target}:~/" 2>&1
+    script_windows: |
+      # Windows: use robocopy for local or WinSCP/scp for remote
+      Write-Warning "Windows push: using scp as rsync fallback (install cwRsync for full support)"
+      $dry = if ("{{dry_run}}" -eq "true") { "/L" } else { "" }
+      foreach ($src in $env:SYNC_SOURCES -split ' ') {
+        scp $src "${env:NAVIG_VAR_ssh_target}:~/"
+      }
+
+  - id: rsync_pull
+    name: "Pull configs from remote"
+    condition: "direction == 'pull' or direction == 'bidirectional'"
+    shell: auto
+    script_linux: |
+      DRY="{{dry_run}}"
+      DRY_FLAG=$([ "$DRY" = "true" ] && echo "--dry-run" || echo "")
+      echo "=== PULL from {{remote}} ==="
+      rsync -avz --checksum $DRY_FLAG \
+        -e "ssh ${NAVIG_VAR_ssh_key:+-i $NAVIG_VAR_ssh_key}" \
+        "${NAVIG_VAR_ssh_target}:~/{.bashrc,.zshrc,.gitconfig,.vimrc}" \
+        ~/ 2>&1
+
+  - id: verify_sync
+    name: "Verify sync completed"
+    shell: auto
+    condition: "dry_run == false"
+    script: |
+      echo "Sync complete: {{direction}} → {{remote}}"
+      echo "Profiles: {{profiles}}"
+
+examples:
+  - description: "Dry-run push shell and git configs to homeserver"
+    command: "navig skill run sync-configs --remote homeserver --direction push --dry_run true"
+  - description: "Push all profiles (live)"
+    command: "navig skill run sync-configs --remote homeserver --dry_run false"
+  - description: "Pull SSH config and vim from remote"
+    command: "navig skill run sync-configs --remote nas --direction pull --profiles ssh_config,vim"

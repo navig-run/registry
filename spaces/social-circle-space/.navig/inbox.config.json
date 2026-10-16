@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "space_id": "social-circle-space",
+  "inbox_path": ".navig/inbox",
+  "auto_process": false,
+  "categories": [
+    {
+      "id": "csv-import",
+      "match": ["*.csv"],
+      "action": "import-contacts",
+      "review_required": true
+    },
+    {
+      "id": "vcf-import",
+      "match": ["*.vcf", "*.vcard"],
+      "action": "import-contacts",
+      "review_required": true
+    },
+    {
+      "id": "linkedin-import",
+      "match": ["Connections.csv", "linkedin*.csv"],
+      "action": "import-linkedin",
+      "review_required": true
+    },
+    {
+      "id": "interaction-notes",
+      "match": ["*.md", "*.txt"],
+      "action": "parse-interactions",
+      "review_required": false
+    },
+    {
+      "id": "twitter-handles",
+      "match": ["handles.txt", "twitter-*.txt"],
+      "action": "import-handles",
+      "review_required": true
+    }
+  ],
+  "defaults": {
+    "default_circle": "community",
+    "duplicate_strategy": "ask",
+    "field_mapping_strategy": "auto-then-ask"
+  }
+}

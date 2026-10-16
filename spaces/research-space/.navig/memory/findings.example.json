@@ -1,0 +1,6 @@
+{
+  "version": "1.0",
+  "space": "research",
+  "description": "Findings synthesized from the data. Each carries the query or source behind it, a confidence level, and a resolution status.",
+  "findings": []
+}

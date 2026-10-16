@@ -1,0 +1,23 @@
+channels:
+  - id: projects
+    description: New project ideas, updates, status changes
+    default_agent: project-planner
+    trigger_keywords: [project, start, idea, plan, build, create, make, working on]
+
+  - id: tasks
+    description: Individual task updates, completions, new tasks
+    default_agent: task-tracker
+    trigger_keywords: [task, done, finished, completed, working, todo, action, next]
+
+  - id: blockers
+    description: Anything blocking progress — log immediately
+    default_agent: blocker-resolver
+    priority: high
+    trigger_keywords: [blocked, stuck, waiting, can't proceed, issue, problem, blocked by, need]
+
+  - id: milestones
+    description: Milestone completions and progress updates
+    default_agent: milestone-keeper
+    trigger_keywords: [milestone, reached, achieved, done, completed, delivered]
+
+default_channel: projects

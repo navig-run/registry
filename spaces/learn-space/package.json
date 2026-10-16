@@ -1,0 +1,13 @@
+{
+  "name": "learn-space",
+  "version": "1.0.0",
+  "description": "Track every course, book, and skill. Build continuously, retain deliberately.",
+  "navig": {
+    "runtime": "navig-space-2",
+    "tier": "personal",
+    "type": "learning",
+    "space": "learn-space"
+  },
+  "author": "navig-run",
+  "license": "MIT"
+}

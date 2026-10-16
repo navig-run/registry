@@ -1,0 +1,61 @@
+name: automation-review
+description: |
+  On-demand automation review. Syncs Home Assistant entities against the device
+  registry, detects orphaned entities and unexposed devices, dry-runs active scenes,
+  and reports drift so the automation graph stays honest.
+
+on_demand: true
+formation: automation-loop
+agent_lead: automa
+
+steps:
+  - id: sync_entities
+    name: "Sync Home Assistant Entities"
+    skill: ha-entity-sync
+    params:
+      domain: ""
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: detect_orphans
+    name: "Detect Orphaned & Unexposed Entities"
+    depends_on: [sync_entities]
+    agent: automa
+    action: detect_entity_drift
+    params:
+      sync_result: "{{steps.sync_entities.output}}"
+      registry: ".navig/memory/device-registry.json"
+    on_error: continue
+
+  - id: dry_run_scenes
+    name: "Dry-Run Active Scenes"
+    depends_on: [sync_entities]
+    agent: automa
+    action: dry_run_scenes
+    params:
+      entities: "{{steps.sync_entities.output}}"
+    timeout_seconds: 60
+    on_error: continue
+
+  - id: validate_commands
+    name: "Validate Command Topics Resolve"
+    depends_on: [dry_run_scenes]
+    agent: broker
+    action: validate_command_topics
+    params:
+      scenes: "{{steps.dry_run_scenes.output}}"
+    on_error: continue
+
+  - id: report
+    name: "Compose Automation Review"
+    depends_on: [detect_orphans, dry_run_scenes, validate_commands]
+    agent: automa
+    action: compose_report
+    params:
+      template: "automation-design"
+      sections:
+        - drift: "{{steps.detect_orphans.output}}"
+        - scene_dry_runs: "{{steps.dry_run_scenes.output}}"
+        - command_validation: "{{steps.validate_commands.output}}"
+      deliver_to: inbox
+      channel: "#automation"

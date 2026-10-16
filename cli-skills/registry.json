@@ -1,0 +1,57 @@
+{
+  "version": "1.1",
+  "updated": "2026-07-04",
+  "description": "Index of all command skills in the NAVIG Registry. Canonical form is the <category>/<id>.yaml file; entries without a marketplace block are free.",
+  "skills": [
+    {
+      "id": "git-ops",
+      "category": "developer",
+      "file": "developer/git-ops.yaml",
+      "description": "Inspect, summarize, and manage Git repositories without leaving NAVIG",
+      "commands": ["status", "log", "diff", "branches", "stash", "sync", "tag", "summary"],
+      "version": "1.0.0",
+      "risk_level": "elevated",
+      "install": "navig skill install github:navig-run/registry/cli-skills/developer/git-ops"
+    },
+    {
+      "id": "docker-ops",
+      "category": "docker",
+      "file": "docker/docker-ops.yaml",
+      "description": "Container lifecycle, health checks, log tailing, and cleanup",
+      "commands": ["ps", "logs", "stats", "exec", "restart", "compose-up", "prune"],
+      "version": "1.0.0",
+      "risk_level": "elevated",
+      "install": "navig skill install github:navig-run/registry/cli-skills/docker/docker-ops"
+    },
+    {
+      "id": "network-scan",
+      "category": "network",
+      "file": "network/network-scan.yaml",
+      "description": "Discover devices, check connectivity, map your LAN",
+      "commands": ["scan", "check", "trace", "watch"],
+      "version": "1.0.0",
+      "risk_level": "safe",
+      "install": "navig skill install github:navig-run/registry/cli-skills/network/network-scan"
+    },
+    {
+      "id": "security-audit",
+      "category": "security",
+      "file": "security/security-audit.yaml",
+      "description": "Port exposure, firewall status, SSH hardening, secrets scan",
+      "commands": ["ports", "firewall", "ssh-config", "auth-log", "secrets-scan", "full"],
+      "version": "1.0.0",
+      "risk_level": "elevated",
+      "install": "navig skill install github:navig-run/registry/cli-skills/security/security-audit"
+    },
+    {
+      "id": "system-health",
+      "category": "system",
+      "file": "system/system-health.yaml",
+      "description": "CPU, memory, disk, and top process monitoring",
+      "commands": ["vitals", "top", "alerts", "watch"],
+      "version": "1.0.0",
+      "risk_level": "safe",
+      "install": "navig skill install github:navig-run/registry/cli-skills/system/system-health"
+    }
+  ]
+}

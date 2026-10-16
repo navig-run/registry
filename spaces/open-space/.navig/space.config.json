@@ -1,0 +1,25 @@
+{
+  "name": "open-space",
+  "version": "1.0.0",
+  "description": "Build in the open — stream live sessions, publish workflows, and let the community fork and remix your work.",
+  "owner": "navig-run",
+  "tier": "community",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "agent",
+    "blackbox",
+    "storage"
+  ],
+  "config_key": null,
+  "viral_hook": "Every session is a forkable workflow — and now workflows have their own marketplace",
+  "navig_files_used": [
+    "navig/blackbox/timeline.py"
+  ],
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

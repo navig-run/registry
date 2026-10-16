@@ -1,0 +1,15 @@
+{
+  "id": "project-space",
+  "space_id": "project-space",
+  "name": "Project Space",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "runtime": "navig-space-2",
+  "packages": [
+    "project-management",
+    "task-tracking",
+    "milestone-tracking",
+    "blocker-management"
+  ]
+}

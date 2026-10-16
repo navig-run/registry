@@ -1,0 +1,63 @@
+id: channel-growth
+name: Channel Growth
+version: "1.0.0"
+description: |
+  Analytics and SEO operations formation. Runs data-driven growth
+  analysis, keyword research, competitor scans, retention tracking,
+  and CTR optimisation. Feeds insights to other formations.
+
+agents:
+  lead: growth-analyst
+  supporting:
+    - showrunner
+    - art-director
+
+trigger_conditions:
+  - "analytics report"
+  - "seo audit"
+  - "growth review"
+  - "competitor analysis"
+  - "retention check"
+
+action_scope:
+  ALLOW:
+    - pull and analyse analytics data
+    - run SEO audits
+    - scan competitors
+    - generate growth reports
+    - recommend keyword targets
+  DENY:
+    - modify video content
+    - publish or unpublish videos
+    - change channel settings
+
+skills_used:
+  - seo-audit
+  - analytics-pull
+  - retention-analysis
+  - competitor-scan
+  - tag-optimizer
+
+workflows_used:
+  - seo-refresh
+  - weekly-review
+
+communication:
+  inbox_channel: "#growth"
+  escalation: showrunner
+  notify_on:
+    - report_generated
+    - threshold_alert
+    - trend_detected
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/memory/goals.json
+    - .navig/wiki/analytics-reference.md
+  write:
+    - content/analytics/
+    - .navig/memory/space-context.json
+
+example_invocation: |
+  navig formation run "Review channel growth for the last 30 days and compare with the previous period"

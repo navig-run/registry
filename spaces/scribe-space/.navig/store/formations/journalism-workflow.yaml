@@ -1,0 +1,47 @@
+id: journalism-workflow
+name: Journalism Workflow
+version: "1.0.0"
+description: >
+  Supports the full journalism pipeline from story brief through publication-ready
+  copy. Journalist leads with research and drafting; Editor applies line and copy
+  edits; Content Strategist governs placement and scheduling.
+
+agents:
+  lead: journalist
+  supporting:
+    - editor
+    - content-strategist
+
+trigger_conditions:
+  - "Keyword in #journalism: story, article, investigation, headline, lede"
+  - "Workflow: first-draft (type=article)"
+  - "Manual: @journalism-workflow"
+
+action_scope:
+  - journalism/
+
+skills_used:
+  - word-count
+  - grammar-check
+  - readability-score
+
+workflows_used:
+  - first-draft
+  - editorial-review
+  - publish-checklist
+
+communication:
+  inbox_channel: "#journalism"
+  escalation: operator
+  notify_on:
+    - draft_ready
+    - edit_complete
+    - ready_to_publish
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+  write:
+    - .navig/memory/space-context.json
+
+example_invocation: "@journalism-workflow brief --topic 'Open source in government' --angle 'cost vs. security'"

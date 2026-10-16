@@ -1,0 +1,8 @@
+space_id: open-space
+runtime: navig-space-2
+
+open:
+  default_visibility: public
+  stream_enabled: true
+  fork_enabled: true
+  session_timeline: true

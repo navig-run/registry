@@ -1,0 +1,581 @@
+{
+  "version": "0.1",
+  "updated": "2026-10-16",
+  "generated_by": "scripts/gen_plugin_registry.py",
+  "description": "Index of first-party NAVIG plugins. Each extends navig (`navig <verb>`) and some also run standalone. They install from their NATIVE channel (pip / npm), not via `navig plugin add`, which git-clones and cannot install a pip or npm distribution. `published` and `released` reflect the real index at generation time: `released` is the version an install delivers, `version` is the in-repo manifest (which can run ahead of a release). An entry with published=false carries no install command on purpose.",
+  "total": 34,
+  "published": 29,
+  "plugins": [
+    {
+      "id": "agentctl",
+      "package": "navig-agentctl",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-agentctl",
+      "standalone": false,
+      "commands": [
+        "agentctl"
+      ],
+      "scripts": [],
+      "summary": "Agent Control Center (devops section): sessions, worktrees & tasks — one read-only view, then a controller."
+    },
+    {
+      "id": "antivirus",
+      "package": "navig-antivirus",
+      "channel": "pip",
+      "version": "0.2.1",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-antivirus",
+      "standalone": true,
+      "commands": [
+        "antivirus"
+      ],
+      "scripts": [
+        "navig-antivirus"
+      ],
+      "summary": "NAVIG Antivirus module — browser-extension malware/PUP scanning, Chrome extension-registry auditing, Chrome profile-index recovery, and a system malware scan (Windows Defender; Malwarebytes best-effort). Wired into `navig antivirus`. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "audio",
+      "package": "navig-audio",
+      "channel": "pip",
+      "version": "0.5.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-audio",
+      "standalone": true,
+      "commands": [
+        "audio"
+      ],
+      "scripts": [
+        "navig-audio"
+      ],
+      "summary": "Speak text, transcribe audio, generate music and sound effects, analyse beats and render podcasts — its own navig-audio command, with your own provider keys; also `navig audio` / `navig voice` inside navig."
+    },
+    {
+      "id": "blackbox",
+      "package": "navig-blackbox",
+      "channel": "pip",
+      "version": "0.1.1",
+      "released": "0.1.1",
+      "published": true,
+      "install": "pip install navig-blackbox",
+      "standalone": true,
+      "commands": [
+        "bb",
+        "blackbox"
+      ],
+      "scripts": [
+        "navig-blackbox",
+        "nbb"
+      ],
+      "summary": "NAVIG Blackbox — a standalone flight-recorder & crash black-box for any Python app: append-only event log, sys.excepthook crash capture, and sealed .navbox incident bundles. Installs without navig; also wired into `navig blackbox`."
+    },
+    {
+      "id": "bookmarks",
+      "package": "navig-bookmarks",
+      "channel": "pip",
+      "version": "0.1.0",
+      "released": "0.1.0",
+      "published": true,
+      "install": "pip install navig-bookmarks",
+      "standalone": true,
+      "commands": [
+        "bookmarks"
+      ],
+      "scripts": [
+        "navig-bookmarks"
+      ],
+      "summary": "navig bookmarks -- a local bookmark manager: import from any browser or HTML export, full-text search, AI folder plans and tags with your own AI, dead-link checks, duplicate cleanup, and Netscape HTML export with folders."
+    },
+    {
+      "id": "browser",
+      "package": "navig-browser",
+      "channel": "pip",
+      "version": "0.2.1",
+      "released": "0.1.0",
+      "published": true,
+      "install": "pip install navig-browser",
+      "standalone": true,
+      "commands": [],
+      "scripts": [
+        "navig-browser"
+      ],
+      "summary": "Launch an isolated Chrome/Edge/Brave or Electron app, drive it over CDP, keep named profiles and stop only what it launched — the browser engine navig uses; runs on its own as `navig-browser`."
+    },
+    {
+      "id": "cabinet",
+      "package": "navig-cabinet",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-cabinet",
+      "standalone": true,
+      "commands": [
+        "cabinet",
+        "paperwork"
+      ],
+      "scripts": [
+        "navig-cabinet"
+      ],
+      "summary": "NAVIG Cabinet — your documents in one plugin: an encrypted cabinet for important files (ID and passport scans, medical records, contracts, photos, recordings — any type, any size; local-OCR search, expiry reminders, portable backups) plus `navig paperwork`, which files business paperwork (invoices, quotes, contracts, tax) into a space. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "calendar",
+      "package": "navig-calendar",
+      "channel": "pip",
+      "version": "0.2.0",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-calendar",
+      "standalone": true,
+      "commands": [
+        "calendar"
+      ],
+      "scripts": [
+        "navig-calendar"
+      ],
+      "summary": "NAVIG Calendar module — list/add/sync events (Google Calendar, CalDAV, ICS). A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "chats",
+      "package": "navig-chats",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "chats"
+      ],
+      "scripts": [
+        "navig-chats"
+      ],
+      "summary": "navig chats -- a local library for your AI conversations: import your ChatGPT data export, save chats from the page with the NAVIG Dock, search every message offline, organise them in folders, and export to Markdown, HTML, JSON or a checksummed zip."
+    },
+    {
+      "id": "contacts",
+      "package": "navig-contacts",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-contacts",
+      "standalone": true,
+      "commands": [
+        "contacts",
+        "ct"
+      ],
+      "scripts": [
+        "navig-contacts"
+      ],
+      "summary": "NAVIG Contacts module — `navig contacts`: the address book and the alias-to-route table dispatch resolves against, in one store. Imports vCard and Telegram exports, merges the same person out of many records, and keeps only contacts with a phone number that validates."
+    },
+    {
+      "id": "dedupe",
+      "package": "navig-dedupe",
+      "channel": "pip",
+      "version": "0.1.1",
+      "released": "0.1.1",
+      "published": true,
+      "install": "pip install navig-dedupe",
+      "standalone": true,
+      "commands": [
+        "dedupe"
+      ],
+      "scripts": [
+        "navig-dedupe",
+        "ndup"
+      ],
+      "summary": "NAVIG Dedupe — a free, standalone perceptual duplicate finder for photos, video, audio & any file. Non-destructive (quarantine, never delete). Installs without navig; also wired into `navig dedupe`."
+    },
+    {
+      "id": "devhost",
+      "package": "navig-devhost",
+      "channel": "pip",
+      "version": "0.2.0",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-devhost",
+      "standalone": true,
+      "commands": [
+        "devhost"
+      ],
+      "scripts": [
+        "navig-devhost"
+      ],
+      "summary": "NAVIG Dev Host module — give any local dev server a real .test domain over trusted HTTPS in one command (hosts + mkcert + raw TLS relay), wired into `navig devhost`. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "devnet",
+      "package": "navig-devnet",
+      "channel": "pip",
+      "version": "0.5.0",
+      "released": "0.5.0",
+      "published": true,
+      "install": "pip install navig-devnet",
+      "standalone": true,
+      "commands": [
+        "devnet"
+      ],
+      "scripts": [
+        "navig-devnet"
+      ],
+      "summary": "Developer/ops network inspection: DNS/WHOIS/SSL lookups and an SSRF-guarded HTTP repeater — its own navig-devnet command, and `navig devnet` inside navig."
+    },
+    {
+      "id": "download",
+      "package": "navig-download",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-download",
+      "standalone": true,
+      "commands": [
+        "dl",
+        "download",
+        "tiktok",
+        "tt"
+      ],
+      "scripts": [
+        "navig-download"
+      ],
+      "summary": "NAVIG Download module — universal media downloader (yt-dlp): video, audio & files from YouTube, TikTok and any supported site. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "ebay",
+      "package": "navig-ebay",
+      "channel": "pip",
+      "version": "0.2.0",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-ebay",
+      "standalone": true,
+      "commands": [
+        "ebay"
+      ],
+      "scripts": [
+        "navig-ebay"
+      ],
+      "summary": "NAVIG eBay module — sell on eBay via the official Sell APIs (draft, publish, price, orders) wired into `navig ebay`. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "email",
+      "package": "navig-email",
+      "channel": "pip",
+      "version": "0.4.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-email",
+      "standalone": true,
+      "commands": [
+        "email"
+      ],
+      "scripts": [
+        "navig-email"
+      ],
+      "summary": "Gmail mailroom: rules, watch, labels, stats, digests, drafts — its own navig-email command (Gmail app password over IMAP), and `navig email` inside navig."
+    },
+    {
+      "id": "explore",
+      "package": "navig-explore",
+      "channel": "pip",
+      "version": "0.2.0",
+      "released": "0.2.0",
+      "published": true,
+      "install": "pip install navig-explore",
+      "standalone": true,
+      "commands": [
+        "explore",
+        "telegram-exports"
+      ],
+      "scripts": [
+        "navig-explore"
+      ],
+      "summary": "NAVIG Explore module — a universal local media/data explorer for ANY folder. Buckets files by type (image/gif/video/audio/text/document/archive), auto-reads Telegram exports, previews everything, and organizes by drag-to-class. Non-destructive. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "games",
+      "package": "navig-games",
+      "channel": "pip",
+      "version": "0.11.1",
+      "released": "0.11.0",
+      "published": true,
+      "install": "pip install navig-games",
+      "standalone": true,
+      "commands": [
+        "games"
+      ],
+      "scripts": [
+        "navig-games"
+      ],
+      "summary": "NAVIG Games — proactively find & auto-claim FREE games (Epic now; GOG/Amazon/Steam next) and manage your game library. A first-party navig plugin (free, toggleable). FREE-ONLY: never spends real money."
+    },
+    {
+      "id": "generate",
+      "package": "navig-generate",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.2.1",
+      "published": true,
+      "install": "pip install navig-generate",
+      "standalone": true,
+      "commands": [],
+      "scripts": [
+        "navig-generate"
+      ],
+      "summary": "Generate images, video and audio with your own provider keys, keep the variants you like, and edit them: cut, fx, beats, tonality, sprites. Runs on its own as `navig-generate`; the shared media engine lives in `navig-media-core`."
+    },
+    {
+      "id": "github",
+      "package": "navig-github",
+      "channel": "pip",
+      "version": "0.3.0",
+      "released": "0.3.0",
+      "published": true,
+      "install": "pip install navig-github",
+      "standalone": true,
+      "commands": [
+        "github"
+      ],
+      "scripts": [
+        "navig-github"
+      ],
+      "summary": "The full GitHub toolbox (backup, mirror, export, manage): its own navig-github command, and `navig github` inside navig."
+    },
+    {
+      "id": "media",
+      "package": "navig-media",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [],
+      "scripts": [
+        "navig-media"
+      ],
+      "summary": "The NAVIG media suite in one install: image and video generation, voice and music, writing, and the assembly line that downloads, transcribes, scripts, narrates and publishes."
+    },
+    {
+      "id": "media-core",
+      "package": "navig-media-core",
+      "channel": "pip",
+      "version": "0.1.1",
+      "released": "0.1.0",
+      "published": true,
+      "install": "pip install navig-media-core",
+      "standalone": false,
+      "commands": [],
+      "scripts": [],
+      "summary": "The shared media engine NAVIG's media packages run on — media types and the generator registry, the generation service, the refs library, the variant store, the provider key catalog, and the ffmpeg primitives (audio edit, video edit, frames, fx). A library: no commands of its own, runs without navig."
+    },
+    {
+      "id": "menu",
+      "package": "navig-menu",
+      "channel": "npm",
+      "version": "1.7.0",
+      "released": "1.2.0",
+      "published": true,
+      "install": "npm i -g navig-menu",
+      "standalone": true,
+      "commands": [],
+      "scripts": [
+        "navig-menu",
+        "nm"
+      ],
+      "summary": "AI-first menu builder — auto-detects any project's stack and builds a premium interactive terminal menu with layouts, a plugin system, and a live settings panel. Standalone or via `navig menu`."
+    },
+    {
+      "id": "mini",
+      "package": "navig-mini",
+      "channel": "pip",
+      "version": "1.1.3",
+      "released": "1.1.3",
+      "published": true,
+      "install": "pip install navig-mini",
+      "standalone": true,
+      "commands": [
+        "mini"
+      ],
+      "scripts": [
+        "navig-mini"
+      ],
+      "summary": "NAVIG Mini — Lightweight AI agent daemon for Raspberry Pi, NAS boxes, and low-power devices"
+    },
+    {
+      "id": "mobile",
+      "package": "navig-mobile",
+      "channel": "pip",
+      "version": "0.8.0",
+      "released": "0.5.0",
+      "published": true,
+      "install": "pip install navig-mobile",
+      "standalone": true,
+      "commands": [
+        "android",
+        "ios",
+        "mobile",
+        "unpack"
+      ],
+      "scripts": [
+        "navig-mobile"
+      ],
+      "summary": "NAVIG Mobile — pro-grade Android + iOS device operations: connect, device info, apps, file pull, screenshots, backups, plus forensics / spyware-scan / root-jailbreak assist / OSINT, and app UI automation (a11y snapshots, tap/fill, `ui assert` machine checks, evidence capture). Wired into `navig mobile` (+ `navig android` / `navig ios`). A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "msstore",
+      "package": "navig-msstore",
+      "channel": "pip",
+      "version": "0.7.0",
+      "released": "0.7.0",
+      "published": true,
+      "install": "pip install navig-msstore",
+      "standalone": true,
+      "commands": [
+        "mstore"
+      ],
+      "scripts": [
+        "navig-msstore"
+      ],
+      "summary": "navig mstore -- Microsoft Store publishing verbs for NAVIG, wrapping the msstore-publish block."
+    },
+    {
+      "id": "obs",
+      "package": "navig-obs",
+      "channel": "pip",
+      "version": "0.6.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "obs"
+      ],
+      "scripts": [
+        "navig-obs"
+      ],
+      "summary": "Control OBS Studio from navig — scenes, sources, streams, recording, studio mode, whole obs-websocket v5 surface — its own navig-obs command, and `navig obs` inside navig."
+    },
+    {
+      "id": "pentest",
+      "package": "navig-pentest",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "pentest"
+      ],
+      "scripts": [
+        "navig-pentest",
+        "navig-warroom",
+        "warroom-osint"
+      ],
+      "summary": "NAVIG Pentest — the authorized-only offensive-security toolkit: passive recon (RDAP/whois, DNS, crt.sh subdomains, HTTP fingerprint) plus gated active recon (port scan, subdomain probe, template checks) behind a written-authorization engagement gate. Wired into `navig pentest` (+ `navig-warroom` / `warroom-osint` conveniences)."
+    },
+    {
+      "id": "pipeline",
+      "package": "navig-pipeline",
+      "channel": "pip",
+      "version": "0.6.0",
+      "released": "0.2.2",
+      "published": true,
+      "install": "pip install navig-pipeline",
+      "standalone": true,
+      "commands": [
+        "pipeline"
+      ],
+      "scripts": [
+        "navig-pipeline"
+      ],
+      "summary": "The content assembly line: short vertical clips cut to the beat, narrated reels, captions and hooks, and download → transcribe → script → narrate → fan-out — its own navig-pipeline command, with your own keys; also `navig pipeline` inside navig."
+    },
+    {
+      "id": "social",
+      "package": "navig-social",
+      "channel": "pip",
+      "version": "0.2.2",
+      "released": "0.2.1",
+      "published": true,
+      "install": "pip install navig-social",
+      "standalone": true,
+      "commands": [
+        "facebook",
+        "fb",
+        "social"
+      ],
+      "scripts": [
+        "navig-social"
+      ],
+      "summary": "NAVIG Social module — compose, schedule & publish across social networks (Studio + one-call fan-out). A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "text",
+      "package": "navig-text",
+      "channel": "pip",
+      "version": "0.5.0",
+      "released": "0.4.0",
+      "published": true,
+      "install": "pip install navig-text",
+      "standalone": true,
+      "commands": [
+        "design",
+        "text"
+      ],
+      "scripts": [
+        "navig-text"
+      ],
+      "summary": "NAVIG Text module — AI text generation (drafts/articles/captions/briefs) + `navig design` (agent HTML/CSS restyle + design tokens) for the Design Mode lens. A first-party navig plugin (free, toggleable). The TEXT facet of the shared media generation engine."
+    },
+    {
+      "id": "vault",
+      "package": "navig-vault",
+      "channel": "pip",
+      "version": "0.11.0",
+      "released": "0.10.0",
+      "published": true,
+      "install": "pip install navig-vault",
+      "standalone": true,
+      "commands": [],
+      "scripts": [
+        "navig-vault",
+        "nv"
+      ],
+      "summary": "NAVIG Vault — a free, standalone, encrypted developer secrets manager (Doppler / 1Password-CLI / Infisical class). Installs without navig; shares one vault."
+    },
+    {
+      "id": "video",
+      "package": "navig-video",
+      "channel": "pip",
+      "version": "0.2.2",
+      "released": "0.2.2",
+      "published": true,
+      "install": "pip install navig-video",
+      "standalone": true,
+      "commands": [
+        "video"
+      ],
+      "scripts": [
+        "navig-video"
+      ],
+      "summary": "NAVIG Video module — render a channel's video formats (kinetic episodes, bulletins, motion cards) from its workspace of texts, plates and voice: timeline → frames → ffmpeg, with per-destination encode variants. A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "vm",
+      "package": "navig-vm",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "vm"
+      ],
+      "scripts": [
+        "navig-vm"
+      ],
+      "summary": "NAVIG VM module — local VMware Workstation VMs from verified cloud images, provisioned on first boot with cloud-init and driven from `navig vm` (create, start, ssh, snapshots). A first-party navig plugin (free, toggleable)."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "space_id": "devops-space",
+  "display_name": "DevOps Space",
+  "description": "CI/CD, infrastructure-as-code, SRE ops, and incident response hub.",
+  "version": "1.0.0",
+  "runtime": "navig-space-2",
+  "tier": "work",
+  "status": "active",
+  "author": "navig-run",
+  "agents": ["pipeline-engineer", "infra-architect", "site-reliability", "incident-commander"],
+  "formations": ["ci-pipeline", "infra-deploy", "incident-response", "sre-ops"],
+  "skills": ["health-probe", "rollback", "alert-triage", "deploy-validate", "cert-check"],
+  "workflows": ["deploy-check", "incident-triage", "weekly-reliability-review"],
+  "sub_workspaces": ["ci-cd", "infrastructure-as-code", "monitoring", "runbooks"],
+  "created": "2026-03-11",
+  "updated": "2026-10-16"
+}

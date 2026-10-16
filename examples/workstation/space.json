@@ -1,0 +1,38 @@
+{
+  "kind": "space",
+  "id": "workstation",
+  "name": "Workstation",
+  "description": "General-purpose local machine space — system health, network monitoring, and daily ops",
+  "version": "1.1.0",
+  "formation": "homelab-node",
+
+  "context": {
+    "machine_role": "workstation",
+    "os": "linux"
+  },
+
+  "skills": [
+    "system-health",
+    "network-scan",
+    "docker-ops",
+    "security-audit"
+  ],
+
+  "prompts": [
+    "morning-briefing",
+    "weekly-review"
+  ],
+
+  "vault_keys": [
+    {
+      "name": "telegram_bot_token",
+      "description": "Telegram bot for alerts and daily briefing delivery",
+      "required": false
+    }
+  ],
+
+  "notifications": {
+    "channel": "telegram",
+    "events": ["system.alert", "security.critical", "daily.briefing"]
+  }
+}

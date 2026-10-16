@@ -1,0 +1,41 @@
+name: evening-reflection
+version: "2.0.0"
+description: End-of-day wind-down — close mood, gratitude, journal entry, deferred task detection, and tomorrow intention.
+schedule:
+  cron: "0 21 * * *"
+  timezone: "{{TIMEZONE}}"
+  enabled: false
+on_demand: true
+formation: evening-reflection
+
+steps:
+  - name: evening-mood
+    description: Log evening mood and energy close
+    skill: log-mood
+    params:
+      prompt_user: true
+
+  - name: gratitude-prompt
+    description: Prompt for gratitude and best moment of the day
+    prompt: evening-reflection
+    depends_on: evening-mood
+
+  - name: journal-write
+    description: Create or append to today's journal entry
+    skill: journal-entry
+    params:
+      mood: "{{steps.evening-mood.output.mood}}"
+      gratitude: "{{steps.gratitude-prompt.output.gratitude}}"
+      highlight: "{{steps.gratitude-prompt.output.highlight}}"
+      challenge: "{{steps.gratitude-prompt.output.challenge}}"
+      tomorrow: "{{steps.gratitude-prompt.output.tomorrow}}"
+    depends_on: gratitude-prompt
+
+  - name: deferred-check
+    description: Detect tasks deferred 3+ times — suggest reschedule or drop
+    depends_on: journal-write
+
+  - name: notify
+    description: Post reflection summary to #journal
+    inbox_channel: "#journal"
+    depends_on: journal-write

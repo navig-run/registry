@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────
+# Workflow: Sample Harvest
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: sample-harvest
+description: |
+  Batch-processes new sample files. Detects BPM and key,
+  tags metadata, catalogs into the library, and removes
+  duplicates. Designed for periodic library maintenance.
+
+schedule:
+  cron: "0 12 * * 0"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: sample-lab
+
+steps:
+  - id: scan-inbox
+    name: Scan Sample Inbox
+    skill: sample-catalog
+    params:
+      samples_dir: "{{config.samples_dir}}/inbox"
+      action: list-new
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 120
+
+  - id: detect-bpm-batch
+    name: Batch BPM Detection
+    skill: bpm-detect
+    params:
+      input_file: "{{steps.scan-inbox.files}}"
+      batch: true
+    depends_on:
+      - scan-inbox
+    on_error: continue
+    timeout_seconds: 600
+    condition: "steps.scan-inbox.count > 0"
+
+  - id: detect-key-batch
+    name: Batch Key Detection
+    skill: key-detect
+    params:
+      input_file: "{{steps.scan-inbox.files}}"
+      batch: true
+    depends_on:
+      - scan-inbox
+    on_error: continue
+    timeout_seconds: 600
+    parallel: true
+    condition: "steps.scan-inbox.count > 0"
+
+  - id: tag-metadata
+    name: Tag Sample Metadata
+    skill: metadata-tag
+    params:
+      files: "{{steps.scan-inbox.files}}"
+      bpm_data: "{{steps.detect-bpm-batch.result}}"
+      key_data: "{{steps.detect-key-batch.result}}"
+    depends_on:
+      - detect-bpm-batch
+      - detect-key-batch
+    on_error: continue
+    timeout_seconds: 300
+
+  - id: deduplicate
+    name: Deduplicate Samples
+    skill: sample-catalog
+    params:
+      samples_dir: "{{config.samples_dir}}"
+      action: deduplicate
+    depends_on:
+      - tag-metadata
+    on_error: continue
+    timeout_seconds: 300
+
+  - id: catalog
+    name: Catalog into Library
+    skill: sample-catalog
+    params:
+      samples_dir: "{{config.samples_dir}}"
+      action: catalog
+      source: "{{config.samples_dir}}/inbox"
+    depends_on:
+      - deduplicate
+    on_error: abort
+    timeout_seconds: 300
+
+  - id: report
+    name: Harvest Report
+    agent: sound-designer
+    action: harvest-summary
+    params:
+      new_count: "{{steps.scan-inbox.count}}"
+      duplicates: "{{steps.deduplicate.removed}}"
+      cataloged: "{{steps.catalog.added}}"
+    depends_on:
+      - catalog
+    on_error: continue
+    timeout_seconds: 60

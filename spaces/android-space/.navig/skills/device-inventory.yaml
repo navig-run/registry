@@ -1,0 +1,77 @@
+id: device-inventory
+name: Device Inventory
+version: "1.0.0"
+description: >
+  Fingerprint every connected Android device — model, manufacturer, Android version,
+  SDK/API level, security patch, serial, ABI, storage, and battery — via `adb getprop`
+  and `dumpsys`. Merges results into the fleet device registry.
+category: fleet
+platform: [windows, linux, macos]
+formation: fleet-patrol
+author: navig-run
+
+parameters:
+  - name: serial
+    type: string
+    description: "Target a specific device serial (blank = all connected)"
+    default: ""
+  - name: output_format
+    type: enum
+    values: [table, json, csv]
+    default: table
+
+steps:
+  - id: list_devices
+    name: "List all connected devices"
+    shell: auto
+    script: |
+      adb devices -l
+
+  - id: fingerprint
+    name: "Read device properties (getprop)"
+    shell: auto
+    script_windows: |
+      $target = "{{serial}}"
+      $sel = if ($target) { "-s $target" } else { "" }
+      $props = @(
+        "ro.product.manufacturer","ro.product.model","ro.product.name",
+        "ro.build.version.release","ro.build.version.sdk",
+        "ro.build.version.security_patch","ro.product.cpu.abi",
+        "ro.serialno","ro.boot.serialno"
+      )
+      Write-Output "=== DEVICE FINGERPRINT ==="
+      foreach ($p in $props) {
+        $v = & adb $sel shell getprop $p 2>$null
+        Write-Output ("{0,-38}: {1}" -f $p, ($v -join ''))
+      }
+    script_linux: |
+      target="{{serial}}"; sel=""; [ -n "$target" ] && sel="-s $target"
+      echo "=== DEVICE FINGERPRINT ==="
+      for p in ro.product.manufacturer ro.product.model ro.product.name \
+               ro.build.version.release ro.build.version.sdk \
+               ro.build.version.security_patch ro.product.cpu.abi ro.serialno; do
+        printf "%-38s: %s\n" "$p" "$(adb $sel shell getprop $p 2>/dev/null | tr -d '\r')"
+      done
+
+  - id: storage
+    name: "Storage headroom (df /data)"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} shell df -h /data 2>/dev/null
+
+  - id: battery
+    name: "Battery level & health (dumpsys battery)"
+    shell: auto
+    script: |
+      adb {{#serial}}-s {{serial}}{{/serial}} shell dumpsys battery | grep -iE "level|health|status|temperature"
+
+output:
+  fields: [serial, manufacturer, model, android_version, sdk, security_patch, abi, storage, battery]
+  store_to: ".navig/memory/device-registry.json"
+  merge: true
+
+examples:
+  - description: "Inventory every connected device"
+    command: "navig skill run device-inventory"
+  - description: "Inventory one device by serial, JSON output"
+    command: "navig skill run device-inventory --serial 3A091FDJ00042X --output_format json"

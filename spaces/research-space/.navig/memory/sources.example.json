@@ -1,0 +1,6 @@
+{
+  "version": "1.0",
+  "space": "research",
+  "description": "Registry of sources discovered and tracked for research. Candidates become tracked sources; tracked sources feed the crawl pipeline.",
+  "sources": []
+}

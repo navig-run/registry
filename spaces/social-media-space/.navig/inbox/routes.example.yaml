@@ -1,0 +1,36 @@
+channels:
+  - id: strategy
+    name: "#strategy"
+    description: "Content planning, calendar, ideas, and brand strategy"
+    agents: [content-strategist]
+    priority: normal
+
+  - id: drafts
+    name: "#drafts"
+    description: "New draft submissions and rewrite requests"
+    agents: [post-writer, brand-guardian]
+    priority: normal
+
+  - id: review
+    name: "#review"
+    description: "Voice review queue — drafts awaiting brand-guardian approval"
+    agents: [brand-guardian]
+    priority: high
+
+  - id: schedule
+    name: "#schedule"
+    description: "Scheduling requests and queue management"
+    agents: [scheduler]
+    priority: normal
+
+  - id: analytics
+    name: "#analytics"
+    description: "Performance reports, anomalies, growth alerts"
+    agents: [analytics-watcher]
+    priority: normal
+
+  - id: viral
+    name: "#viral"
+    description: "Breakout post alerts, viral signal detection"
+    agents: [analytics-watcher, content-strategist]
+    priority: urgent

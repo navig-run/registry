@@ -1,0 +1,21 @@
+{
+  "id": "forge-space",
+  "name": "Forge Space",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "planned",
+  "description": "Build, test, and ship new tool capabilities and packages.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "tools",
+    "storage",
+    "agent"
+  ]
+}

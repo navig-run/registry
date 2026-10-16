@@ -1,0 +1,69 @@
+id: mqtt-subscribe
+name: MQTT Subscribe
+version: "1.0.0"
+description: Subscribe to one or more MQTT topics and capture messages from the bus.
+category: mqtt
+platform: [windows, linux, macos]
+formation: mqtt-ops
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    description: "Topic filter to subscribe to (supports + and # wildcards)"
+    default: "#"
+  - name: host
+    type: string
+    description: "MQTT broker host"
+    default: "{{config.mqtt_host}}"
+  - name: port
+    type: int
+    default: 1883
+  - name: count
+    type: int
+    description: "Number of messages to capture then exit (0 = run until stopped)"
+    default: 10
+  - name: duration
+    type: int
+    description: "Max seconds to listen"
+    default: 15
+
+steps:
+  - id: check_client
+    name: "Check mosquitto_sub availability"
+    shell: auto
+    script_windows: |
+      $c = Get-Command mosquitto_sub -ErrorAction SilentlyContinue
+      if ($c) { Write-Output "has_client=true" } else { Write-Output "has_client=false — install via 'winget install EclipseFoundation.Mosquitto'" }
+    script_linux: |
+      command -v mosquitto_sub >/dev/null 2>&1 && echo "has_client=true" || echo "has_client=false — install mosquitto-clients"
+    script_macos: |
+      command -v mosquitto_sub >/dev/null 2>&1 && echo "has_client=true" || echo "has_client=false — brew install mosquitto"
+
+  - id: subscribe
+    name: "Subscribe and capture messages"
+    shell: auto
+    script: |
+      # -v prints topic + payload; -W caps duration; -C caps message count
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v \
+        -W {{duration}} $( [ {{count}} -gt 0 ] && echo "-C {{count}}" )
+    script_windows: |
+      $countArg = if ({{count}} -gt 0) { "-C {{count}}" } else { "" }
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v -W {{duration}} $countArg
+
+  - id: summarize
+    name: "Summarize subscription"
+    shell: auto
+    script: |
+      echo "Subscribed to '{{topic}}' on {{host}}:{{port}} ({{count}} msgs / {{duration}}s)"
+
+output:
+  fields: [topic, payload, timestamp]
+  store_to: ".navig/memory/mqtt-capture.json"
+  merge: false
+
+examples:
+  - description: "Watch all Tasmota telemetry for 30 seconds"
+    command: "navig skill run mqtt-subscribe --topic 'tele/#' --duration 30"
+  - description: "Capture 5 messages from a single device"
+    command: "navig skill run mqtt-subscribe --topic 'stat/plug-office/#' --count 5"

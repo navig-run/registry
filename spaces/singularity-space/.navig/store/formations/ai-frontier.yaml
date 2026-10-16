@@ -1,0 +1,33 @@
+id: ai-frontier
+name: AI Frontier
+version: "1.0.0"
+description: >
+  AI frontier observation formation. AI Researcher leads with Signal Tracker
+  bridging AI signals into the broader civilization-signal stream.
+
+agents:
+  lead: ai-researcher
+  supporting: [signal-tracker]
+
+trigger_conditions:
+  - "AI journal entry requested"
+  - "New AI capability or model announced"
+  - "Weekly AI digest workflow"
+
+action_scope:
+  - ALLOW: tag-content
+  - ALLOW: write to .navig/memory/ai-journal.json
+  - ALLOW: trigger rate-signal for AI domain signals
+
+workflows_used:
+  - weekly-signal-sweep
+
+communication:
+  inbox_channel: "#ai"
+  escalation: oracle
+  notify_on:
+    - capability_jump_detected
+
+context_memory:
+  read: [ai-journal.json, civilization-signals.json]
+  write: [ai-journal.json]

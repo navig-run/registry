@@ -1,0 +1,45 @@
+# ── logs & temp ──
+*.log
+
+# ── OS / editor junk ──
+.DS_Store
+Thumbs.db
+# ── navig wire (managed) ── do not edit between markers
+# root links (junction on Windows, symlink on POSIX) — the committed paths are under .navig/
+/plans
+/.inbox
+# linked capability junctions (live under .claude/, sources in .navig/)
+.claude/skills
+.claude/blocks
+.claude/agents
+.claude/output-styles
+.claude/rules
+# .navig/ is committable (plans, skills, wiki, refs …) EXCEPT machine-local / private state:
+.navig/inbox/
+.navig/state/
+.navig/vault/
+.navig/credentials/
+.navig/memory/
+.navig/refs/
+.navig/data/
+.navig/logs/
+.navig/navig.log
+.navig/*.key
+.navig/*.pem
+# machine-local / private — never commit
+.lab/
+.local/
+.dev/
+.backup/
+.wiki
+.docs
+# build / cache / IDE artifacts
+.next/
+.open-next/
+.wrangler/
+.venv/
+.pytest_cache/
+.tmp/
+.core-sync-tmp/
+.idea/
+# ── end navig wire (managed) ──

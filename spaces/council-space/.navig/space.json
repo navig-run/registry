@@ -1,0 +1,22 @@
+{
+  "id": "council-space",
+  "name": "Council Space",
+  "version": "1.0.0",
+  "tier": "labs",
+  "status": "labs",
+  "description": "Assemble a council of agents. Watch them argue. Extract decisions.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "memory"
+  ],
+  "config_key": "formations.enabled"
+}

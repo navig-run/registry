@@ -1,0 +1,49 @@
+id: health-ops
+name: Health Operations
+version: "2.0.0"
+description: Weekly health review — metrics aggregation, mood trends, sleep analysis, trend detection, and summary.
+
+agents:
+  lead: wellness-tracker
+  supporting:
+    - daily-planner
+    - habit-coach
+
+trigger_conditions:
+  - Weekly health review scheduled (Sunday)
+  - Metric threshold breach
+  - Mood drop alert (≤3 for 3+ consecutive entries)
+
+action_scope:
+  - Aggregate weekly health metrics (sleep, steps, weight, energy, mood, HRV)
+  - Generate trend report with week-over-week comparison
+  - Sleep pattern analysis (consistency, duration, quality)
+  - Mood trend analysis (correlations with sleep, activity, habits)
+  - Flag anomalies and concerning patterns
+  - Produce actionable summary with recommendations
+
+skills_used:
+  - log-health-metric
+  - log-mood
+  - sleep-analysis
+  - body-metrics-report
+
+workflows_used:
+  - weekly-health-review
+
+communication:
+  inbox_channel: "#health"
+  escalation: daily-planner
+  notify_on:
+    - sleep below 6 hours for 3+ nights
+    - steps below 5000 for 3+ days
+    - mood below 3 for 3+ entries
+    - weight change >2kg in one week
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - spaces/health/metrics.csv
+  write: []
+
+example_invocation: "@health-ops weekly-review"

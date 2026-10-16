@@ -1,0 +1,10 @@
+{
+  "name": "company-space",
+  "version": "2.0.1",
+  "private": true,
+  "description": "Full business operating system — finance, clients, invoicing, taxes, sales, contracts",
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": "https://github.com/navig-run/registry",
+  "navig": {"space": "company-space", "runtime": "navig-space-2", "agents": 5, "formations": 5, "skills": 10, "workflows": 6, "prompts": 8}
+}

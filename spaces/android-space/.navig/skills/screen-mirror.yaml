@@ -1,0 +1,80 @@
+id: screen-mirror
+name: Screen Mirror
+version: "1.0.0"
+description: >
+  Mirror and control a device's display on the desktop with scrcpy. Tunable
+  resolution, bitrate, and framerate; supports view-only or full control, wireless
+  transport, and screenshot/record shortcuts. Falls back to `adb exec-out screencap`
+  when scrcpy is unavailable.
+category: control
+platform: [windows, linux, macos]
+formation: device-bridge
+author: navig-run
+
+parameters:
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: max_size
+    type: int
+    description: "Max dimension in px (0 = native)"
+    default: 1024
+  - name: bit_rate
+    type: string
+    description: "Video bitrate (e.g. 8M)"
+    default: "8M"
+  - name: max_fps
+    type: int
+    description: "Max framerate"
+    default: 60
+  - name: view_only
+    type: bool
+    description: "Disable input control (mirror only)"
+    default: false
+
+steps:
+  - id: check_scrcpy
+    name: "Check scrcpy availability"
+    shell: auto
+    script_windows: |
+      $s = Get-Command scrcpy -ErrorAction SilentlyContinue
+      if ($s) { Write-Output "has_scrcpy=true" } else { Write-Output "has_scrcpy=false" }
+    script_linux: |
+      command -v scrcpy >/dev/null 2>&1 && echo "has_scrcpy=true" || echo "has_scrcpy=false"
+
+  - id: mirror
+    name: "Launch scrcpy mirroring"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $flags = @("--max-size", "{{max_size}}", "--video-bit-rate", "{{bit_rate}}", "--max-fps", "{{max_fps}}")
+      if ("{{view_only}}" -eq "true") { $flags += "--no-control" }
+      Write-Output "Launching: scrcpy $sel $flags"
+      & scrcpy $sel.Split(' ') $flags
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      flags="--max-size {{max_size}} --video-bit-rate {{bit_rate}} --max-fps {{max_fps}}"
+      [ "{{view_only}}" = "true" ] && flags="$flags --no-control"
+      echo "Launching: scrcpy $sel $flags"
+      scrcpy $sel $flags
+
+  - id: fallback_shot
+    name: "Fallback: single screenshot if scrcpy missing"
+    condition: "has_scrcpy == 'false'"
+    shell: auto
+    script: |
+      echo "scrcpy not found — capturing a single screenshot instead."
+      adb {{#serial}}-s {{serial}}{{/serial}} exec-out screencap -p > scrcpy-fallback.png
+      echo "Saved scrcpy-fallback.png"
+
+output:
+  fields: [serial, resolution, mode]
+
+examples:
+  - description: "Mirror the connected device with defaults"
+    command: "navig skill run screen-mirror"
+  - description: "High-quality wireless mirror at native resolution"
+    command: "navig skill run screen-mirror --max_size 0 --bit_rate 16M"
+  - description: "View-only mirror (no input control)"
+    command: "navig skill run screen-mirror --view_only true"

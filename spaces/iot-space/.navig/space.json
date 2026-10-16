@@ -1,0 +1,20 @@
+{
+  "id": "iot-space",
+  "name": "IoT Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Command mesh for every IoT & smart-home device — discovery & fingerprinting, MQTT message bus, firmware/OTA, network segmentation & security, telemetry, and automation.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["beacon", "broker", "warden", "flux", "automa", "sensor"],
+  "formations": ["discovery-sweep", "mqtt-ops", "security-mesh", "firmware-fleet", "automation-loop"],
+  "skills": [
+    "device-discover", "mqtt-subscribe", "mqtt-publish", "firmware-check",
+    "ota-update", "tasmota-flash", "energy-report", "sensor-telemetry",
+    "vlan-audit", "credential-audit", "ha-entity-sync", "zigbee-scan"
+  ],
+  "workflows": ["morning-mesh-sweep", "device-onboard", "firmware-audit", "nightly-telemetry-sync", "security-review", "automation-review"],
+  "packages": ["mosquitto", "esphome"],
+  "subspaces": []
+}

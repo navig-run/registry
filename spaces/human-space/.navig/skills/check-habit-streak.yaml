@@ -1,0 +1,70 @@
+id: check-habit-streak
+name: Check Habit Streak
+version: "2.0.0"
+description: Reads the habit log CSV and prints current streak, adherence rate, and trend for each tracked habit.
+category: habits
+platform: [windows, linux, macos]
+formation: morning-routine
+author: navig-run
+
+parameters:
+  - name: habit
+    description: "Habit name filter (blank = all habits)"
+    required: false
+  - name: period
+    description: "Period to analyse: last-7-days | last-30-days | all (default: last-7-days)"
+    required: false
+    default: last-7-days
+
+steps:
+  - name: read-habit-log
+    description: Read habit log from spaces/growth/habits.csv and calculate streaks
+    env:
+      NAVIG_PARAM_HABIT: "{{habit}}"
+    script: |
+      import os, pathlib, csv, datetime
+      p = pathlib.Path("spaces/growth/habits.csv")
+      if not p.exists():
+          print("No habit log found at spaces/growth/habits.csv.")
+          print("Create one with columns: date,habit,completed,notes")
+          import sys; sys.exit(0)
+      with open(p, newline="", encoding="utf-8") as f:
+          rows = list(csv.DictReader(f))
+      if not rows:
+          print("Habit log is empty.")
+      else:
+          habits = set(r["habit"] for r in rows)
+          filter_habit = os.environ.get("NAVIG_PARAM_HABIT", "")
+          if filter_habit:
+              habits = {h for h in habits if filter_habit.lower() in h.lower()}
+          for h in sorted(habits):
+              entries = sorted([r for r in rows if r["habit"] == h], key=lambda r: r["date"])
+              completed = sum(1 for r in entries if r.get("completed", "").lower() in ("1", "yes", "true"))
+              total = len(entries)
+              rate = completed / total * 100 if total else 0
+              # Calculate current streak
+              streak = 0
+              for r in reversed(entries):
+                  if r.get("completed", "").lower() in ("1", "yes", "true"):
+                      streak += 1
+                  else:
+                      break
+              print(f"  {h}: {completed}/{total} days ({rate:.0f}% adherence) — streak: {streak} days")
+    script_windows: |
+      $p = "spaces\growth\habits.csv"
+      if (-not (Test-Path $p)) { Write-Host "No habit log found at $p. Create with columns: date,habit,completed,notes"; exit 0 }
+      $rows = Import-Csv $p
+      if (-not $rows) { Write-Host "Habit log is empty."; exit 0 }
+      $habits = $rows | Select-Object -ExpandProperty habit -Unique | Sort-Object
+      $filterHabit = $env:NAVIG_PARAM_HABIT
+      if ($filterHabit) { $habits = $habits | Where-Object { $_.ToLower().Contains($filterHabit.ToLower()) } }
+      foreach ($h in $habits) {
+          $entries = $rows | Where-Object { $_.habit -eq $h } | Sort-Object date
+          $done = ($entries | Where-Object { $_.completed -match "1|yes|true" }).Count
+          $total = $entries.Count
+          $rate = if ($total) { [int]($done / $total * 100) } else { 0 }
+          $streak = 0
+          $reversed = $entries | Sort-Object date -Descending
+          foreach ($r in $reversed) { if ($r.completed -match "1|yes|true") { $streak++ } else { break } }
+          Write-Host "  ${h}: $done/$total days ($rate% adherence) — streak: $streak days"
+      }

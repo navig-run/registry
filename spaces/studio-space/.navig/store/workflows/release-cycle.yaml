@@ -1,0 +1,130 @@
+# ─────────────────────────────────────────────
+# Workflow: Release Cycle
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+name: release-cycle
+description: |
+  Master-to-distribution release pipeline.
+  Validates loudness, embeds metadata, converts formats,
+  and prepares distribution-ready assets.
+
+schedule:
+  cron: null
+  timezone: null
+  enabled: false
+
+on_demand: true
+formation: release-pipeline
+
+steps:
+  - id: loudness-check
+    name: Loudness Validation
+    skill: loudness-check
+    params:
+      input_file: "{{master_file}}"
+      target_lufs: "{{target_lufs}}"
+      tolerance_db: 0.5
+    depends_on: []
+    on_error: abort
+    timeout_seconds: 120
+
+  - id: metadata
+    name: Embed Metadata
+    skill: metadata-tag
+    params:
+      input_file: "{{master_file}}"
+      title: "{{release_title}}"
+      artist: "{{artist}}"
+      album: "{{album}}"
+      year: "{{year}}"
+      genre: "{{genre}}"
+      isrc: "{{isrc}}"
+      artwork: "{{artwork_file}}"
+    depends_on:
+      - loudness-check
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: format-wav
+    name: Export WAV Master
+    skill: format-convert
+    params:
+      input_file: "{{master_file}}"
+      output_format: wav
+      sample_rate: 44100
+      bit_depth: 24
+      output_dir: "{{release_dir}}/wav"
+    depends_on:
+      - metadata
+    on_error: abort
+    timeout_seconds: 120
+
+  - id: format-flac
+    name: Export FLAC
+    skill: format-convert
+    params:
+      input_file: "{{master_file}}"
+      output_format: flac
+      sample_rate: 44100
+      bit_depth: 24
+      output_dir: "{{release_dir}}/flac"
+    depends_on:
+      - metadata
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: format-mp3
+    name: Export MP3 (320k)
+    skill: format-convert
+    params:
+      input_file: "{{master_file}}"
+      output_format: mp3
+      bitrate: 320
+      output_dir: "{{release_dir}}/mp3"
+    depends_on:
+      - metadata
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: upload-prep
+    name: Prepare Distribution Package
+    skill: upload-distro
+    params:
+      release_dir: "{{release_dir}}"
+      distributor: "{{distributor}}"
+      release_date: "{{release_date}}"
+    depends_on:
+      - format-wav
+      - format-flac
+      - format-mp3
+    on_error: abort
+    timeout_seconds: 180
+
+  - id: validate
+    name: Release Validation
+    agent: release-manager
+    action: validate-package
+    params:
+      release_dir: "{{release_dir}}"
+      checklist:
+        - loudness_ok
+        - metadata_complete
+        - formats_exported
+        - artwork_embedded
+    depends_on:
+      - upload-prep
+    on_error: abort
+    timeout_seconds: 60
+
+  - id: backup
+    name: Archive Release
+    skill: backup-session
+    params:
+      session_dir: "{{release_dir}}"
+    depends_on:
+      - validate
+    on_error: continue
+    timeout_seconds: 300

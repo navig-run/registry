@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "space": "social-media-space",
+  "description": "MCP server configuration for social-media-space. Local filesystem + future platform API connectors.",
+  "servers": {
+    "workspace-fs": {
+      "type": "local",
+      "status": "active",
+      "description": "Local workspace file access - brands, content, analytics",
+      "roots": [
+        "brands/",
+        "content/",
+        "analytics/",
+        ".navig/plans/",
+        ".navig/memory/"
+      ],
+      "permissions": {
+        "read": true,
+        "write": true,
+        "delete": false
+      }
+    },
+    "twitter-api": {
+      "type": "remote",
+      "status": "not-configured",
+      "description": "X / Twitter API v2 - scheduled post publishing and analytics pull",
+      "auth": "oauth2",
+      "credentials_ref": "vault://social-media/twitter",
+      "capabilities": ["publish", "analytics"]
+    },
+    "linkedin-api": {
+      "type": "remote",
+      "status": "not-configured",
+      "description": "LinkedIn Marketing API - post publishing and page analytics",
+      "auth": "oauth2",
+      "credentials_ref": "vault://social-media/linkedin",
+      "capabilities": ["publish", "analytics"]
+    },
+    "instagram-api": {
+      "type": "remote",
+      "status": "not-configured",
+      "description": "Instagram Graph API - publishing, Story scheduling, reach analytics",
+      "auth": "oauth2",
+      "credentials_ref": "vault://social-media/instagram",
+      "capabilities": ["publish", "analytics"]
+    },
+    "tiktok-api": {
+      "type": "remote",
+      "status": "not-configured",
+      "description": "TikTok Content Posting API - video scheduling and analytics",
+      "auth": "oauth2",
+      "credentials_ref": "vault://social-media/tiktok",
+      "capabilities": ["publish", "analytics"]
+    },
+    "bluesky-atproto": {
+      "type": "remote",
+      "status": "not-configured",
+      "description": "Bluesky AT Protocol - post publishing via app password",
+      "auth": "app-password",
+      "credentials_ref": "vault://social-media/bluesky",
+      "capabilities": ["publish"]
+    }
+  },
+  "notes": [
+    "All remote servers require credentials stored in NAVIG vault before activation.",
+    "Use `navig config set social-media.mcp.{server}.status active` to enable after configuring vault.",
+    "Local filesystem server is always active — no credentials required."
+  ]
+}

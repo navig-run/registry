@@ -1,0 +1,88 @@
+schema_version: "1.0"
+space: channel-space
+
+description: |
+  Inbox routing rules for channel-space. Directs incoming
+  tasks to the appropriate agent based on channel keywords.
+
+routes:
+  - channel: "#production"
+    owner: showrunner
+    description: Video production tasks and creative direction
+    triggers:
+      keyword:
+        - video
+        - film
+        - shoot
+        - production
+      formation: video-production
+    response_mode: async
+    notify_on:
+      - completion
+      - error
+
+  - channel: "#scripts"
+    owner: scriptwriter
+    description: Scripting, outlines, and content writing
+    triggers:
+      keyword:
+        - script
+        - outline
+        - hook
+        - intro
+        - copy
+      formation: content-planning
+    response_mode: async
+    notify_on:
+      - completion
+
+  - channel: "#editing"
+    owner: editor
+    description: Post-production editing tasks
+    triggers:
+      keyword:
+        - edit
+        - cut
+        - trim
+        - render
+        - export
+      formation: video-production
+    response_mode: async
+    notify_on:
+      - completion
+      - error
+
+  - channel: "#growth"
+    owner: growth-analyst
+    description: SEO, analytics, and growth tasks
+    triggers:
+      keyword:
+        - seo
+        - analytics
+        - subscribers
+        - retention
+        - ctr
+      formation: channel-growth
+    response_mode: async
+    notify_on:
+      - completion
+
+  - channel: "#thumbnails"
+    owner: art-director
+    description: Thumbnail design and testing
+    triggers:
+      keyword:
+        - thumbnail
+        - cover
+        - design
+        - graphic
+      formation: thumbnail-lab
+    response_mode: async
+    notify_on:
+      - completion
+
+fallback:
+  owner: showrunner
+  action: triage
+  notify:
+    - operator

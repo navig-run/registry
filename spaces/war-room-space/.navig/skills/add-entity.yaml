@@ -1,0 +1,115 @@
+id: add-entity
+name: Add Entity
+version: "1.0.0"
+description: >
+  Add a node to the OSINT entity graph (person/org/domain/ip/email/username/phone/
+  wallet/asset) with source and confidence, optionally linked to a case and to another
+  entity by a typed edge. The graph is the truth — pivots happen on the graph.
+category: osint
+platform: [windows, linux, macos]
+formation: osint-sweep
+author: war-room-space
+
+parameters:
+  - name: value
+    type: string
+    required: true
+    description: "The entity value (e.g. 'acme-corp.com', 'jane.doe@example.com', 'John Smith')"
+  - name: type
+    type: enum
+    values: [person, org, domain, ip, email, username, phone, wallet, asset, other]
+    required: true
+    description: "Entity type"
+  - name: case
+    type: string
+    required: false
+    default: ""
+    description: "Case id this entity belongs to (e.g. 'case_0001')"
+  - name: relation
+    type: string
+    required: false
+    default: ""
+    description: >
+      Optional typed edge as 'rel:target' (e.g. 'owns:acme-corp.com',
+      'registered_by:jane.doe@example.com'). Creates an edge from this node to target.
+  - name: source
+    type: string
+    required: false
+    default: "operator"
+    description: "Where this entity/observation came from"
+  - name: confidence
+    type: enum
+    values: [low, medium, high, confirmed]
+    required: false
+    default: "medium"
+
+steps:
+  - id: add_entity
+    name: "Add Entity to Graph"
+    shell: auto
+    env:
+      NAVIG_PARAM_VALUE: "{{params.value}}"
+      NAVIG_PARAM_TYPE: "{{params.type}}"
+      NAVIG_PARAM_CASE: "{{params.case}}"
+      NAVIG_PARAM_SOURCE: "{{params.source}}"
+      NAVIG_PARAM_CONFIDENCE: "{{params.confidence}}"
+      NAVIG_PARAM_RELATION: "{{params.relation}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      ent_path = ".navig/memory/entities.json"
+      try:
+          with open(ent_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"version": "1.0", "last_updated": "", "nodes": [], "edges": []}
+      data.setdefault("nodes", [])
+      data.setdefault("edges", [])
+
+      now = datetime.utcnow().isoformat() + "Z"
+      node = {
+          "id": f"ent_{len(data['nodes']) + 1:04d}",
+          "value": os.environ.get("NAVIG_PARAM_VALUE", ""),
+          "type": os.environ.get("NAVIG_PARAM_TYPE", ""),
+          "case": os.environ.get("NAVIG_PARAM_CASE", ""),
+          "source": os.environ.get("NAVIG_PARAM_SOURCE", ""),
+          "confidence": os.environ.get("NAVIG_PARAM_CONFIDENCE", ""),
+          "added_at": now
+      }
+      data["nodes"].append(node)
+
+      edge_msg = ""
+      relation = os.environ.get("NAVIG_PARAM_RELATION", "")
+      if relation.strip():
+          rel, _, target = relation.partition(":")
+          rel = rel.strip()
+          target = target.strip()
+          edge = {
+              "id": f"edge_{len(data['edges']) + 1:04d}",
+              "from": node["id"],
+              "from_value": node["value"],
+              "relation": rel,
+              "to": target,
+              "case": os.environ.get("NAVIG_PARAM_CASE", ""),
+              "confidence": os.environ.get("NAVIG_PARAM_CONFIDENCE", ""),
+              "added_at": now
+          }
+          data["edges"].append(edge)
+          edge_msg = f"\nEdge added: [{edge['id']}] {node['value']} --{rel}--> {target}"
+
+      data["last_updated"] = now[:10]
+      os.makedirs(os.path.dirname(ent_path), exist_ok=True)
+      with open(ent_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      case_tag = f" | case: {node['case']}" if node["case"] else ""
+      print(f"Entity added: [{node['id']}] {node['type']}: {node['value']} | confidence: {node['confidence']}{case_tag}")
+      print(f"Source: {node['source']}", end="")
+      print(edge_msg)
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: add_entity

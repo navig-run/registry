@@ -1,0 +1,106 @@
+id: check-expiry
+name: Check Expiry
+version: "1.0.0"
+description: >
+  Scan the medication log for items expiring within a configurable number of days.
+  Outputs a prioritized list: critical (< 7 days), warning (7–30 days), and
+  attention (30–90 days). Expired items are always shown first.
+category: health
+platform: [windows, linux, macos]
+formation: medical-watch
+author: residence-space
+
+parameters:
+  - name: days
+    type: integer
+    required: false
+    default: 90
+    description: "Look-ahead window in days (items expiring within this window are shown)"
+  - name: person
+    type: string
+    required: false
+    default: "all"
+    description: "Filter to a specific person, or 'all'"
+  - name: include_inactive
+    type: boolean
+    required: false
+    default: false
+    description: "Whether to include inactive medications in the scan"
+
+steps:
+  - id: scan_expiry
+    name: "Scan Medication Expiry"
+    shell: auto
+    env:
+      NAVIG_PARAM_DAYS: "{{params.days}}"
+      NAVIG_PARAM_PERSON: "{{params.person}}"
+      NAVIG_PARAM_INCLUDE_INACTIVE: "{{params.include_inactive}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import date, timedelta
+
+      days_raw = os.environ.get("NAVIG_PARAM_DAYS", "") or "90"
+      try:
+          days = int(days_raw)
+      except ValueError:
+          print(f"Invalid 'days' value: {days_raw!r} (expected an integer)")
+          raise SystemExit(1)
+      person_filter = os.environ.get("NAVIG_PARAM_PERSON", "") or "all"
+      include_inactive = (os.environ.get("NAVIG_PARAM_INCLUDE_INACTIVE", "") or "false").strip().lower() in ("1", "true", "yes")
+
+      memory_path = ".navig/memory/medication-log.json"
+      try:
+          with open(memory_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          print("No medication log found. Add medications first with the track-medication skill.")
+          raise SystemExit(0)
+
+      today = date.today()
+      horizon = today + timedelta(days=days)
+
+      buckets = {"expired": [], "critical": [], "warning": [], "attention": []}
+
+      for med in data.get("medications", []):
+          if not include_inactive and not med.get("active", True):
+              continue
+          if person_filter != "all" and med.get("person") != person_filter:
+              continue
+          expiry_str = med.get("expiry", "")
+          if not expiry_str:
+              continue
+          try:
+              if len(expiry_str) == 7:
+                  expiry_str += "-01"
+              expiry_date = date.fromisoformat(expiry_str)
+          except ValueError:
+              continue
+          if expiry_date < today:
+              buckets["expired"].append(med)
+          elif expiry_date <= today + timedelta(days=7):
+              buckets["critical"].append(med)
+          elif expiry_date <= today + timedelta(days=30):
+              buckets["warning"].append(med)
+          elif expiry_date <= horizon:
+              buckets["attention"].append(med)
+
+      total = sum(len(v) for v in buckets.values())
+      if total == 0:
+          print(f"All medications checked — none expiring within {days} days.")
+          raise SystemExit(0)
+
+      print(f"Expiry scan results (window: {days} days):\n")
+      labels = {"expired": "❌ EXPIRED", "critical": "🔴 CRITICAL (<7d)", "warning": "⚠️  WARNING (<30d)", "attention": "ℹ️  ATTENTION (<90d)"}
+      for bucket, meds in buckets.items():
+          if meds:
+              print(f"{labels[bucket]}")
+              for m in meds:
+                  print(f"  {m['name']} — {m['person']} — expires {m['expiry']} — {m['room']}")
+              print()
+      EOF
+    on_error: continue
+
+outputs:
+  - name: expiry_report
+    from: scan_expiry

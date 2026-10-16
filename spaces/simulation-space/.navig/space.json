@@ -1,0 +1,33 @@
+{
+  "id": "simulation-space",
+  "name": "Simulation",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "The self as a system — debug behavioral failures, track habits as processes, model the people around you, and score probability assessments.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "agent-modeler",
+    "debugger",
+    "habit-engine",
+    "probability-analyst"
+  ],
+  "formations": [
+    "agent-lab",
+    "debug-loop",
+    "habit-sim"
+  ],
+  "skills": [
+    "assess-probability",
+    "log-debug",
+    "run-habit",
+    "update-agent"
+  ],
+  "workflows": [
+    "weekly-simulation-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "debug-loop"
+}

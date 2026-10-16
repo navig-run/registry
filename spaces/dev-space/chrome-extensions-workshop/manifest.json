@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+
+  "_comment_name": "Display name shown in chrome://extensions and CWS listing",
+  "name": "Starter Extension",
+  "version": "1.0.0",
+
+  "_comment_description": "One-line description (≤132 chars). Shown in CWS and extensions page.",
+  "description": "Replace this with what your extension does.",
+
+  "_comment_icons": "Provide 16x16, 48x48, 128x128 PNGs. Used in toolbar, management page, CWS.",
+  "icons": {
+    "16":  "icons/icon-16.png",
+    "48":  "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "_comment_action": "Defines the toolbar button. popup: the HTML to show on click.",
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16":  "icons/icon-16.png",
+      "48":  "icons/icon-48.png"
+    },
+    "default_title": "Starter Extension"
+  },
+
+  "_comment_background": "MV3 service worker — replaces MV2 persistent background page.",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "_comment_content_scripts": "Injected into pages matching 'matches'. Remove if no content script needed.",
+  "content_scripts": [
+    {
+      "_comment_matches": "URL patterns where content.js will be injected.",
+      "matches": ["https://example.com/*", "https://www.example.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+
+  "_comment_permissions": "Only request what you actually use. Each permission is visible to users.",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+
+  "_comment_host_permissions": "Domains your extension can make requests to or read. Use sparingly.",
+  "host_permissions": [
+    "https://example.com/*"
+  ],
+
+  "_comment_web_accessible_resources": "Files the extension makes accessible to web pages (e.g. injected images or CSS).",
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["https://example.com/*"]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+schema_version: "1.0"
+space: studio-space
+updated: "2026-04-05"
+description: >
+  Inbox routing configuration for the studio space.
+  Messages arriving on each channel are dispatched to the owning agent.
+  Unrouted messages escalate to the producer (space lead).
+
+routes:
+  - channel: "#production"
+    owner: producer
+    description: Track composition, arrangement, creative direction, session orchestration
+    triggers:
+      - keyword: ["track", "beat", "arrangement", "compose", "produce", "session", "bpm", "key", "tempo"]
+      - formation: track-production
+    response_mode: immediate
+    notify_on: [session_started, track_complete]
+
+  - channel: "#mixing"
+    owner: mix-engineer
+    description: Mixing, levels, EQ, compression, reverb, spatial placement, stem management
+    triggers:
+      - keyword: ["mix", "level", "eq", "compress", "reverb", "panning", "stereo", "stem", "bus", "send"]
+      - formation: mastering-suite
+    response_mode: immediate
+    notify_on: [mix_ready, revision_needed]
+
+  - channel: "#mastering"
+    owner: mix-engineer
+    description: Mastering, loudness, limiting, format delivery
+    triggers:
+      - keyword: ["master", "loudness", "lufs", "limiter", "true peak", "dither", "final"]
+      - formation: mastering-suite
+    response_mode: immediate
+    notify_on: [master_approved, loudness_fail]
+
+  - channel: "#samples"
+    owner: sound-designer
+    description: Sample library, sound design, synthesis, presets, sample packs
+    triggers:
+      - keyword: ["sample", "preset", "synth", "sound design", "wavetable", "one-shot", "loop", "foley"]
+      - formation: sample-lab
+    response_mode: scheduled
+    schedule: "0 10 * * *"
+    notify_on: [new_samples_cataloged, duplicates_found]
+
+  - channel: "#releases"
+    owner: release-manager
+    description: Distribution, metadata, platform uploads, release scheduling
+    triggers:
+      - keyword: ["release", "distribute", "upload", "metadata", "isrc", "upc", "spotify", "apple music", "bandcamp"]
+      - formation: release-pipeline
+    response_mode: immediate
+    notify_on: [release_submitted, metadata_error, upload_complete]
+
+fallback:
+  owner: producer
+  action: queue
+  notify: true

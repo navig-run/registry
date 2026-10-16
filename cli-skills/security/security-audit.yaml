@@ -1,0 +1,89 @@
+name: Security Audit
+description: Scan open ports, check firewall rules, audit SSH config, and surface exposed secrets
+version: 1.0.0
+category: security
+license: MIT
+
+user_invocable: true
+risk_level: elevated
+
+requires:
+  - nmap
+
+commands:
+  - name: ports
+    syntax: navig skill run security-audit ports [--host <ip>] [--range <start-end>]
+    description: Scan open ports on local host or a target IP (default range 1-65535)
+    risk: elevated
+
+  - name: firewall
+    syntax: navig skill run security-audit firewall
+    description: Show active firewall rules (ufw / iptables / Windows Defender Firewall)
+    risk: safe
+
+  - name: ssh-config
+    syntax: navig skill run security-audit ssh-config [--path <sshd_config>]
+    description: Audit sshd_config for common misconfigurations (root login, password auth, weak ciphers)
+    risk: safe
+
+  - name: auth-log
+    syntax: navig skill run security-audit auth-log [--tail <n>] [--failures-only]
+    description: Parse authentication log for failed/successful login attempts (default last 200 lines)
+    risk: safe
+
+  - name: secrets-scan
+    syntax: navig skill run security-audit secrets-scan [--path <dir>] [--exclude <pattern>]
+    description: Recursively search files for exposed credentials, API keys, and private keys
+    risk: elevated
+
+  - name: full
+    syntax: navig skill run security-audit full [--host <ip>]
+    description: Run all checks and generate a ranked risk report
+    risk: elevated
+
+examples:
+  - title: Check what ports are exposed
+    user: What ports are open on my server?
+    command: navig skill run security-audit ports
+
+  - title: Review firewall rules
+    user: Show me my current firewall rules
+    command: navig skill run security-audit firewall
+
+  - title: Harden SSH
+    user: Check if my SSH config is secure
+    command: navig skill run security-audit ssh-config
+
+  - title: Investigate failed logins
+    user: Are there brute force attempts on my server?
+    command: navig skill run security-audit auth-log --failures-only
+
+  - title: Scan for leaked secrets in a project
+    user: Make sure I haven't accidentally committed any API keys
+    command: navig skill run security-audit secrets-scan --path .
+
+  - title: Full security report
+    user: Give me a complete security audit of this machine
+    command: navig skill run security-audit full
+
+agent_hints:
+  when_to_use: >
+    Use when the user asks about server security, open ports, firewall settings,
+    SSH hardening, failed login attempts, or leaked credentials. Trigger on:
+    "security check", "open ports", "brute force", "ssh config", "firewall rules",
+    "leaked secrets", "security audit", "am I exposed", "harden my server".
+  output_format: >
+    ports: { host, open_ports: [{port, protocol, service, state}] }.
+    ssh-config: { issues: [{severity, setting, current_value, recommendation}] }.
+    auth-log: { failed_attempts: [{ip, count, last_seen}], successful: [{user, ip, time}] }.
+    secrets-scan: { findings: [{file, line, type, snippet_redacted}] }.
+    full: markdown risk report with severity-ranked findings table.
+  follow_up: >
+    After ports, offer to close any non-essential ports via firewall commands.
+    After ssh-config findings, offer to generate a hardened sshd_config snippet.
+    After auth-log, if a high-frequency IP is found, offer to add a fail2ban or firewall rule.
+    After secrets-scan findings, offer to rotate compromised credentials immediately.
+
+platforms:
+  - linux
+  - mac

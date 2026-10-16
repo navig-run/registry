@@ -1,0 +1,43 @@
+id: title-generator
+name: Title Generator
+version: "1.0.0"
+description: Generates SEO-optimised YouTube video title variants based on topic, keywords, and target audience.
+category: seo
+platform: [windows, linux, macos]
+formation: content-planning
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    required: true
+    description: Video topic or subject
+  - name: keywords
+    type: string
+    required: false
+    description: Comma-separated target keywords
+  - name: count
+    type: integer
+    required: false
+    default: 5
+    description: Number of title variants to generate
+  - name: output_file
+    type: string
+    required: false
+    default: content/scripts/titles.txt
+    description: File to save generated titles
+
+steps:
+  - id: ensure-dir
+    name: Ensure output directory
+    shell: true
+    script_windows: "if not exist \"content\\scripts\" mkdir \"content\\scripts\""
+    script_linux: "mkdir -p content/scripts"
+    script_macos: "mkdir -p content/scripts"
+
+  - id: generate
+    name: Generate title variants
+    shell: true
+    script_windows: "echo Topic: {{topic}} > \"{{output_file}}\" && echo Keywords: {{keywords}} >> \"{{output_file}}\" && echo Variants: {{count}} >> \"{{output_file}}\" && echo --- >> \"{{output_file}}\" && echo [Agent will generate {{count}} SEO titles here] >> \"{{output_file}}\""
+    script_linux: "echo 'Topic: {{topic}}' > '{{output_file}}' && echo 'Keywords: {{keywords}}' >> '{{output_file}}' && echo 'Variants: {{count}}' >> '{{output_file}}'"
+    script_macos: "echo 'Topic: {{topic}}' > '{{output_file}}' && echo 'Keywords: {{keywords}}' >> '{{output_file}}' && echo 'Variants: {{count}}' >> '{{output_file}}'"

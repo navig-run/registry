@@ -1,0 +1,40 @@
+name: listing-audit
+description: >
+  Review all active listings across configured channels for SEO gaps, suppressed
+  listings, keyword rank drops, and price competitiveness. Produce a prioritised
+  action list.
+schedule:
+  cron: "0 9 * * MON"
+  timezone: UTC
+  enabled: true
+on_demand: true
+formation: ecommerce-ops
+
+params:
+  - name: platforms
+    description: "Comma-separated platforms to audit (default: all configured)"
+    required: false
+  - name: limit
+    description: 'Max number of listings to audit per platform (default: 50)'
+    required: false
+
+steps:
+  - name: fetch-listings
+    description: Pull active listing data from each platform
+    skill: audit-listings
+    params:
+      mode: full
+
+  - name: check-fees
+    description: Check for fee increases vs. prior period
+    skill: check-fees
+    depends_on: fetch-listings
+
+  - name: generate-action-list
+    description: Produce ranked action list — suppressed first, then SEO gaps, then fee issues
+    depends_on: [fetch-listings, check-fees]
+
+  - name: notify
+    description: Post action list summary to #ecommerce
+    inbox_channel: "#ecommerce"
+    depends_on: generate-action-list

@@ -1,0 +1,69 @@
+id: transcript-generate
+name: "Transcript Generate"
+version: "1.0.0"
+description: "Transcribe audio to text with timestamps using Whisper AI"
+category: content
+platform: [windows, linux, macos]
+formation: episode-production
+author: "NAVIG Community"
+
+parameters:
+  - name: input_path
+    type: string
+    required: true
+    description: "Input audio file path"
+  - name: output_path
+    type: string
+    required: true
+    description: "Output transcript file path"
+  - name: model
+    type: string
+    default: "base"
+    description: "Whisper model size: tiny, base, small, medium, large"
+  - name: language
+    type: string
+    default: "auto"
+    description: "Language code or 'auto' for detection"
+  - name: format
+    type: string
+    default: "txt"
+    description: "Output format: txt, srt, vtt, json"
+
+steps:
+  - id: transcribe
+    env:
+      NAVIG_PARAM_LANGUAGE: "{{language}}"
+      NAVIG_PARAM_INPUT_PATH: "{{input_path}}"
+      NAVIG_PARAM_MODEL: "{{model}}"
+      NAVIG_PARAM_FORMAT: "{{format}}"
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Transcribe Audio"
+    shell: bash
+    script_linux: |
+      LANG_FLAG=""
+      if [ "${NAVIG_PARAM_LANGUAGE}" != "auto" ]; then LANG_FLAG="--language ${NAVIG_PARAM_LANGUAGE}"; fi
+      whisper "${NAVIG_PARAM_INPUT_PATH}" --model ${NAVIG_PARAM_MODEL} $LANG_FLAG --output_format ${NAVIG_PARAM_FORMAT} --output_dir "$(dirname "${NAVIG_PARAM_OUTPUT_PATH}")"
+    script_windows: |
+      $langFlag = @()
+      if ("$($env:NAVIG_PARAM_LANGUAGE)" -ne "auto") { $langFlag = @("--language", $env:NAVIG_PARAM_LANGUAGE) }
+      whisper "$($env:NAVIG_PARAM_INPUT_PATH)" --model $($env:NAVIG_PARAM_MODEL) $langFlag --output_format $($env:NAVIG_PARAM_FORMAT) --output_dir (Split-Path "$($env:NAVIG_PARAM_OUTPUT_PATH)")
+    script_macos: |
+      LANG_FLAG=""
+      if [ "${NAVIG_PARAM_LANGUAGE}" != "auto" ]; then LANG_FLAG="--language ${NAVIG_PARAM_LANGUAGE}"; fi
+      whisper "${NAVIG_PARAM_INPUT_PATH}" --model ${NAVIG_PARAM_MODEL} $LANG_FLAG --output_format ${NAVIG_PARAM_FORMAT} --output_dir "$(dirname "${NAVIG_PARAM_OUTPUT_PATH}")"
+
+  - id: verify-transcript
+    env:
+      NAVIG_PARAM_OUTPUT_PATH: "{{output_path}}"
+    name: "Verify Transcript"
+    shell: bash
+    script_linux: |
+      wc -w "${NAVIG_PARAM_OUTPUT_PATH}" | awk '{print "Word count:", $1}'
+      head -20 "${NAVIG_PARAM_OUTPUT_PATH}"
+    script_windows: |
+      $content = Get-Content "$($env:NAVIG_PARAM_OUTPUT_PATH)"
+      Write-Host "Word count: $(($content | Measure-Object -Word).Words)"
+      $content | Select-Object -First 20
+    script_macos: |
+      wc -w "${NAVIG_PARAM_OUTPUT_PATH}" | awk '{print "Word count:", $1}'
+      head -20 "${NAVIG_PARAM_OUTPUT_PATH}"

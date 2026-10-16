@@ -1,0 +1,31 @@
+# Paper mail and scans are personal data: they are filed by `navig paperwork` and, for
+# identity/health documents, encrypted into `navig cabinet`. Keep the files themselves
+# off the record — only the space's notes and plans are committed.
+inbox/*
+!inbox/.gitkeep
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.tif
+*.tiff
+
+# `navig paperwork` state: the plan, receipts and quarantine name every letter it read.
+.navig/paperwork/
+
+# Runtime state — your own data. Only the shipped seeds and READMEs are tracked.
+.navig/memory/*
+!.navig/memory/README.md
+!.navig/memory/.gitkeep
+!.navig/memory/*.example.*
+.navig/state/*
+!.navig/state/.gitkeep
+.navig/inbox/*
+!.navig/inbox/.gitkeep
+!.navig/inbox/README.md
+!.navig/inbox/*.example.*
+!.navig/inbox/docs/
+!.navig/inbox/shortcuts/
+.navig/logs/*
+!.navig/logs/.gitkeep

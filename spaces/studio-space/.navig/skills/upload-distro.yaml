@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────
+# Skill: Upload to Distributor
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: upload-distro
+name: Upload to Distributor
+version: "1.0.0"
+description: |
+  Package and validate release assets for distribution platforms.
+  Creates a distribution-ready folder with manifests and checksums.
+category: release
+platform:
+  - windows
+  - linux
+  - macos
+formation: release-pipeline
+author: navig-run
+
+parameters:
+  - name: release_dir
+    type: string
+    description: Path to the release directory.
+    default: null
+  - name: distributor
+    type: string
+    description: Target distributor (distrokid, cdbaby, tunecore, manual).
+    default: manual
+  - name: release_date
+    type: string
+    description: Scheduled release date (YYYY-MM-DD).
+    default: null
+
+steps:
+  - id: validate
+    name: Validate release assets
+    shell: true
+    script_windows: |
+      echo Validating release at {{release_dir}}...
+      if not exist "{{release_dir}}\wav" (echo ERROR: Missing WAV master & exit /b 1)
+      dir /b "{{release_dir}}\wav\*.wav" >nul 2>&1
+      if %errorlevel% neq 0 (echo ERROR: No WAV files found & exit /b 1)
+      echo Assets validated.
+    script_linux: |
+      echo "Validating release at {{release_dir}}..."
+      if [ ! -d "{{release_dir}}/wav" ]; then echo "ERROR: Missing WAV master" && exit 1; fi
+      if ! ls "{{release_dir}}/wav/"*.wav >/dev/null 2>&1; then echo "ERROR: No WAV files found" && exit 1; fi
+      echo "Assets validated."
+    script_macos: |
+      echo "Validating release at {{release_dir}}..."
+      if [ ! -d "{{release_dir}}/wav" ]; then echo "ERROR: Missing WAV master" && exit 1; fi
+      if ! ls "{{release_dir}}/wav/"*.wav >/dev/null 2>&1; then echo "ERROR: No WAV files found" && exit 1; fi
+      echo "Assets validated."
+
+  - id: checksum
+    name: Generate checksums
+    shell: true
+    script_windows: |
+      for %%f in ("{{release_dir}}\wav\*.wav") do certutil -hashfile "%%f" SHA256 >> "{{release_dir}}\checksums.txt"
+      echo Checksums written to {{release_dir}}\checksums.txt
+    script_linux: |
+      sha256sum "{{release_dir}}/wav/"*.wav > "{{release_dir}}/checksums.txt"
+      echo "Checksums written to {{release_dir}}/checksums.txt"
+    script_macos: |
+      shasum -a 256 "{{release_dir}}/wav/"*.wav > "{{release_dir}}/checksums.txt"
+      echo "Checksums written to {{release_dir}}/checksums.txt"
+
+  - id: manifest
+    name: Create distribution manifest
+    shell: true
+    script_windows: |
+      echo {"distributor":"{{distributor}}","release_date":"{{release_date}}","created":"%date%"} > "{{release_dir}}\distro-manifest.json"
+    script_linux: |
+      echo "{\"distributor\":\"{{distributor}}\",\"release_date\":\"{{release_date}}\",\"created\":\"$(date -Iseconds)\"}" > "{{release_dir}}/distro-manifest.json"
+    script_macos: |
+      echo "{\"distributor\":\"{{distributor}}\",\"release_date\":\"{{release_date}}\",\"created\":\"$(date -Iseconds)\"}" > "{{release_dir}}/distro-manifest.json"

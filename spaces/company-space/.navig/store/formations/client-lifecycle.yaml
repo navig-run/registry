@@ -1,0 +1,62 @@
+id: client-lifecycle
+name: Client Lifecycle
+version: "1.0.0"
+description: |
+  Full client journey from prospect through active engagement to retention.
+  Sales leads intake and qualification, ops handles onboarding logistics,
+  project-lead manages delivery, sales monitors satisfaction and retention.
+
+agents:
+  lead: sales
+  supporting:
+    - ops-manager
+    - project-lead
+
+trigger_conditions:
+  - New lead received (any channel)
+  - Lead qualified and ready for proposal
+  - Client contract signed → onboarding
+  - Project delivered → satisfaction check
+  - Client inactive >90 days → retention outreach
+  - Client feedback received
+
+action_scope:
+  - Lead intake and qualification
+  - Proposal drafting and negotiation
+  - Contract preparation and signing workflow
+  - Client onboarding coordination
+  - Delivery handoff to project-lead
+  - Post-delivery satisfaction monitoring
+  - Retention risk detection and outreach
+  - Client record maintenance
+
+skills_used:
+  - lead-qualify
+  - contract-draft
+
+workflows_used:
+  - lead-intake
+
+communication:
+  channels:
+    - "#sales"
+    - "#projects"
+    - "#ops"
+  escalation: chief
+  notify_on:
+    - high-value lead qualified
+    - contract pending signature >7 days
+    - client satisfaction score <7/10
+    - retention risk detected
+
+context_memory:
+  read:
+    - .navig/config.yaml
+    - clients/
+    - leads/
+    - contracts/
+  write:
+    - leads/
+    - clients/
+    - contracts/
+    - reports/

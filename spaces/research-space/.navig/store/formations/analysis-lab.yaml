@@ -1,0 +1,39 @@
+id: analysis-lab
+name: Analysis Lab
+version: "1.0.0"
+description: >
+  Answer questions from the stored data. Analyst leads, querying the database and
+  synthesizing cited findings; Scout supports by chasing gaps the data can't fill.
+
+agents:
+  lead: analyst
+  supporting: [scout]
+
+trigger_conditions:
+  - "#analysis inbox activity"
+  - "A research question against existing datasets"
+  - "A finding needs verification against original sources"
+
+action_scope:
+  - ALLOW: db-query
+  - ALLOW: web-search
+  - ALLOW: write to .navig/memory/findings.json
+  - DENY: modify datasets or the database
+
+skills_used:
+  - db-query
+  - web-search
+
+workflows_used:
+  - weekly-research-review
+
+communication:
+  inbox_channel: "#analysis"
+  escalation: operator
+  notify_on:
+    - finding_logged
+    - data_gap_identified
+
+context_memory:
+  read: [datasets.json, findings.json, sources.json]
+  write: [findings.json]

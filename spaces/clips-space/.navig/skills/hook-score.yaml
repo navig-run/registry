@@ -1,0 +1,46 @@
+id: hook-score
+name: Hook Score
+version: "1.0.0"
+description: "Score hook effectiveness based on attention metrics and proven patterns."
+category: content
+platform: [windows, linux, macos]
+formation: clip-factory
+author: navig-run
+
+parameters:
+  - name: hook_text
+    type: string
+    required: true
+    description: "The hook text to score"
+  - name: hook_type
+    type: string
+    default: visual
+    description: "Hook type: visual, text, audio, question"
+  - name: platform
+    type: string
+    default: tiktok
+    description: "Target platform for scoring context"
+
+steps:
+  - id: analyse-pattern
+    name: Analyse hook against proven patterns
+    shell: bash
+    script_windows: |
+      echo "Analysing hook pattern: curiosity gap, pattern interrupt, emotional trigger..."
+      echo "Hook: {{hook_text}}"
+    script_linux: |
+      echo "Analysing hook pattern: curiosity gap, pattern interrupt, emotional trigger..."
+      echo "Hook: {{hook_text}}"
+    script_macos: |
+      echo "Analysing hook pattern: curiosity gap, pattern interrupt, emotional trigger..."
+      echo "Hook: {{hook_text}}"
+
+  - id: score-metrics
+    name: Calculate hook score
+    shell: bash
+    script_windows: |
+      echo "Scoring: clarity=?/10 urgency=?/10 curiosity=?/10 relevance=?/10"
+    script_linux: |
+      echo "Scoring: clarity=?/10 urgency=?/10 curiosity=?/10 relevance=?/10"
+    script_macos: |
+      echo "Scoring: clarity=?/10 urgency=?/10 curiosity=?/10 relevance=?/10"

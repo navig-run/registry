@@ -1,0 +1,39 @@
+id: debug-loop
+name: Debug Loop
+version: "1.0.0"
+description: >
+  Default formation. Behavioral debug loop. Debugger leads with Probability
+  Analyst supporting on decision-linked failure analysis.
+
+agents:
+  lead: debugger
+  supporting: [probability-analyst]
+
+trigger_conditions:
+  - "#debug inbox activity"
+  - "Open debug ticket past retest date"
+  - "Repeating failure pattern detected in habits"
+
+action_scope:
+  - ALLOW: log-debug
+  - ALLOW: assess-probability
+  - ALLOW: write to .navig/memory/debug-log.json
+  - ALLOW: write to .navig/memory/probability-trees.json
+
+skills_used:
+  - log-debug
+  - assess-probability
+
+workflows_used:
+  - weekly-simulation-review
+
+communication:
+  inbox_channel: "#debug"
+  escalation: operator
+  notify_on:
+    - debug_ticket_past_retest
+    - repeating_pattern_4_instances
+
+context_memory:
+  read: [debug-log.json, probability-trees.json, habits.json]
+  write: [debug-log.json, probability-trees.json]

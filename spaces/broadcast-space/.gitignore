@@ -1,0 +1,67 @@
+# Audio files
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+*.m4a
+*.wma
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Large media
+*.zip
+*.tar.gz
+*.rar
+
+# Transcripts (generated)
+*.srt
+*.vtt
+
+# RSS feed outputs
+feed.xml
+*.rss
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.secret
+
+# Runtime
+__pycache__/
+*.pyc
+.cache/
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# NAVIG runtime
+.navig/state/
+.navig/proposed/
+
+# Pack artifacts
+*.navig-pack
+dist/
+
+# Working state (the space ships *.example.* seeds only)
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml

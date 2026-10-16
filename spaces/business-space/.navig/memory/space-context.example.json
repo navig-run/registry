@@ -1,0 +1,11 @@
+{
+  "primary_channels": ["amazon-fba", "ebay", "etsy", "own-website"],
+  "primary_currency": "USD",
+  "accounting_period": "calendar-month",
+  "target_margin_net": 25,
+  "repricer_tool": null,
+  "ppc_platform": "amazon-ads",
+  "affiliate_platform": null,
+  "bookkeeping_tool": null,
+  "notes": "Update this file as tools and platforms are confirmed."
+}

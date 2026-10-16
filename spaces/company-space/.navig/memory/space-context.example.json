@@ -1,0 +1,36 @@
+{
+  "identity": {
+    "company_name": "{{COMPANY_NAME}}",
+    "entity_type": "{{ENTITY_TYPE}}",
+    "company_id": "{{COMPANY_ID}}",
+    "address": "{{COMPANY_ADDRESS}}",
+    "founded": "{{FOUNDED_YEAR}}",
+    "owner": "{{OWNER_NAME}}",
+    "contact_email": "{{COMPANY_EMAIL}}",
+    "contact_phone": "{{COMPANY_PHONE}}"
+  },
+  "services": [
+    "web-development",
+    "graphic-design",
+    "sys-admin",
+    "seo",
+    "copywriting-translation",
+    "digital-marketing"
+  ],
+  "products": [],
+  "active_projects": [],
+  "tools": {
+    "hosting": "{{HOSTING_PROVIDER}}",
+    "version_control": "git",
+    "project_management": "{{PM_TOOL}}",
+    "communication": "{{COMM_TOOL}}"
+  },
+  "tax_regime": {
+    "type": "{{TAX_REGIME}}",
+    "tax_rate": 0.0,
+    "threshold": 0,
+    "ceiling": 0,
+    "exemption_article": ""
+  },
+  "notes": "Configure all {{VARIABLE}} placeholders in config.yaml before use."
+}

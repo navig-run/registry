@@ -1,0 +1,9 @@
+version: "1.0"
+routes:
+  - channel: "#deploys"
+    description: "Deploy events and release notifications"
+    default: true
+  - channel: "#rollbacks"
+    description: "Rollback events and incident-triggered reverts"
+  - channel: "#diffs"
+    description: "Diff summaries and change notes"

@@ -1,0 +1,47 @@
+id: live-session
+name: "Live Session"
+version: "1.0.0"
+description: |
+  Real-time live streaming management. Host leads on-air while
+  sound-engineer monitors audio quality and community-manager handles
+  live chat and engagement. Post-stream, clips are extracted for social.
+agents:
+  lead: host
+  supporting:
+    - sound-engineer
+    - community-manager
+    - publisher
+trigger_conditions:
+  - "Live stream scheduled"
+  - "Going live now"
+  - "Post-stream processing"
+action_scope:
+  ALLOW:
+    - Monitor audio levels in real-time
+    - Engage with live chat
+    - Extract clips post-stream
+    - Upload recording
+  DENY:
+    - Cut stream without host approval
+    - Share viewer private data
+    - Skip post-stream backup
+skills_used:
+  - audio-record
+  - noise-reduce
+  - clip-extract
+  - loudness-normalize
+workflows_used:
+  - live-show
+communication:
+  inbox_channel: "#episodes"
+  escalation: operator
+  notify_on:
+    - stream_started
+    - stream_ended
+    - clips_extracted
+context_memory:
+  read:
+    - space-context
+  write:
+    - space-context
+example_invocation: "Go live on YouTube — Q&A session with listeners, 60 minutes"

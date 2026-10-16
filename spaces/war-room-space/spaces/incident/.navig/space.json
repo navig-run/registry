@@ -1,0 +1,17 @@
+{
+  "id": "incident",
+  "name": "Incident",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "ready",
+  "description": "Structured incident triage from alert to post-mortem — everything you need is already open.",
+  "author": "navig-run",
+  "license": "MIT",
+  "parent": "war-room-space",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

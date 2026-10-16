@@ -1,0 +1,23 @@
+name: URL
+description: Shorten the URL on the clipboard via TinyURL and copy the short link back.
+version: 1.0.0
+category: web
+license: MIT
+author: navig-run
+
+user_invocable: true
+risk_level: safe
+platforms: [windows]
+entrypoint: ../../bin/devtools.ps1
+
+commands:
+  - name: shorten
+    syntax: navig skill run url shorten
+    description: Shorten the clipboard URL with TinyURL and copy the result back to the clipboard
+    risk: safe
+
+agent_hints:
+  when_to_use: >
+    Use to shorten a long URL the user copied. Trigger on "shorten this url", "tinyurl this".
+  output_format: >
+    Prints original and short URL; the short URL is placed on the clipboard.

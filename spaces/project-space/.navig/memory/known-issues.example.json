@@ -1,0 +1,10 @@
+{
+  "issues": [
+    {
+      "id": "ISS-001",
+      "description": "No projects added yet",
+      "action": "Run 'navig flow run new-project' to create your first project",
+      "severity": "info"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+id: fiction-workshop
+name: Fiction Workshop
+version: "1.0.0"
+description: >
+  End-to-end formation for writing and editing long-form fiction. Storyteller
+  leads with first-draft output; Editor handles structural, line, and copy
+  passes. Supports novel, novella, and short-story formats.
+
+agents:
+  lead: storyteller
+  supporting:
+    - editor
+
+trigger_conditions:
+  - "Keyword in #fiction: outline, chapter, draft, characters, plot"
+  - "Workflow: first-draft (type=fiction)"
+  - "Manual: @fiction-workshop"
+
+action_scope:
+  - book-writing/
+  - .navig/wiki/architecture.md
+
+skills_used:
+  - outline-draft
+  - word-count
+  - readability-score
+
+workflows_used:
+  - first-draft
+  - editorial-review
+
+communication:
+  inbox_channel: "#fiction"
+  escalation: operator
+  notify_on:
+    - draft_complete
+    - edit_complete
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/wiki/architecture.md
+  write:
+    - .navig/wiki/architecture.md
+
+example_invocation: "@fiction-workshop draft chapter-04 --style literary-thriller"

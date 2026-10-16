@@ -1,0 +1,41 @@
+id: portfolio-ops
+name: Portfolio Ops
+version: "1.0.0"
+description: >
+  Default formation for the empire space. Provides the ongoing portfolio
+  overview: venture health, revenue summary, and strategic priorities.
+  Portfolio Commander leads with Revenue Tracker as support.
+
+agents:
+  lead: portfolio-commander
+  supporting: [revenue-tracker]
+
+trigger_conditions:
+  - "Weekly portfolio review workflow"
+  - "Manual: activate the portfolio-ops formation"
+  - "Venture health score drops below threshold"
+
+action_scope:
+  - ALLOW: track-revenue
+  - ALLOW: write to .navig/memory/ventures.json
+  - ALLOW: write to .navig/memory/revenue.json
+  - ALLOW: write to .navig/memory/space-context.json
+  - DENY: advance venture stage without evidence (route to venture-review)
+
+skills_used:
+  - track-revenue
+
+workflows_used:
+  - weekly-portfolio-review
+  - monthly-empire-review
+
+communication:
+  inbox_channel: "#empire"
+  escalation: operator
+  notify_on:
+    - venture_health_critical
+    - portfolio_mrr_decline_2mo
+
+context_memory:
+  read: [ventures.json, revenue.json, space-context.json]
+  write: [ventures.json, revenue.json, space-context.json]

@@ -1,0 +1,41 @@
+name: monthly-billing-run
+description: |
+  End-of-month billing workflow. Collects all unbilled time for each active
+  client, creates draft invoices, and notifies the operator for review before
+  dispatch.
+
+schedule:
+  cron: "0 9 28 * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: billing-cycle
+requires_approval: true
+
+steps:
+  - id: collect_clients
+    name: "Identify Active Clients"
+    agent: account-manager
+    action: list_active_clients
+    on_error: fail
+
+  - id: create_invoices
+    name: "Create Draft Invoices"
+    depends_on: [collect_clients]
+    skill: create-invoice
+    params:
+      client: "{{steps.collect_clients.output.each}}"
+      period: "{{date.year}}-{{date.month}}"
+      currency: "{{client.currency}}"
+      due_days: 30
+    on_error: continue
+
+  - id: billing_summary
+    name: "Generate Billing Summary for Approval"
+    depends_on: [create_invoices]
+    agent: billing-officer
+    action: summarize_draft_invoices
+    params:
+      deliver_to: operator
+      require_approval: true

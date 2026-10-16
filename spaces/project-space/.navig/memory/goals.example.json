@@ -1,0 +1,28 @@
+{
+  "goals": [
+    {
+      "id": "G001",
+      "description": "Every project has a clearly stated done-state before first task is logged",
+      "metric": "All active projects have done_state field populated",
+      "status": "active"
+    },
+    {
+      "id": "G002",
+      "description": "No blocker persists for more than 3 days without a next action",
+      "metric": "blockers with age > 3 days AND no next_action = 0",
+      "status": "active"
+    },
+    {
+      "id": "G003",
+      "description": "Run weekly standup every week",
+      "metric": "standup_streak >= 4",
+      "status": "active"
+    },
+    {
+      "id": "G004",
+      "description": "Close projects with a written outcome",
+      "metric": "All completed projects have close.md",
+      "status": "active"
+    }
+  ]
+}

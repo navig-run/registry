@@ -1,0 +1,46 @@
+id: incident-response
+name: Incident Response
+version: "1.0.0"
+description: >
+  Active incident management. Incident Commander leads; Site Reliability handles
+  technical investigation and mitigation. High-priority — responds to #incidents
+  and #alerts channels immediately.
+
+agents:
+  lead: incident-commander
+  supporting:
+    - site-reliability
+    - pipeline-engineer
+
+trigger_conditions:
+  - "Any message in #incidents"
+  - "Alert severity=critical or high in #alerts"
+  - "incident-triage workflow invoked"
+
+action_scope:
+  - runbooks/
+
+skills_used:
+  - health-probe
+  - alert-triage
+  - rollback
+
+workflows_used:
+  - incident-triage
+
+communication:
+  inbox_channel: "#incidents"
+  escalation: operator
+  notify_on:
+    - incident_opened
+    - severity_change
+    - incident_resolved
+    - postmortem_filed
+
+context_memory:
+  read:
+    - .navig/memory/known-issues.json
+  write:
+    - .navig/memory/known-issues.json
+
+example_invocation: "@incident-response open --severity critical --title 'Database connection pool exhausted'"

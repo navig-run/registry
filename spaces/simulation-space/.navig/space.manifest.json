@@ -1,0 +1,28 @@
+{
+  "space_id": "simulation-space",
+  "schema_version": "2.0",
+  "type": "work",
+  "name": "Simulation",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-12",
+  "description": "Personal operating system simulator — debug habits, model agents, track probability trees, and run behavioral experiments on the self as system.",
+  "tags": [
+    "simulation",
+    "habits",
+    "debug",
+    "probability",
+    "agent-modeling",
+    "behavioral"
+  ],
+  "theme": {
+    "accent_color": "#00FF41",
+    "background_hint": "terminal-dark",
+    "animation_hint": "terminal-boot-sequence",
+    "icon": "💻",
+    "tone": "cold-precision"
+  },
+  "author": "navig-run",
+  "tier": "work",
+  "status": "active"
+}

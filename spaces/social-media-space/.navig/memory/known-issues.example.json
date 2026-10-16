@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ISS-001",
+    "title": "No brands configured",
+    "description": "brands/ is empty. Copy brands/_template/ to brands/{your-brand-slug}/ and fill voice.json, accounts.json and guidelines.md to activate all agents.",
+    "severity": "high",
+    "status": "open",
+    "detected_by": "content-strategist"
+  },
+  {
+    "id": "ISS-002",
+    "title": "No analytics data",
+    "description": "analytics/ is empty. Log first post engagement after publishing to activate analytics-watcher trend analysis.",
+    "severity": "low",
+    "status": "open",
+    "detected_by": "analytics-watcher"
+  }
+]

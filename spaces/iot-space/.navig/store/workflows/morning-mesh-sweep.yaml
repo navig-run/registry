@@ -1,0 +1,101 @@
+name: morning-mesh-sweep
+description: |
+  Scheduled morning IoT mesh sweep. Runs device discovery, telemetry collection,
+  offline detection, and a light segmentation check across the whole fleet.
+  Delivers a consolidated status report to the space inbox.
+
+schedule:
+  cron: "0 7 * * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: discovery-sweep
+
+steps:
+  - id: discover
+    name: "Mesh Discovery"
+    skill: device-discover
+    params:
+      range: "auto"          # reads iot_subnet from space config
+      method: all
+      output_format: json
+    on_error: continue       # a transient discovery glitch shouldn't abort the sweep
+    timeout_seconds: 120
+
+  - id: check_registry
+    name: "Compare Discovery to Registry"
+    depends_on: [discover]
+    agent: beacon
+    action: compare_discovery_to_registry
+    params:
+      scan_result: "{{steps.discover.output}}"
+      registry_path: ".navig/memory/device-registry.json"
+    on_error: continue
+
+  - id: telemetry
+    name: "Collect Telemetry"
+    skill: sensor-telemetry
+    params:
+      topic: "tele/#"
+      duration: 30
+      battery_threshold: 15
+    parallel: true
+    timeout_seconds: 60
+    on_error: continue
+
+  - id: offline_check
+    name: "Detect Offline Devices"
+    depends_on: [telemetry, check_registry]
+    agent: sensor
+    action: detect_offline_devices
+    params:
+      registry: "{{steps.check_registry.output}}"
+      telemetry: "{{steps.telemetry.output}}"
+    timeout_seconds: 30
+    on_error: continue
+
+  - id: segmentation_glance
+    name: "Quick Segmentation Check"
+    skill: vlan-audit
+    params:
+      iot_subnet: "auto"
+      trusted_subnet: "192.168.1.0/24"
+    timeout_seconds: 90
+    on_error: continue
+
+  - id: new_devices_alert
+    name: "Alert on Unknown Devices"
+    depends_on: [check_registry]
+    agent: warden
+    action: alert_unknown_devices
+    params:
+      unknown_devices: "{{steps.check_registry.unknown}}"
+    condition: "{{steps.check_registry.unknown | length}} > 0"
+
+  - id: write_memory
+    name: "Write Health Snapshot to Memory"
+    depends_on: [telemetry, offline_check]
+    agent: sensor
+    action: write_memory
+    params:
+      file: ".navig/memory/health-snapshots.json"
+      data:
+        timestamp: "{{now_iso}}"
+        telemetry: "{{steps.telemetry.output}}"
+        offline: "{{steps.offline_check.output}}"
+
+  - id: report
+    name: "Compose & Deliver Morning Report"
+    depends_on: [discover, telemetry, offline_check, segmentation_glance]
+    agent: broker
+    action: compose_report
+    params:
+      template: "morning-mesh-sweep"
+      sections:
+        - discovery: "{{steps.discover.output}}"
+        - telemetry: "{{steps.telemetry.output}}"
+        - offline: "{{steps.offline_check.output}}"
+        - segmentation: "{{steps.segmentation_glance.output}}"
+      deliver_to: inbox
+      channel: "#ops"

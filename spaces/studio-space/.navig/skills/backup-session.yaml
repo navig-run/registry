@@ -1,0 +1,75 @@
+# ─────────────────────────────────────────────
+# Skill: Backup Session
+# Space: studio-space
+# ─────────────────────────────────────────────
+
+id: backup-session
+name: Backup Session
+version: "1.0.0"
+description: |
+  Create a timestamped compressed archive of a session or release directory.
+  Verifies archive integrity after creation.
+category: utility
+platform:
+  - windows
+  - linux
+  - macos
+formation: track-production
+author: navig-run
+
+parameters:
+  - name: session_dir
+    type: string
+    description: Path to the session directory to back up.
+    default: null
+  - name: check_only
+    type: boolean
+    description: When true, only check if a recent backup exists.
+    default: false
+  - name: max_age_hours
+    type: integer
+    description: Maximum age in hours for check_only mode.
+    default: 24
+
+steps:
+  - id: backup
+    name: Create backup archive
+    shell: true
+    condition: "params.check_only == false"
+    script_windows: |
+      set TIMESTAMP=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+      set TIMESTAMP=%TIMESTAMP: =0%
+      set BACKUP_NAME=backup_%TIMESTAMP%.zip
+      powershell -Command "Compress-Archive -Path '{{session_dir}}\*' -DestinationPath '{{session_dir}}\..\%BACKUP_NAME%'"
+      echo Backup created: %BACKUP_NAME%
+    script_linux: |
+      TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+      BACKUP_NAME="backup_${TIMESTAMP}.tar.gz"
+      PARENT=$(dirname "{{session_dir}}")
+      tar -czf "${PARENT}/${BACKUP_NAME}" -C "{{session_dir}}" .
+      echo "Backup created: ${PARENT}/${BACKUP_NAME}"
+    script_macos: |
+      TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+      BACKUP_NAME="backup_${TIMESTAMP}.tar.gz"
+      PARENT=$(dirname "{{session_dir}}")
+      tar -czf "${PARENT}/${BACKUP_NAME}" -C "{{session_dir}}" .
+      echo "Backup created: ${PARENT}/${BACKUP_NAME}"
+
+  - id: verify
+    name: Verify archive integrity
+    shell: true
+    condition: "params.check_only == false"
+    script_windows: |
+      echo Verifying backup integrity...
+      powershell -Command "Expand-Archive -Path '{{session_dir}}\..\backup_*.zip' -DestinationPath '%TEMP%\verify_backup' -Force; Remove-Item -Recurse '%TEMP%\verify_backup'"
+      echo Backup verified.
+    script_linux: |
+      echo "Verifying backup integrity..."
+      PARENT=$(dirname "{{session_dir}}")
+      LATEST=$(ls -t "${PARENT}/backup_"*.tar.gz 2>/dev/null | head -1)
+      tar -tzf "$LATEST" >/dev/null && echo "Backup verified: $LATEST"
+    script_macos: |
+      echo "Verifying backup integrity..."
+      PARENT=$(dirname "{{session_dir}}")
+      LATEST=$(ls -t "${PARENT}/backup_"*.tar.gz 2>/dev/null | head -1)
+      tar -tzf "$LATEST" >/dev/null && echo "Backup verified: $LATEST"

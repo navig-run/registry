@@ -1,0 +1,21 @@
+{
+  "id": "radar-space",
+  "name": "Radar Space",
+  "version": "1.0.0",
+  "tier": "platform",
+  "status": "planned",
+  "description": "Resource costs and cloud spend — tracked before they surprise you.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "capability_deps": [
+    "storage",
+    "tools",
+    "agent"
+  ]
+}

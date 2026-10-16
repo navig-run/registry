@@ -1,0 +1,41 @@
+id: venture-review
+name: Venture Review
+version: "1.0.0"
+description: >
+  Formation for venture evaluation and stage advancement. Venture Scout leads
+  with Portfolio Commander providing strategic context for advancement decisions.
+
+agents:
+  lead: venture-scout
+  supporting: [portfolio-commander]
+
+trigger_conditions:
+  - "advance-stage skill invoked"
+  - "New venture pipeline request"
+  - "Venture stagnant at stage > 90 days"
+  - "Manual: activate the venture-review formation"
+
+action_scope:
+  - ALLOW: advance-stage
+  - ALLOW: write to .navig/memory/ventures.json
+  - ALLOW: write to .navig/memory/decisions.json
+  - DENY: advance stage without evidence
+  - DENY: archive without operator approval
+
+skills_used:
+  - advance-stage
+  - log-decision
+
+workflows_used:
+  - monthly-empire-review
+
+communication:
+  inbox_channel: "#ventures"
+  escalation: portfolio-commander
+  notify_on:
+    - stage_advancement_approved
+    - venture_stagnant_90_days
+
+context_memory:
+  read: [ventures.json, decisions.json]
+  write: [ventures.json, decisions.json]

@@ -1,0 +1,50 @@
+﻿name: Homelab Node
+description: Standard agent formation for a self-hosted homelab node
+version: 1.1.0
+license: MIT
+
+# A formation is a named group of agent roles that work together.
+# Each agent has a role, optional skill bindings, and optional schedule.
+agents:
+  - id: homelab-ops
+    name: Homelab Ops
+    role: >
+      Execute homelab tasks: Docker management, database checks, file operations,
+      remote command execution. Default hands-on agent for the operator.
+    bound_skills:
+      - network-scan
+      - system-health
+      - docker-ops
+
+  - id: homelab-guardian
+    name: Security Guardian
+    role: >
+      Passive sentinel: monitor for anomalies, unauthorized SSH attempts,
+      unusual processes, open ports, and changed firewall rules.
+      Alert immediately on anything CRITICAL.
+    bound_skills:
+      - security-audit
+    alert_channel: telegram   # uses default configured channel
+
+  - id: homelab-chronicler
+    name: Daily Chronicler
+    role: >
+      Summarize the day's events, incidents, and resolved issues into a
+      concise digest. Include one recommended action for tomorrow.
+    bound_skills:
+      - system-health
+    schedule: "0 20 * * *"   # 8 PM daily
+    output: telegram
+
+trigger:
+  on: space_activated
+  actions:
+    - run_skill: system-health vitals
+    - run_skill: network-scan scan
+    - notify: "Homelab formation active. Running initial health check."
+
+# Escalation policy: what happens when guardian raises CRITICAL
+escalation:
+  critical:
+    - notify: telegram
+    - log: ~/.navig/logs/incidents.jsonl

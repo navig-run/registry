@@ -1,0 +1,22 @@
+{
+  "name": "persona-space",
+  "version": "1.0.0",
+  "description": "Design exactly how your agent thinks, speaks, and decides",
+  "owner": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "agent",
+    "memory",
+    "vault"
+  ],
+  "config_key": null,
+  "viral_hook": "Publish your agent persona to the gallery — others can fork and run it in 10 seconds",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

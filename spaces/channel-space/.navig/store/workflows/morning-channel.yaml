@@ -1,0 +1,71 @@
+name: morning-channel
+description: |
+  Daily morning briefing for channel operations. Checks overnight
+  analytics, reviews scheduled content, scans for trending topics,
+  and provides a summary of the day's priorities.
+
+schedule:
+  cron: "0 8 * * 1-5"
+  timezone: UTC
+  enabled: true
+
+on_demand: true
+formation: video-production
+
+steps:
+  - id: overnight-analytics
+    name: Pull overnight analytics
+    skill: analytics-pull
+    params:
+      period: last_24_hours
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+
+  - id: check-comments
+    name: Scan new comments
+    skill: null
+    agent: showrunner
+    action: scan_comments
+    params:
+      flag_negative: true
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 60
+    parallel: true
+
+  - id: trend-scan
+    name: Morning trend scan
+    skill: competitor-scan
+    params:
+      focus: breaking_trends
+      limit: 5
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 120
+    parallel: true
+
+  - id: check-schedule
+    name: Review today's schedule
+    skill: null
+    agent: showrunner
+    action: review_schedule
+    params:
+      date: today
+    depends_on: []
+    on_error: continue
+    timeout_seconds: 15
+    parallel: true
+
+  - id: morning-brief
+    name: Generate morning briefing
+    skill: null
+    agent: showrunner
+    action: morning_briefing
+    params:
+      include_analytics: true
+      include_trends: true
+      include_schedule: true
+    depends_on: [overnight-analytics, check-comments, trend-scan, check-schedule]
+    on_error: abort
+    timeout_seconds: 30

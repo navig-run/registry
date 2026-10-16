@@ -1,0 +1,498 @@
+{
+  "version": "2.4.0",
+  "updated": "2026-10-16",
+  "total": 44,
+  "conventions": {
+    "internal": "Entries with \"internal\": true are scaffolds, templates, or sub-space internals — registered for count integrity but not listable products.",
+    "marketplace": "Optional per-entry Harbor Bay pricing block. Absent = free. See the repository README, section 'Harbor Bay pricing'.",
+    "sub_spaces": "Paths of real nested spaces, relative to the parent space folder. Logical relationships between independent spaces are not listed here.",
+    "path": "Folder under spaces/ when it differs from id (only social-media, whose paid grant item:social-media predates the folder name)."
+  },
+  "tiers": {
+    "personal": "Spaces about your personal life — self, home, health, relationships, growth",
+    "work": "Spaces about professional and business domains — company, clients, code, infrastructure",
+    "studio": "Spaces for building and configuring NAVIG itself — agent, tools, packages",
+    "platform": "Operational dashboards — deployments, cost tracking, incidents",
+    "community": "Spaces for sharing, showcasing, and remixing with others",
+    "labs": "Experimental opt-in features — multi-agent formations, swarms, councils"
+  },
+  "spaces": [
+    {
+      "id": "system-space",
+      "tier": "studio",
+      "tagline": "OS & filesystem operator — organize, migrate, dedupe, convert, reclaim, safely at scale",
+      "status": "active",
+      "description": "Deep Windows + filesystem knowledge wired into safe bulk operations: inventory, classify-by-purpose, same-volume rename and long-path cleanup. Dedupe and conversion are planned.",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "human-space",
+      "tier": "personal",
+      "tagline": "Your whole personal life — habits, routines, and daily decisions in one place",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "bureau-space",
+      "tier": "personal",
+      "tagline": "Administrative life — taxes, housing, official documents, bureaucratic ops",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "growth-space",
+      "tier": "personal",
+      "tagline": "Learning, skill-building, and habit formation — your deliberate self-improvement layer",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "health-space",
+      "tier": "personal",
+      "tagline": "Physical and mental health — metrics, protocols, sleep, training, and wellbeing",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "residence-space",
+      "tier": "personal",
+      "tagline": "Home operations — maintenance, rooms, inventory, pharmacy, and household logistics",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "singularity-space",
+      "tier": "personal",
+      "tagline": "Your long-arc intelligence archive — journals, signals, memories, and pattern recognition",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "social-circle-space",
+      "tier": "personal",
+      "tagline": "Your entire human network — every person you know, mapped and maintained",
+      "status": "planned",
+      "capability_deps": [
+        "storage",
+        "agent",
+        "memory",
+        "tools"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "finance-space",
+      "tier": "personal",
+      "tagline": "Budgets, savings goals, investment tracking, and tax prep — your personal money layer",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "travel-space",
+      "tier": "personal",
+      "tagline": "Trip planning, itineraries, budget tracking, and document management for every journey",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "learn-space",
+      "tier": "personal",
+      "tagline": "Course tracking, book synthesis, skill roadmaps, and spaced repetition — your learning OS",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "company-space",
+      "tier": "work",
+      "tagline": "The command center for your company — strategy, operations, and projects in one space",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "sub_spaces": [
+        "spaces/ops",
+        "spaces/projects"
+      ],
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 900,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "business-space",
+      "tier": "work",
+      "tagline": "Multi-channel business portfolio — ecommerce, affiliates, and digital product ops",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "empire-space",
+      "tier": "work",
+      "tagline": "Multi-venture portfolio command center — when you run more than one thing",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "freelance-space",
+      "tier": "work",
+      "tagline": "Clients, proposals, invoices, and independent work — your solo operator layer",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "dev-space",
+      "tier": "work",
+      "tagline": "Code, extensions, scripts, and developer workshops — your personal build environment",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "devops-space",
+      "tier": "work",
+      "tagline": "CI/CD, infrastructure as code, monitoring, and cloud operations",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "homelab-space",
+      "tier": "work",
+      "tagline": "Home server, self-hosted tools, physical hardware, and local network ops",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "android-space",
+      "tier": "work",
+      "tagline": "Command hub for every Android device — ADB bridge, app & APK ops, fleet inventory, debloat, mirroring, and backup",
+      "status": "active",
+      "description": "Full control layer over the Android devices you own or manage: ADB connectivity and wireless debugging, app/APK install-sideload-extract, multi-device fleet inventory, privacy debloat, scrcpy screen mirroring, and backup/restore migration.",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "iot-space",
+      "name": "IoT",
+      "tier": "work",
+      "tagline": "Command mesh for every IoT & smart-home device — discovery, MQTT, firmware/OTA, segmentation & security, and automation",
+      "status": "active",
+      "description": "Discover, monitor, secure, and automate the smart-home / IoT fleet: mDNS/SSDP fingerprinting, MQTT message bus, firmware and OTA rollouts, VLAN segmentation with credential and CVE audits, telemetry, and scene automation.",
+      "capability_deps": [],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "scribe-space",
+      "tier": "work",
+      "tagline": "Writing studio — books, journalism, screenwriting, content strategy, and long-form",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "simulation-space",
+      "tier": "work",
+      "tagline": "Experiments, models, and computational research — your personal science lab",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "war-room-space",
+      "tier": "work",
+      "tagline": "Strategic command — competitive intelligence, legal ops, and critical response",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null,
+      "sub_spaces": [
+        "spaces/incident"
+      ],
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "social-media",
+      "name": "Social Media Space",
+      "path": "social-media-space",
+      "tier": "work",
+      "status": "active",
+      "tagline": "Multi-brand. Multi-platform. One command layer.",
+      "description": "Unified command layer for all social media — brands, content pipelines, scheduling, analytics, and viral intelligence.",
+      "capability_deps": [
+        "agent",
+        "formations",
+        "storage"
+      ],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "project-space",
+      "tier": "work",
+      "tagline": "Project planning, task tracking, milestones, and blocker resolution — unified project ops",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "research-space",
+      "tier": "work",
+      "tagline": "Discovery-to-data pipeline — web search, crawling, datasets, databases, and cited synthesis",
+      "status": "active",
+      "capability_deps": [
+        "agent",
+        "tools",
+        "storage"
+      ],
+      "config_key": null,
+      "marketplace": {
+        "pricing_model": "buy_once",
+        "included_in_tier": "plus",
+        "price_cents": 500,
+        "currency": "usd"
+      }
+    },
+    {
+      "id": "lab-space",
+      "tier": "studio",
+      "tagline": "Live command REPL — run, tweak, and share any Navig command",
+      "status": "planned",
+      "capability_deps": [
+        "agent",
+        "tools",
+        "storage"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "persona-space",
+      "tier": "studio",
+      "tagline": "Design exactly how your agent thinks, speaks, and makes decisions",
+      "status": "planned",
+      "capability_deps": [
+        "agent",
+        "memory",
+        "vault"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "forge-space",
+      "tier": "studio",
+      "tagline": "Build, test, and ship new tool capabilities and packages for the NAVIG ecosystem",
+      "status": "planned",
+      "capability_deps": [
+        "tools",
+        "storage",
+        "agent"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "deploy-space",
+      "tier": "platform",
+      "tagline": "Every deploy, every diff, every rollback — one unified view",
+      "status": "planned",
+      "capability_deps": [
+        "storage",
+        "tools"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "radar-space",
+      "tier": "platform",
+      "tagline": "Resource costs and cloud spend — tracked before they surprise you",
+      "status": "planned",
+      "capability_deps": [
+        "storage",
+        "tools",
+        "agent"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "open-space",
+      "tier": "community",
+      "tagline": "Build in the open — stream sessions, publish workflows, let others fork and remix",
+      "status": "planned",
+      "capability_deps": [
+        "agent",
+        "blackbox",
+        "storage"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "showcase-space",
+      "tier": "community",
+      "tagline": "Browse, demo, and install agents and packs made by the community",
+      "status": "planned",
+      "capability_deps": [
+        "agent",
+        "storage"
+      ],
+      "config_key": null
+    },
+    {
+      "id": "council-space",
+      "tier": "labs",
+      "tagline": "Assemble a multi-agent council — they deliberate, you extract the decision",
+      "status": "labs",
+      "capability_deps": [
+        "formations",
+        "agent",
+        "memory"
+      ],
+      "config_key": "formations.enabled"
+    },
+    {
+      "id": "fleet-space",
+      "tier": "labs",
+      "tagline": "Spawn, coordinate, and monitor autonomous agent swarms at scale",
+      "status": "labs",
+      "capability_deps": [
+        "formations",
+        "agent",
+        "tools",
+        "storage"
+      ],
+      "config_key": "formations.enabled"
+    },
+    {
+      "id": "studio-space",
+      "tier": "work",
+      "tagline": "Music production command center — compose, mix, master, and release from one space",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "channel-space",
+      "tier": "work",
+      "tagline": "YouTube production pipeline — scripts, shoots, edits, thumbnails, and growth in one space",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "clips-space",
+      "tier": "work",
+      "tagline": "Short-form video factory — TikTok, Reels, Shorts creation, trends, and batch publishing",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "broadcast-space",
+      "tier": "work",
+      "tagline": "Podcast and live streaming command center — episodes, guests, RSS, and multi-platform distribution",
+      "status": "active",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "chrome-ext-space",
+      "tier": "work",
+      "tagline": "Chrome extension reverse engineering, static analysis, security auditing, and development workspace",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "devtools-space",
+      "tier": "studio",
+      "tagline": "Developer power-tools as a navig skill space — extract/compress, copy-structure, git clone, media/image/docker/ssh, plus a Windows right-click menu",
+      "status": "planned",
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "empty-space",
+      "tier": "studio",
+      "tagline": "The canonical blank skeleton `navig space init` starts from — a template, not a product",
+      "status": "ready",
+      "internal": true,
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "example-space",
+      "tier": "studio",
+      "tagline": "Fully annotated reference space showing the canonical structure every space gets from `navig space init`",
+      "status": "ready",
+      "internal": true,
+      "capability_deps": [],
+      "config_key": null
+    },
+    {
+      "id": "build-in-public-space",
+      "tier": "community",
+      "tagline": "Build-in-public workflow space — bootstrap stub, purpose not yet authored",
+      "status": "planned",
+      "internal": true,
+      "capability_deps": [],
+      "config_key": null
+    }
+  ]
+}

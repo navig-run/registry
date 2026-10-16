@@ -1,0 +1,10 @@
+space_id: growth-space
+runtime: navig-space-2
+display_name: Personal Growth
+
+growth:
+  habit_check_in_frequency: daily
+  reflection_frequency: weekly
+  goal_review_frequency: monthly
+  streak_tracking: true
+  skill_levels: [exploring, learning, practicing, proficient, mastery]

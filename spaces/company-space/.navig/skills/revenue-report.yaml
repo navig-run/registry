@@ -1,0 +1,141 @@
+id: revenue-report
+name: Revenue Report
+version: "1.0.0"
+description: |
+  Generate a revenue report for a given period (month, quarter, year).
+  Scans finance/invoices/ for paid invoices, aggregates by service line,
+  calculates tax liability, and monitors revenue thresholds.
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+agent: controller
+author: navig-run
+
+parameters:
+  - name: period
+    description: "Report period: YYYY-MM for monthly, Q1-YYYY for quarterly, YYYY for yearly"
+    required: true
+  - name: output_dir
+    description: Directory to save report
+    required: false
+    default: finance/reports
+
+outputs:
+  - name: report_file
+    description: Path to generated revenue report
+  - name: total_revenue
+    description: Total revenue for the period
+  - name: tax_liability
+    description: Estimated tax contribution
+  - name: threshold_pct
+    description: Percentage of configured revenue threshold reached
+
+steps:
+  - name: generate-revenue-report
+    description: Scan invoices, aggregate, calculate tax and threshold status
+    env:
+      NAVIG_PARAM_PERIOD: "{{ period }}"
+      NAVIG_PARAM_OUTPUT_DIR: "{{ output_dir }}"
+    script: |
+      import datetime, os, pathlib, re
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      PREFIX = setting("finance.invoicing.prefix", "COMPANY_INVOICE_PREFIX", "INV")
+      CURRENCY = setting("finance.currency", "COMPANY_CURRENCY", "USD")
+      TAX_RATE = float(setting("finance.tax_rate", "COMPANY_TAX_RATE", "0"))          # e.g. 0.22
+      THRESHOLD_1 = float(setting("finance.tax_threshold", "COMPANY_TAX_THRESHOLD", "0"))
+
+      invoices_dir = pathlib.Path("finance/invoices")
+      output_dir = pathlib.Path(param("output_dir", "finance/reports"))
+      output_dir.mkdir(parents=True, exist_ok=True)
+
+      period = param("period")
+      today = datetime.date.today().isoformat()
+
+      def in_period(day):
+          """YYYY-MM, YYYY, or Qn-YYYY."""
+          if period.upper().startswith("Q") and "-" in period:
+              q, y = period.upper().split("-", 1)
+              months = {1: "010203", 2: "040506", 3: "070809", 4: "101112"}[int(q[1])]
+              return day[:4] == y and day[5:7] in [months[i:i + 2] for i in (0, 2, 4)]
+          return day.startswith(period)
+
+      total = 0.0
+      by_service = {}
+      by_client = {}
+      count = 0
+
+      for f in sorted(invoices_dir.glob(f"{PREFIX}-*.md")):
+          content = f.read_text(encoding="utf-8")
+          amount_match = re.search(r"^amount(?:_ht)?:\s*([\d.]+)", content, re.M)
+          date_match = re.search(r"^date:\s*([\d-]+)", content, re.M)
+          service_match = re.search(r"^service_line:\s*(\S+)", content, re.M)
+          client_match = re.search(r'^client:\s*"?([^"\n]+)"?', content, re.M)
+
+          if not amount_match or not date_match:
+              continue
+          if not in_period(date_match.group(1)):
+              continue
+
+          amount = float(amount_match.group(1))
+          total += amount
+          count += 1
+
+          service = service_match.group(1) if service_match else "unclassified"
+          client = client_match.group(1).strip() if client_match else "unknown"
+
+          by_service[service] = by_service.get(service, 0) + amount
+          by_client[client] = by_client.get(client, 0) + amount
+
+      tax = total * TAX_RATE
+      threshold_pct = (total / THRESHOLD_1) * 100 if THRESHOLD_1 > 0 else 0
+
+      report = f"""# Revenue Report — {period}
+      Generated: {today}
+
+      ## Summary
+      - **Total Revenue:** {total:,.2f} {CURRENCY}
+      - **Invoices:** {count}
+      - **Tax Liability ({TAX_RATE*100:.1f}%):** {tax:,.2f} {CURRENCY}
+      - **Net after Tax:** {total - tax:,.2f} {CURRENCY}
+      - **Revenue Threshold:** {threshold_pct:.1f}% of {THRESHOLD_1:,.0f} {CURRENCY}
+
+      ## By Service Line
+      | Service | Revenue |
+      |---------|---------|
+      """
+      for svc, amt in sorted(by_service.items(), key=lambda x: -x[1]):
+          report += f"| {svc} | {amt:,.2f} {CURRENCY} |\n"
+
+      report += """
+      ## By Client
+      | Client | Revenue |
+      |--------|---------|
+      """
+      for cli, amt in sorted(by_client.items(), key=lambda x: -x[1]):
+          report += f"| {cli} | {amt:,.2f} {CURRENCY} |\n"
+
+      if threshold_pct > 80:
+          report += f"\nALERT: Revenue at {threshold_pct:.1f}% of threshold. Monitor closely.\n"
+
+      filepath = output_dir / f"revenue-{period}.md"
+      filepath.write_text(report, encoding="utf-8")
+      print(f"Revenue report -> {filepath}")
+      print(f"   {total:,.2f} {CURRENCY} | {count} invoices | Tax: {tax:,.2f} {CURRENCY}")

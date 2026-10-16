@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "space": "studio-space",
+  "updated": "2026-04-05",
+  "purpose": "Music production command center — session tracking, mixing, mastering, sample management, release distribution",
+  "owner": {
+    "handle": "operator",
+    "timezone": "UTC",
+    "primary_OS": "Windows",
+    "primary_shell": "PowerShell"
+  },
+  "session_count": 0,
+  "sample_count": 0,
+  "release_count": 0,
+  "platforms": [
+    "Windows",
+    "Linux",
+    "macOS"
+  ],
+  "daw_preferences": {
+    "primary": null,
+    "secondary": null,
+    "project_extensions": [
+      ".als",
+      ".flp",
+      ".logic",
+      ".rpp",
+      ".bwproject",
+      ".ptx"
+    ]
+  },
+  "audio_defaults": {
+    "sample_rate": 44100,
+    "bit_depth": 24,
+    "format": "wav",
+    "loudness_standard": "streaming"
+  },
+  "active_formations": [
+    "track-production",
+    "release-pipeline",
+    "sample-lab",
+    "mastering-suite",
+    "collab-session"
+  ],
+  "active_agents": [
+    "producer",
+    "mix-engineer",
+    "sound-designer",
+    "release-manager",
+    "session-planner"
+  ],
+  "skills_installed": [
+    "bpm-detect",
+    "key-detect",
+    "loudness-check",
+    "stem-export",
+    "format-convert",
+    "metadata-tag",
+    "upload-distro",
+    "backup-session",
+    "sample-catalog",
+    "daw-project-scan"
+  ]
+}

@@ -1,0 +1,77 @@
+id: sensor-telemetry
+name: Sensor Telemetry
+version: "1.0.0"
+description: Pull live environment/health telemetry (temp, humidity, battery, RSSI, uptime) from devices.
+category: telemetry
+platform: [windows, linux, macos]
+formation: discovery-sweep
+author: navig-run
+
+parameters:
+  - name: topic
+    type: string
+    description: "Telemetry topic filter"
+    default: "tele/#"
+  - name: host
+    type: string
+    default: "{{config.mqtt_host}}"
+  - name: port
+    type: int
+    default: 1883
+  - name: duration
+    type: int
+    default: 30
+  - name: battery_threshold
+    type: int
+    description: "Flag devices with battery below this percent"
+    default: 15
+
+steps:
+  - id: collect
+    name: "Collect telemetry from the bus"
+    shell: auto
+    script: |
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v -W {{duration}} | tee /tmp/iot-telemetry.raw
+    script_windows: |
+      mosquitto_sub -h {{host}} -p {{port}} -t "{{topic}}" -v -W {{duration}} | Tee-Object -FilePath "$env:TEMP\iot-telemetry.raw"
+
+  - id: parse
+    name: "Parse telemetry and flag low battery / offline"
+    shell: auto
+    # Parameters reach the script as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_BATTERY_THRESHOLD: "{{battery_threshold}}"
+    script: |
+      python3 - <<'PY'
+      import json, re, os
+      thr = float(os.environ.get('NAVIG_PARAM_BATTERY_THRESHOLD') or 15)
+      raw = open('/tmp/iot-telemetry.raw', errors='ignore').read() if os.path.exists('/tmp/iot-telemetry.raw') else ''
+      seen=set(); low=[]
+      for line in raw.splitlines():
+        m = re.match(r'(\S+)\s+(\{.*\})', line)
+        if not m: continue
+        topic, payload = m.group(1), m.group(2)
+        try: d = json.loads(payload)
+        except Exception: continue
+        dev = topic.split('/')[1] if '/' in topic else topic
+        seen.add(dev)
+        batt = d.get('Battery') or d.get('BatteryPercentage')
+        rssi = (d.get('Wifi') or {}).get('RSSI') if isinstance(d.get('Wifi'), dict) else d.get('RSSI')
+        print(f"{dev:30s} batt={batt}  rssi={rssi}  temp={d.get('Temperature')}  hum={d.get('Humidity')}")
+        if batt is not None and float(batt) < thr: low.append((dev, batt))
+      print(f"\nDevices reporting: {len(seen)}")
+      if low:
+        print("LOW BATTERY:")
+        for dev,b in low: print(f"  - {dev}: {b}%")
+      PY
+
+output:
+  fields: [device, battery_pct, rssi, temperature_c, humidity_pct, uptime]
+  store_to: ".navig/memory/health-snapshots.json"
+  merge: true
+
+examples:
+  - description: "Live telemetry from all devices"
+    command: "navig skill run sensor-telemetry --topic 'tele/#' --duration 30"
+  - description: "Flag any device under 20% battery"
+    command: "navig skill run sensor-telemetry --battery_threshold 20"

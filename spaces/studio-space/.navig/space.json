@@ -1,0 +1,62 @@
+{
+  "id": "studio-space",
+  "name": "Studio Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Music production command center — from first beat to final master, manage sessions, mixes, releases, and samples in one space.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": {
+    "default": "producer",
+    "formation": "track-production"
+  },
+  "agents": [
+    "mix-engineer",
+    "producer",
+    "release-manager",
+    "session-planner",
+    "sound-designer"
+  ],
+  "formations": [
+    "collab-session",
+    "mastering-suite",
+    "release-pipeline",
+    "sample-lab",
+    "track-production"
+  ],
+  "skills": [
+    "backup-session",
+    "bpm-detect",
+    "daw-project-scan",
+    "format-convert",
+    "key-detect",
+    "loudness-check",
+    "metadata-tag",
+    "sample-catalog",
+    "stem-export",
+    "upload-distro"
+  ],
+  "workflows": [
+    "morning-studio",
+    "release-cycle",
+    "sample-harvest",
+    "session-prep",
+    "track-production",
+    "weekly-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "paths": {
+    "skills": ".navig/skills",
+    "agents": ".navig/store/agents",
+    "formations": ".navig/store/formations",
+    "workflows": ".navig/store/workflows",
+    "prompts": ".navig/store/prompts",
+    "mcp": ".navig/store/mcp",
+    "wiki": ".navig/wiki",
+    "memory": ".navig/memory",
+    "inbox": ".navig/inbox",
+    "plans": ".navig/plans"
+  }
+}

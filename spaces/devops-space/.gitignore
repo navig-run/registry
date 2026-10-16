@@ -1,0 +1,57 @@
+# NAVIG Space — .gitignore
+
+# Space runtime caches
+.navig/state/
+.navig/proposed/
+
+# Seed state ships as *.example.* — your live copies stay local
+.navig/memory/*.json
+!.navig/memory/*.example.json
+.navig/inbox/routes.yaml
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+override.tf
+override.tf.json
+
+# Ansible
+*.retry
+inventory/host_vars/*_vault*
+
+# Secrets
+.env
+.env.*
+*.secret
+vault/
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Editors
+.vscode/settings.json
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent outputs
+*.tmp
+*.bak
+
+# Screenshots
+screenshots/*.png
+screenshots/*.jpg
+!screenshots/SCREENSHOTS.md

@@ -1,0 +1,20 @@
+{
+  "name": "channel-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NAVIG space for YouTube creators — video production, SEO, growth, and community.",
+  "author": "navig-run",
+  "license": "MIT",
+  "scripts": {
+    "navig:validate": "navig space doctor . --no-interactive",
+    "navig:doctor": "navig space doctor .",
+    "navig:skills": "navig skill list",
+    "navig:formations": "navig formation list"
+  },
+  "navig": {
+    "type": "space",
+    "skills_dir": ".navig/skills",
+    "store_dir": ".navig/store",
+    "entry_workflow": "morning-channel"
+  }
+}

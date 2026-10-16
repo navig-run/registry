@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "empire",
+  "goals": [
+    {
+      "id": "portfolio-visibility",
+      "title": "Full portfolio visibility",
+      "description": "Every active venture tracked with up-to-date status and revenue",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "revenue-clarity",
+      "title": "Revenue stream clarity",
+      "description": "All revenue attributed to streams with monthly trend analysis",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

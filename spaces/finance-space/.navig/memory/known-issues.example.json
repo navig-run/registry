@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ISS-001",
+    "issue": "No accounts configured",
+    "impact": "Budget analyst and investment tracker cannot function without account definitions",
+    "resolution": "Copy accounts/_template/account.json and fill in each account; add slugs to space-context.json active_accounts"
+  },
+  {
+    "id": "ISS-002",
+    "issue": "No transactions imported",
+    "impact": "All spending and variance reports will be empty",
+    "resolution": "Export CSV from your bank and run @budget-analyst import"
+  },
+  {
+    "id": "ISS-003",
+    "issue": "No savings goals defined",
+    "impact": "Savings coach cannot track progress or alert on milestones",
+    "resolution": "Create goals/savings-goals.json using the template"
+  }
+]

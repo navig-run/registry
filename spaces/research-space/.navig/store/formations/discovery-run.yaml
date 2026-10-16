@@ -1,0 +1,40 @@
+id: discovery-run
+name: Discovery Run
+version: "1.0.0"
+description: >
+  Default formation. Find new information. Scout leads, fanning out web searches
+  and registering credible sources. Analyst supports by framing the question and
+  spotting gaps.
+
+agents:
+  lead: scout
+  supporting: [analyst]
+
+trigger_conditions:
+  - "#discovery inbox activity"
+  - "A research question with no tracked sources yet"
+  - "A topic gone stale (no new sources in 14 days)"
+
+action_scope:
+  - ALLOW: web-search
+  - ALLOW: track-source
+  - ALLOW: write to .navig/memory/sources.json
+  - ALLOW: write to .navig/memory/findings.json
+
+skills_used:
+  - web-search
+  - track-source
+
+workflows_used:
+  - daily-discovery-sweep
+
+communication:
+  inbox_channel: "#discovery"
+  escalation: analyst
+  notify_on:
+    - new_high_value_source
+    - topic_stale
+
+context_memory:
+  read: [sources.json, findings.json]
+  write: [sources.json, findings.json]

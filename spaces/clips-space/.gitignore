@@ -1,0 +1,46 @@
+# Short-form video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.m4v
+
+# Audio
+*.wav
+*.mp3
+*.aac
+*.flac
+
+# Image sources
+*.psd
+*.ai
+*.sketch
+
+# Secrets
+.navig/vault/
+*.env
+
+# Debug & logs
+*.log
+*.debug
+
+# Live memory (private) — the shipped seeds are *.example.json
+.navig/memory/*.json
+!.navig/memory/*.example.json
+
+# Runtime
+.navig/state/*.json
+.navig/proposed/*.json
+!.navig/state/.gitkeep
+!.navig/proposed/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Pack artifacts
+*.navig-pack
+*.tar.gz
+dist/

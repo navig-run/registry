@@ -1,0 +1,146 @@
+id: process-investigate
+name: Process Investigate
+version: "1.0.0"
+description: >
+  Find suspicious, resource-heavy, or unexpected processes. Correlates against
+  known-good process list, flags unsigned binaries (Windows), and reports
+  processes exceeding CPU/RAM thresholds.
+category: security
+platform: [windows, linux, macos]
+formation: security-watch
+author: navig-run
+
+parameters:
+  - name: cpu_threshold
+    type: float
+    description: "Flag processes using more than N% CPU"
+    default: 20.0
+  - name: ram_threshold_mb
+    type: int
+    description: "Flag processes using more than N MB RAM"
+    default: 500
+  - name: check_signatures
+    type: bool
+    description: "Verify binary signatures (Windows only)"
+    default: true
+  - name: baseline
+    type: string
+    description: "Path to known-good process list JSON"
+    default: ".navig/memory/process-baseline.json"
+  - name: mode
+    type: enum
+    values: [top, suspicious, unsigned, all]
+    default: all
+
+steps:
+  - id: top_processes
+    name: "Resource-heavy processes"
+    condition: "mode == 'top' or mode == 'all'"
+    shell: auto
+    script_windows: |
+      Get-Process | Sort-Object CPU -Descending | Select-Object -First 20 |
+        Select-Object Name, Id,
+          @{n='CPU_Pct';e={[math]::Round($_.CPU,1)}},
+          @{n='RAM_MB';e={[math]::Round($_.WorkingSet64/1MB,1)}},
+          @{n='Path';e={$_.Path}} |
+        Where-Object { $_.CPU_Pct -gt {{cpu_threshold}} -or $_.RAM_MB -gt {{ram_threshold_mb}} } |
+        Format-Table -AutoSize
+    script_linux: |
+      echo "=== Top CPU consumers ==="
+      ps aux --sort=-%cpu | awk -v thresh={{cpu_threshold}} '
+        NR==1{print; next}
+        $3+0 > thresh {printf "%-12s %6s %6s %6s %s\n",$1,$2,$3,$4,$11}
+      ' | head -20
+      echo ""
+      echo "=== Top RAM consumers ==="
+      ps aux --sort=-%mem | awk -v thresh={{ram_threshold_mb}} '
+        NR==1{print; next}
+        ($6/1024) > thresh {printf "%-12s %6s %6s %7.1fMB %s\n",$1,$2,$3,$6/1024,$11}
+      ' | head -20
+    script_macos: |
+      ps aux | sort -rn -k3 | awk -v ct={{cpu_threshold}} -v rt={{ram_threshold_mb}} '
+        NR==1{print; next}
+        $3+0>ct || ($6/1024)>rt {print}
+      ' | head -25
+
+  - id: suspicious_names
+    name: "Flag suspicious process names"
+    condition: "mode == 'suspicious' or mode == 'all'"
+    shell: auto
+    # Parameters reach the script as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_BASELINE: "{{baseline}}"
+    script: |
+      python3 -c "
+      import subprocess, json, os, re
+
+      # Patterns that often indicate malware or misuse
+      suspicious_patterns = [
+          r'mimikatz', r'meterpreter', r'cobalt', r'beacon',
+          r'nc\.exe', r'netcat', r'ncat',
+          r'psexec', r'wce\.exe', r'fgdump',
+          r'xmrig', r'minerd', r'cpuminer',   # Crypto miners
+          r'python.*-c.*exec', r'powershell.*encodedcommand',
+          r'cmd.*\/c.*reg.*add', r'regsrv32'
+      ]
+      pattern = re.compile('|'.join(suspicious_patterns), re.IGNORECASE)
+
+      # Load baseline of known-good processes
+      baseline_path = os.environ.get('NAVIG_PARAM_BASELINE', '')
+      known_good = []
+      if os.path.exists(baseline_path):
+          known_good = json.load(open(baseline_path)).get('known_good', [])
+
+      found = []
+      try:
+          if os.name == 'nt':
+              import ctypes
+              result = subprocess.check_output(['tasklist', '/FO', 'CSV'], text=True)
+              for line in result.splitlines()[1:]:
+                  parts = line.strip('\"').split('\",\"')
+                  if len(parts) > 0:
+                      name = parts[0]
+                      if pattern.search(name) and name not in known_good:
+                          found.append({'name': name, 'pid': parts[1] if len(parts)>1 else '?'})
+          else:
+              result = subprocess.check_output(['ps', 'aux'], text=True)
+              for line in result.splitlines()[1:]:
+                  cmd = ' '.join(line.split()[10:])
+                  if pattern.search(cmd):
+                      parts = line.split()
+                      found.append({'user': parts[0], 'pid': parts[1], 'cmd': cmd[:80]})
+      except Exception as e:
+          print(f'Process scan error: {e}')
+
+      if found:
+          print(f'[ALERT] {len(found)} suspicious process(es) found:')
+          for p in found:
+              print(f'  {p}')
+      else:
+          print('[OK] No suspicious processes detected')
+      "
+
+  - id: check_unsigned
+    name: "Unsigned binary check (Windows)"
+    condition: "check_signatures == true and platform == 'windows'"
+    shell: auto
+    script_windows: |
+      Get-Process | Where-Object { $_.Path } | ForEach-Object {
+        $sig = Get-AuthenticodeSignature $_.Path -ErrorAction SilentlyContinue
+        if ($sig.Status -notin "Valid","NotSigned" -and $sig.Status -ne $null) {
+          [PSCustomObject]@{
+            Name   = $_.Name
+            PID    = $_.Id
+            Status = $sig.Status
+            Path   = $_.Path
+          }
+        }
+      } | Format-Table -AutoSize
+
+examples:
+  - description: "Full process investigation"
+    command: "navig skill run process-investigate"
+  - description: "Only flag high CPU (>30%) processes"
+    command: "navig skill run process-investigate --mode top --cpu_threshold 30"
+  - description: "Check for suspicious names only"
+    command: "navig skill run process-investigate --mode suspicious"

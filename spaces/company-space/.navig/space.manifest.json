@@ -1,0 +1,45 @@
+{
+  "id": "company-space",
+  "space_id": "company-space",
+  "type": "work",
+  "tier": "work",
+  "status": "active",
+  "name": "Company Space",
+  "owner": "navig-run",
+  "author": "navig-run",
+  "version": "2.0.1",
+  "created_at": "2026-03-02",
+  "updated_at": "2026-10-16",
+  "description": "Business operations, financial management, client relations, active projects, and execution. The operational brain of the company.",
+  "agents": ["chief", "ops-manager", "controller", "sales", "project-lead"],
+  "formations": ["company-ops", "revenue-pipeline", "client-lifecycle", "financial-review", "strategic-planning"],
+  "skills": ["triage-inbox", "generate-invoice", "generate-quote", "expense-log", "lead-qualify", "revenue-report", "expense-report", "tax-summary", "contract-draft", "meeting-minutes"],
+  "workflows": ["weekly-ops-review", "monthly-financial-close", "quarterly-review", "lead-intake", "invoice-cycle", "tax-deadline-prep"],
+  "paths": {
+    "agents": ".navig/store/agents",
+    "formations": ".navig/store/formations",
+    "skills": ".navig/skills",
+    "workflows": ".navig/store/workflows",
+    "prompts": ".navig/store/prompts",
+    "wiki": ".navig/wiki",
+    "inbox": ".navig/inbox",
+    "docs": "docs",
+    "clients": "clients",
+    "contracts": "contracts",
+    "finance": "finance",
+    "leads": "leads",
+    "meetings": "meetings",
+    "reports": "reports"
+  },
+  "meta": {
+    "tags": ["company", "business", "operations", "finance", "clients", "projects"],
+    "counts": {
+      "agents": 5,
+      "formations": 5,
+      "skills": 10,
+      "workflows": 6,
+      "prompts": 8,
+      "wiki_pages": 7
+    }
+  }
+}

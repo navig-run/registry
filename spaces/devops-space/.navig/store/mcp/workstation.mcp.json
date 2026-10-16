@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.1",
+  "space": "devops",
+  "description": "MCP server configuration for devops-space — cloud CLIs, IaC tools, monitoring, and secrets.",
+  "updated": "2026-03-11",
+  "servers": [
+    {
+      "id": "terraform-cli",
+      "type": "local",
+      "provider": "hashicorp",
+      "description": "Terraform CLI for IaC plan and apply operations.",
+      "config": {
+        "command": "terraform",
+        "timeout_s": 300,
+        "working_dir": "infrastructure-as-code/terraform-starter"
+      }
+    },
+    {
+      "id": "ansible-cli",
+      "type": "local",
+      "provider": "ansible",
+      "description": "Ansible CLI for running playbooks.",
+      "config": {
+        "command": "ansible-playbook",
+        "timeout_s": 300,
+        "working_dir": "infrastructure-as-code/ansible-starter"
+      }
+    },
+    {
+      "id": "kubectl",
+      "type": "local",
+      "provider": "kubernetes",
+      "description": "kubectl for Kubernetes cluster inspection and management.",
+      "config": {
+        "command": "kubectl",
+        "timeout_s": 30
+      }
+    },
+    {
+      "id": "prometheus-api",
+      "type": "http",
+      "provider": "prometheus",
+      "description": "Prometheus HTTP API for querying metrics.",
+      "config": {
+        "base_url_env": "PROMETHEUS_URL",
+        "timeout_s": 10
+      }
+    },
+    {
+      "id": "vault-cli",
+      "type": "local",
+      "provider": "hashicorp",
+      "description": "HashiCorp Vault CLI for secrets management.",
+      "config": {
+        "command": "vault",
+        "auth_env": "VAULT_TOKEN",
+        "timeout_s": 10
+      }
+    }
+  ]
+}

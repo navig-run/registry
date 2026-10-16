@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "space": "iot",
+  "description": "MCP server configuration for the iot space — defines tool access, agent scoping, and security policy",
+  "updated": "2026-07-10",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Read/write access to space directories and firmware/config paths",
+      "config": {
+        "allowed_roots": [
+          "{space_root}",
+          "C:\\Users\\{operator}\\esphome",
+          "/home/{operator}/esphome",
+          "/etc/navig"
+        ],
+        "read_only_roots": [
+          "C:\\Windows\\System32",
+          "/etc",
+          "/sys"
+        ],
+        "max_file_size_mb": 100,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Controlled shell execution for flashing, MQTT clients, and discovery tools",
+      "config": {
+        "allowed_hosts": ["localhost", "mqtt-broker", "home-assistant"],
+        "timeout_seconds": 30,
+        "blocked_commands": [
+          "rm -rf /",
+          "format c:",
+          "mkfs",
+          "dd if=/dev/zero",
+          ":(){:|:&};:",
+          "sudo rm -rf"
+        ],
+        "require_confirmation_for": [
+          "sudo",
+          "runas",
+          "esptool.py erase_flash",
+          "Upgrade 1",
+          "permit_join",
+          "systemctl stop",
+          "firewall"
+        ],
+        "shell_per_os": {
+          "windows": "pwsh",
+          "linux": "bash",
+          "macos": "zsh"
+        },
+        "max_output_kb": 512
+      }
+    },
+    {
+      "id": "mqtt-tools",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "MQTT publish/subscribe and broker inspection tools",
+      "config": {
+        "broker_host": "192.168.1.10",
+        "broker_port": 1883,
+        "blocked_topics": ["$SYS/#/set", "homeassistant/+/+/config"],
+        "publish_requires_confirmation_for": ["cmnd/+/Reset", "cmnd/+/Upgrade", "$SYS/#"],
+        "tools": ["mosquitto_sub", "mosquitto_pub"],
+        "max_subscribe_seconds": 60
+      }
+    },
+    {
+      "id": "network-tools",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Discovery and segmentation tools (mDNS/SSDP/ARP/nmap)",
+      "config": {
+        "allowed_scan_ranges": ["192.168.1.0/24", "192.168.20.0/24", "10.0.0.0/24"],
+        "blocked_ranges": ["0.0.0.0/8", "169.254.0.0/16"],
+        "max_scan_rate_pps": 500,
+        "tools": ["nmap", "arp", "ping", "avahi-browse", "dns-sd", "curl", "ip"],
+        "require_confirmation_for_external": true
+      }
+    },
+    {
+      "id": "firmware-tools",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "description": "Firmware flashing and OTA tooling",
+      "config": {
+        "tools": {
+          "windows": ["esptool", "esphome", "curl"],
+          "linux": ["esptool.py", "esphome", "curl"],
+          "macos": ["esptool.py", "esphome", "curl"]
+        },
+        "require_confirmation_for": ["write_flash", "erase_flash", "OtaUrl", "Upgrade"],
+        "staged_rollout_default": true
+      }
+    }
+  ],
+  "agent_tool_allowlist": {
+    "beacon": ["filesystem", "network-tools", "mqtt-tools"],
+    "broker": ["mqtt-tools", "filesystem"],
+    "warden": ["network-tools", "mqtt-tools", "shell", "filesystem"],
+    "flux": ["firmware-tools", "shell", "filesystem"],
+    "automa": ["mqtt-tools", "filesystem"],
+    "sensor": ["mqtt-tools", "filesystem"]
+  },
+  "security_policy": {
+    "require_space_active": true,
+    "log_all_tool_calls": true,
+    "log_path": ".navig/logs/mcp-audit.log",
+    "rate_limits": {
+      "network_scans_per_hour": 10,
+      "mqtt_publishes_per_minute": 60,
+      "flash_operations_per_hour": 10,
+      "file_writes_per_minute": 30
+    },
+    "alert_on": [
+      "blocked_command_attempt",
+      "scan_outside_allowed_range",
+      "publish_to_blocked_topic",
+      "unconfirmed_flash_attempt",
+      "file_access_outside_allowed_roots",
+      "rate_limit_exceeded"
+    ]
+  }
+}

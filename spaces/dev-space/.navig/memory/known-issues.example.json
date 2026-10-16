@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "space": "dev",
+  "updated": "2026-03-11",
+  "issues": [
+    {
+      "id": "ISS-001",
+      "title": "Sub-workspace templates have placeholder content",
+      "description": "userscripts-workshop and chrome-extensions-workshop contain starter templates that need to be customized for the operator's target sites and projects",
+      "severity": "info",
+      "status": "open",
+      "detected_by": "coder"
+    },
+    {
+      "id": "ISS-002",
+      "title": "No registered projects in space-context.json",
+      "description": "project_count is 0 — populate after adding real projects to this space",
+      "severity": "info",
+      "status": "open",
+      "detected_by": "coder"
+    }
+  ],
+  "schema.template": {
+    "id": "ISS-XXX",
+    "title": "Short issue title",
+    "description": "Full description of the problem",
+    "severity": "info | warning | error | critical",
+    "status": "open | investigating | resolved",
+    "detected_by": "agent-id or operator",
+    "detected_at": "ISO8601 date",
+    "resolved_at": null
+  }
+}

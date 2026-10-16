@@ -1,0 +1,88 @@
+name: security-review
+description: |
+  Weekly IoT security review. Verifies VLAN isolation, probes default credentials,
+  checks firmware against CVEs, and detects rogue devices — then produces a
+  segmentation security brief and logs findings.
+
+schedule:
+  cron: "0 3 * * 0"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: security-mesh
+
+steps:
+  - id: vlan
+    name: "VLAN / Segmentation Audit"
+    skill: vlan-audit
+    params:
+      iot_subnet: "auto"
+      trusted_subnet: "192.168.1.0/24"
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: credentials
+    name: "Default Credential Audit"
+    skill: credential-audit
+    params:
+      target: all
+    parallel: true
+    timeout_seconds: 180
+    on_error: continue
+
+  - id: firmware_cve
+    name: "Firmware CVE Check"
+    skill: firmware-check
+    params:
+      target: all
+      platform: auto
+    depends_on: []
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: rogue_check
+    name: "Rogue Device Detection"
+    skill: device-discover
+    params:
+      range: "auto"
+      method: all
+    timeout_seconds: 120
+    on_error: continue
+
+  - id: correlate
+    name: "Correlate Findings & Rate Severity"
+    depends_on: [vlan, credentials, firmware_cve, rogue_check]
+    agent: warden
+    action: correlate_security_findings
+    params:
+      vlan: "{{steps.vlan.output}}"
+      credentials: "{{steps.credentials.output}}"
+      firmware: "{{steps.firmware_cve.output}}"
+      rogue: "{{steps.rogue_check.output}}"
+
+  - id: write_issues
+    name: "Log Security Findings"
+    depends_on: [correlate]
+    agent: warden
+    action: write_memory
+    params:
+      file: ".navig/memory/known-issues.json"
+      data:
+        timestamp: "{{now_iso}}"
+        findings: "{{steps.correlate.output}}"
+
+  - id: report
+    name: "Compose Segmentation Security Brief"
+    depends_on: [correlate]
+    agent: warden
+    action: compose_report
+    params:
+      template: "security-segmentation-brief"
+      sections:
+        - segmentation: "{{steps.vlan.output}}"
+        - credentials: "{{steps.credentials.output}}"
+        - cve: "{{steps.firmware_cve.output}}"
+        - rogue: "{{steps.rogue_check.output}}"
+      deliver_to: inbox
+      channel: "#security"

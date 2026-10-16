@@ -1,0 +1,17 @@
+# Singularity Space — Inbox Routes
+# Copy this file to routes.yaml (same folder) to enable inbox routing for the space.
+version: "1.0"
+routes:
+  - channel: "#signals"
+    description: "AI and civilization signals to log and rate"
+    handlers: ["signal-tracker"]
+    default: true
+  - channel: "#ai"
+    description: "AI developments, papers, and capability jumps"
+    handlers: ["ai-researcher"]
+  - channel: "#destiny"
+    description: "Intention updates, pivots, and future-state thoughts"
+    handlers: ["destiny-keeper"]
+  - channel: "#singularity"
+    description: "Cross-domain insights for long-term synthesis"
+    handlers: ["oracle"]

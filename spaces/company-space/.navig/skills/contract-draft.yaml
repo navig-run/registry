@@ -1,0 +1,177 @@
+id: contract-draft
+name: Draft Contract
+version: "1.0.0"
+description: |
+  Generate a contract draft from predefined types. Supports service agreements,
+  NDAs, licensing, maintenance, and more. Outputs markdown for review.
+category: legal
+platform: [windows, linux, macos]
+formation: client-lifecycle
+agent: sales
+author: navig-run
+
+parameters:
+  - name: client_name
+    description: Client company or individual name
+    required: true
+  - name: contract_type
+    description: |
+      Contract type: service, licensing, maintenance, nda, copyright-transfer,
+      consulting, retainer, project-based, hosting, support, training,
+      partnership, subcontracting, freelance, advisory
+    required: true
+  - name: scope
+    description: Description of services / scope of work
+    required: true
+  - name: amount
+    description: Contract value
+    required: false
+  - name: duration
+    description: "Contract duration: 3-months, 6-months, 1-year, ongoing"
+    required: false
+    default: project-based
+  - name: language
+    description: "Primary language: en, local, both"
+    required: false
+    default: en
+
+outputs:
+  - name: contract_file
+    description: Path to generated contract draft
+  - name: contract_id
+    description: Generated contract ID
+
+steps:
+  - name: draft-contract
+    description: Generate contract markdown from template
+    env:
+      NAVIG_PARAM_CLIENT_NAME: "{{ client_name }}"
+      NAVIG_PARAM_CONTRACT_TYPE: "{{ contract_type }}"
+      NAVIG_PARAM_SCOPE: "{{ scope }}"
+      NAVIG_PARAM_AMOUNT: "{{ amount }}"
+      NAVIG_PARAM_DURATION: "{{ duration }}"
+      NAVIG_PARAM_LANGUAGE: "{{ language }}"
+    script: |
+      import datetime, os, pathlib, re
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      company_name = setting("company.name", "COMPANY_NAME", "[Company name]")
+      owner_name = setting("company.owner", "COMPANY_OWNER", "[Owner]")
+      company_type = setting("company.type", "COMPANY_TYPE", "[Entity type]")
+      company_id = setting("company.id", "COMPANY_ID", "[Company ID]")
+      company_address = setting("company.address", "COMPANY_ADDRESS", "[Address]")
+      company_email = setting("company.email", "COMPANY_EMAIL", "[Email]")
+      CURRENCY = setting("finance.currency", "COMPANY_CURRENCY", "USD")
+      tax_note = setting("finance.tax_exemption_note", "COMPANY_TAX_NOTE", "[Configure the tax rule for your jurisdiction]")
+
+      jurisdiction = setting("company.jurisdiction", "COMPANY_JURISDICTION", "[Jurisdiction]")
+      client_name = param("client_name")
+      contract_type = param("contract_type", "service")
+      scope = param("scope")
+      amount = param("amount")
+      duration = param("duration", "project-based")
+      language = param("language", "en")
+
+      contracts_dir = pathlib.Path("contracts")
+      contracts_dir.mkdir(parents=True, exist_ok=True)
+
+      today = datetime.date.today().isoformat()
+      year = datetime.date.today().year
+      slug = re.sub(r"[^a-z0-9]+", "-", client_name.lower()).strip("-")[:20] or "client"
+      type_slug = re.sub(r"[^a-z0-9]+", "-", contract_type.lower()).strip("-") or "service"
+      contract_id = f"CTR-{year}-{slug}-{type_slug}"
+
+      content = f"""---
+      contract_id: {contract_id}
+      date: {today}
+      status: draft
+      type: {contract_type}
+      client: "{client_name}"
+      amount: {amount or 'TBD'}
+      duration: {duration}
+      language: {language}
+      ---
+
+      # Contract: {contract_type.upper().replace('-', ' ')}
+
+      **Between:**
+      - **Provider:** {company_name} — {owner_name}, {company_type}
+        ID: {company_id} | {company_address}
+      - **Client:** {client_name}
+
+      **Date:** {today}
+
+      ---
+
+      ## 1. Scope of Services
+
+      {scope}
+
+      ## 2. Duration
+
+      {duration}
+
+      ## 3. Compensation
+
+      {amount or 'To be determined'} {CURRENCY}
+      {tax_note}
+
+      ## 4. Payment Terms
+
+      Payment due within 30 days of invoice date.
+      Late payment terms per applicable law.
+
+      ## 5. Confidentiality
+
+      Both parties agree to maintain confidentiality of proprietary information
+      exchanged during the course of this agreement.
+
+      ## 6. Intellectual Property
+
+      [To be specified based on contract type: {contract_type}]
+
+      ## 7. Termination
+
+      Either party may terminate with 30 days written notice.
+      Work completed up to termination date will be invoiced proportionally.
+
+      ## 8. Governing Law
+
+      This contract is governed by {jurisdiction} law.
+
+      ---
+
+      **Signatures:**
+
+      Provider: _________________________ Date: ___________
+      {company_name} — {owner_name}
+
+      Client: __________________________ Date: ___________
+      {client_name}
+
+      ---
+      _Draft generated by NAVIG — Review required before sending._
+      """
+
+      filepath = contracts_dir / f"{contract_id}.md"
+      filepath.write_text(content, encoding="utf-8")
+      print(f"Contract draft -> {filepath}")
+      print(f"   Type: {contract_type} | Client: {client_name}")
+      print("   Status: DRAFT — requires review before sending")

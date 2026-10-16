@@ -1,0 +1,143 @@
+name: weekly-review
+description: |
+  Weekly infrastructure review workflow. Triggers weekly-ops-review prompt,
+  collects all agent reports from the week, composes a comprehensive review
+  document, and writes a dated wiki archive entry.
+
+schedule:
+  cron: "0 9 * * 0"   # Sundays at 9 AM
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: maintenance-crew
+agent_lead: archivist
+
+steps:
+  - id: collect_incidents
+    name: "Collect This Week's Incidents"
+    agent: sentinel
+    action: read_incidents_this_week
+    params:
+      file: ".navig/memory/known-issues.json"
+      since: "{{7_days_ago_iso}}"
+    timeout_seconds: 30
+
+  - id: collect_hardware_data
+    name: "Collect Hardware Health Data"
+    agent: pulse
+    action: snapshot
+    params:
+      targets: "all_registered"
+      include_gpu: true
+      include_smart: true
+      include_thermals: true
+    timeout_seconds: 300
+
+  - id: collect_security_data
+    name: "Collect Security Data"
+    agent: sentinel
+    action: week_summary
+    params:
+      lookback_hours: 168
+      events: [port_changes, auth_failures, process_anomalies, unknown_devices]
+    timeout_seconds: 180
+
+  - id: collect_config_changes
+    name: "Collect Config Change History"
+    agent: archivist
+    action: read_sync_history
+    params:
+      file: ".navig/memory/sync-history.json"
+      since: "{{7_days_ago_iso}}"
+    timeout_seconds: 30
+
+  - id: collect_device_changes
+    name: "Collect Device Registry Changes"
+    agent: archivist
+    action: device_changes_since
+    params:
+      file: ".navig/memory/device-registry.json"
+      since: "{{7_days_ago_iso}}"
+    timeout_seconds: 30
+
+  - id: generate_hardware_report
+    name: "Generate Hardware Report"
+    depends_on: [collect_hardware_data]
+    agent: pulse
+    action: apply_prompt
+    params:
+      prompt: "hardware-report"
+      data: "{{steps.collect_hardware_data.output}}"
+    timeout_seconds: 60
+
+  - id: generate_security_brief
+    name: "Generate Security Brief"
+    depends_on: [collect_security_data]
+    agent: sentinel
+    action: apply_prompt
+    params:
+      prompt: "security-brief"
+      data: "{{steps.collect_security_data.output}}"
+    timeout_seconds: 60
+
+  - id: compose_weekly_review
+    name: "Compose Weekly Review Report"
+    depends_on:
+      - collect_incidents
+      - generate_hardware_report
+      - generate_security_brief
+      - collect_config_changes
+      - collect_device_changes
+    agent: archivist
+    action: apply_prompt
+    params:
+      prompt: "weekly-ops-review"
+      variables:
+        week_ending: "{{today}}"
+        incidents_this_week: "{{steps.collect_incidents.summary}}"
+        hardware_report: "{{steps.generate_hardware_report.output}}"
+        security_brief: "{{steps.generate_security_brief.output}}"
+        device_changes: "{{steps.collect_device_changes.summary}}"
+        config_changes: "{{steps.collect_config_changes.summary}}"
+    timeout_seconds: 120
+
+  - id: write_wiki_entry
+    name: "Write Dated Wiki Archive Entry"
+    depends_on: [compose_weekly_review]
+    agent: archivist
+    action: write_wiki
+    params:
+      file: ".navig/wiki/history/ops-review-{{today}}.md"
+      content: "{{steps.compose_weekly_review.output}}"
+      create_history_dir: true
+
+  - id: update_runbooks
+    name: "Check for New Runbook Patterns"
+    depends_on: [collect_incidents]
+    condition: "{{steps.collect_incidents.new_patterns | length}} > 0"
+    agent: archivist
+    action: update_runbooks
+    params:
+      patterns: "{{steps.collect_incidents.new_patterns}}"
+      file: ".navig/wiki/runbooks.md"
+
+  - id: deliver_report
+    name: "Deliver Report to Inbox"
+    depends_on: [compose_weekly_review, write_wiki_entry]
+    agent: herald
+    action: deliver
+    params:
+      content: "{{steps.compose_weekly_review.output}}"
+      channel: "#ops"
+      subject: "Weekly Ops Review — {{today}}"
+      summary_first: true     # send 1-page summary first, full report below
+
+  - id: schedule_next
+    name: "Confirm Next Review Scheduled"
+    depends_on: [deliver_report]
+    type: display
+    message: |
+      ✅ Weekly review complete.
+      Report archived: .navig/wiki/history/ops-review-{{today}}.md
+      Next review: {{next_sunday}}

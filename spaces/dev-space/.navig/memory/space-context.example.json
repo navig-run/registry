@@ -1,0 +1,33 @@
+{
+  "purpose": "Code authoring, userscript development, and browser extension engineering hub.",
+  "owner": {
+    "handle": "operator",
+    "timezone": "UTC",
+    "primary_OS": "Windows",
+    "primary_shell": "PowerShell"
+  },
+  "project_count": 0,
+  "platforms": ["Windows", "Linux", "macOS"],
+  "sub_workspaces": [
+    "userscripts-workshop",
+    "chrome-extensions-workshop"
+  ],
+  "active_formations": [
+    "dev-workflow",
+    "review-cycle",
+    "extension-build"
+  ],
+  "active_agents": [
+    "coder",
+    "debugger",
+    "reviewer",
+    "scripter"
+  ],
+  "skills_installed": [
+    "code-lint",
+    "run-tests",
+    "scaffold-project",
+    "publish-extension"
+  ],
+  "notes": "Edit after completing initial project onboarding and filling in sub-workspace templates."
+}

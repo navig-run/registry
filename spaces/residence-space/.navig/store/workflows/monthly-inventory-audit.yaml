@@ -1,0 +1,62 @@
+name: monthly-inventory-audit
+description: |
+  Full monthly home audit. Runs on the 1st of each month or on demand.
+  Produces a complete inventory export, maintenance cost summary, and
+  medication log review. Generates a monthly home health report.
+
+schedule:
+  cron: "0 10 1 * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: household-ops
+requires_approval: false
+
+steps:
+  - id: full_inventory_export
+    name: "Full Inventory Export"
+    skill: inventory-export
+    params:
+      format: markdown
+      room: "all"
+      output_file: "out/inventory-{{date.year}}-{{date.month}}.md"
+    on_error: continue
+
+  - id: expiry_scan_full
+    name: "Full Medication Expiry Scan"
+    skill: check-expiry
+    params:
+      days: 90
+      person: "all"
+      include_inactive: false
+    on_error: continue
+
+  - id: maintenance_summary
+    name: "Maintenance Open Items Summary"
+    agent: steward
+    action: generate_maintenance_summary
+    params:
+      source: ".navig/memory/maintenance-log.json"
+      include_completed_last_days: 30
+    on_error: continue
+
+  - id: declutter_analysis
+    name: "Declutter Opportunity Analysis"
+    agent: organizer
+    action: review_inventory
+    params:
+      filter: "condition:poor,condition:unknown"
+    on_error: continue
+
+  - id: monthly_report
+    name: "Generate Monthly Home Report"
+    depends_on: [full_inventory_export, expiry_scan_full, maintenance_summary, declutter_analysis]
+    agent: housekeeper
+    action: generate_monthly_report
+    params:
+      inventory: "{{steps.full_inventory_export.output}}"
+      medications: "{{steps.expiry_scan_full.output}}"
+      maintenance: "{{steps.maintenance_summary.output}}"
+      declutter: "{{steps.declutter_analysis.output}}"
+      deliver_to: "#home"

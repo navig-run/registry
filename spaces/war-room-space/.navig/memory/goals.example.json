@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "war-room",
+  "goals": [
+    {
+      "id": "threat-awareness",
+      "title": "Full threat awareness",
+      "description": "No adversary move goes undetected or unlogged",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "narrative-control",
+      "title": "Narrative control",
+      "description": "Always have a prepared counter-narrative ready for top threat vectors",
+      "status": "active",
+      "priority": "high"
+    }
+  ]
+}

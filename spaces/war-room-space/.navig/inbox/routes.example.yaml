@@ -1,0 +1,16 @@
+# War Room Space — Inbox Routes
+version: "1.0"
+routes:
+  - channel: "#intel"
+    description: "Intelligence reports and adversary moves"
+    handlers: ["intelligence-officer"]
+    default: true
+  - channel: "#legal"
+    description: "Legal events, filings, and counsel updates"
+    handlers: ["legal-counsel"]
+  - channel: "#narrative"
+    description: "Media mentions, narrative attacks, and comms needs"
+    handlers: ["narrative-engineer"]
+  - channel: "#ops"
+    description: "Active operation updates and tactical decisions"
+    handlers: ["strategist"]

@@ -1,0 +1,17 @@
+{
+  "id": "ops",
+  "name": "Operations",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Day-to-day operational tasks, runbooks, SOPs, incident response, and recurring workflows.",
+  "author": "navig-run",
+  "license": "MIT",
+  "parent": "company-space",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

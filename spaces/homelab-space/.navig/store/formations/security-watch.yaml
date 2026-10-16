@@ -1,0 +1,66 @@
+id: security-watch
+name: Security Watch
+version: "1.0.0"
+description: >
+  Continuous security formation covering port auditing, process investigation,
+  anomaly detection, and intrusion alerting. Runs on schedule and event triggers.
+
+agents:
+  lead: sentinel
+  supporting: [atlas, herald]
+
+trigger_conditions:
+  - "Unexpected port opens on any registered device"
+  - "Process investigation detects suspicious binary or pattern"
+  - "New unregistered device appears on network"
+  - "Failed SSH login attempts detected in auth.log"
+  - "Scheduled: Tuesday 02:00 weekly full audit"
+  - "Manual: navig formation run security-watch"
+
+action_scope:
+  - ALLOW: port-audit, process-investigate, network-scan (passive)
+  - ALLOW: read system logs (/var/log, Windows Event Log)
+  - ALLOW: write to .navig/memory/port-audits.json
+  - ALLOW: send alerts via inbox channel #security
+  - ALLOW: create incident record in known-issues.json
+  - DENY: modify firewall rules without operator approval
+  - DENY: terminate processes without operator approval
+  - DENY: block IPs automatically (alert only mode by default)
+
+skills_used:
+  - port-audit
+  - process-investigate
+  - network-scan
+  - ssh-connect
+
+workflows_used:
+  - deep-audit
+  - morning-sweep   # anomaly alert step
+
+threat_response_policy:
+  mode: alert_only      # alert_only | auto_block | auto_kill
+  alert_channels: ["#security", "operator_inbox"]
+  incident_log: ".navig/memory/known-issues.json"
+
+baseline_files:
+  ports: ".navig/memory/port-baseline.json"
+  processes: ".navig/memory/process-baseline.json"
+
+communication:
+  inbox_channel: "#security"
+  escalation: operator
+  alert_priority: high
+  notify_on:
+    - unexpected_open_port
+    - suspicious_process
+    - new_unregistered_device
+    - failed_auth_attempts
+
+context_memory:
+  read: [device-registry.json, port-audits.json, known-issues.json]
+  write: [port-audits.json, known-issues.json]
+
+example_invocation: |
+  # Trigger immediate full security sweep:
+  navig formation run security-watch
+  # sentinel will: scan all device ports → investigate processes → compare baselines → alert

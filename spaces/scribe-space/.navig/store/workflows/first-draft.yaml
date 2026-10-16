@@ -1,0 +1,59 @@
+name: first-draft
+description: >
+  Runs the first-draft pipeline for a writing project. Accepts a type parameter
+  (fiction, article, screenplay) and routes to the appropriate formation.
+  Produces a draft file in the relevant sub-workspace folder.
+
+schedule:
+  cron: ""
+  timezone: "UTC"
+  enabled: false
+
+on_demand: true
+formation: fiction-workshop
+
+params:
+  - name: type
+    description: "Writing type: fiction | article | screenplay"
+    required: true
+  - name: title
+    description: "Working title of the piece"
+    required: true
+  - name: brief
+    description: "Path to a brief file, or inline text"
+    required: false
+
+steps:
+  - name: route-to-formation
+    description: Select and activate the formation for the given type
+    shell: auto
+    script: |
+      if [ "$type" = "fiction" ]; then
+        echo "Formation: fiction-workshop"
+      elif [ "$type" = "article" ]; then
+        echo "Formation: journalism-workflow"
+      elif [ "$type" = "screenplay" ]; then
+        echo "Formation: production-draft"
+      else
+        echo "ERROR: Unknown type '$type'. Use fiction, article, or screenplay."
+        exit 1
+      fi
+    script_windows: |
+      switch ($type) {
+        "fiction"     { Write-Output "Formation: fiction-workshop" }
+        "article"     { Write-Output "Formation: journalism-workflow" }
+        "screenplay"  { Write-Output "Formation: production-draft" }
+        default       { Write-Error "Unknown type '$type'." ; exit 1 }
+      }
+
+  - name: generate-outline
+    description: Generate a structural outline before drafting
+    depends_on: route-to-formation
+
+  - name: write-draft
+    description: Write the first draft from the outline
+    depends_on: generate-outline
+
+  - name: save-output
+    description: Save draft to sub-workspace directory
+    depends_on: write-draft

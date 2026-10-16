@@ -1,0 +1,29 @@
+{
+  "id": "chrome-ext-space",
+  "kind": "space",
+  "version": "0.1.0",
+  "display_name": "Chrome Extension Space",
+  "description": "Chrome extension reverse engineering, static analysis, security auditing, and development workspace.",
+  "tier": "work",
+  "status": "planned",
+  "agent": {
+    "default": null,
+    "formation": null
+  },
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "meta": {
+    "author": "navig-run",
+    "license": "MIT",
+    "tags": ["chrome", "extensions", "reverse-engineering", "security", "manifest-v3", "analysis", "browser", "development"],
+    "platforms": ["Windows", "Linux", "macOS"],
+    "planned": {
+      "agents": ["reverser", "analyzer", "coder", "auditor"],
+      "formations": ["analyze-workflow", "dev-workflow", "audit-cycle"],
+      "skills": ["parse-manifest", "unpack-crx", "map-permissions", "audit-extension", "scaffold-mv3", "diff-extensions"],
+      "workflows": ["analyze-extension", "security-audit", "scaffold-extension", "diff-versions"]
+    }
+  }
+}

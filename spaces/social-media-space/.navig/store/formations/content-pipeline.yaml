@@ -1,0 +1,67 @@
+id: content-pipeline
+name: Content Pipeline
+version: "1.0.0"
+description: >
+  End-to-end content production for any brand — from strategic brief to scheduled
+  post. Enforces quality gates at every stage: no draft published without a voice
+  score ≥ 7.
+
+space: social-media-space
+lead: content-strategist
+supporting:
+  - post-writer
+  - brand-guardian
+  - scheduler
+
+trigger_conditions:
+  - New content brief created in .navig/plans/briefs/
+  - Weekly planning cycle (Monday)
+  - Manual kickoff from operator
+
+skills:
+  - create-post-draft
+  - check-brand-voice
+  - schedule-post
+  - hashtag-research
+
+workflows:
+  - weekly-content-plan
+  - daily-post-review
+
+pipeline_stages:
+  - stage: idea
+    owner: content-strategist
+    output: .navig/plans/briefs/{brief-slug}.md
+  - stage: draft
+    owner: post-writer
+    output: content/drafts/{brand}/{YYYY-MM-DD}-{slug}.md
+    gate: voice_score >= 7
+    gate_enforcer: brand-guardian
+  - stage: approved
+    owner: brand-guardian
+    notes: Status updated to "approved" after voice gate passes
+  - stage: scheduled
+    owner: scheduler
+    output: content/scheduled/{brand}/{ISOdatetime}-{platform}-{slug}.json
+  - stage: published
+    owner: operator
+    notes: Moved to content/published/ after confirmation
+  - stage: analysed
+    owner: analytics-watcher
+    notes: Engagement recorded to analytics/{brand}/{YYYY-MM}/engagement.csv
+
+quality_gates:
+  voice_gate:
+    field: voice_score
+    threshold: 7
+    enforcer: brand-guardian
+    on_fail: return_to_writer
+  hook_gate:
+    field: hook_score
+    threshold: 7
+    enforcer: post-writer
+    on_fail: revise_hook
+
+escalation:
+  on_quality_failure: content-strategist
+  on_scheduling_conflict: scheduler

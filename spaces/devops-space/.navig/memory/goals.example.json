@@ -1,0 +1,7 @@
+[
+  {"id": "G-001", "goal": "All CI pipelines passing with ≤ 5 min feedback loop", "status": "active", "priority": "high"},
+  {"id": "G-002", "goal": "100% of infrastructure defined as code — no manual cloud resources", "status": "active", "priority": "high"},
+  {"id": "G-003", "goal": "Every incident has a blameless postmortem filed within 24h", "status": "active", "priority": "high"},
+  {"id": "G-004", "goal": "All SSL certificates monitored with ≥ 30-day renewal alerts", "status": "active", "priority": "medium"},
+  {"id": "G-005", "goal": "Weekly reliability review conducted every Monday", "status": "active", "priority": "medium"}
+]

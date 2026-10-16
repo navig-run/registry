@@ -1,0 +1,51 @@
+name: weekly-home-review
+description: |
+  Weekly home status check. Surfaces maintenance items due in the next 14 days,
+  medications expiring in the next 30 days, unknown-condition inventory items,
+  and any open goals. Delivers a concise home health report to #home inbox.
+
+schedule:
+  cron: "0 9 * * 1"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: household-ops
+
+steps:
+  - id: check_maintenance
+    name: "Check Upcoming Maintenance"
+    agent: steward
+    action: list_due_tasks
+    params:
+      source: ".navig/memory/maintenance-log.json"
+      days_ahead: 14
+    on_error: continue
+
+  - id: check_medication_expiry
+    name: "Check Medication Expiry"
+    skill: check-expiry
+    params:
+      days: 30
+      person: "all"
+    on_error: continue
+
+  - id: check_inventory_gaps
+    name: "Surface Unknown-Condition Items"
+    agent: organizer
+    action: review_inventory
+    params:
+      filter: "condition:unknown"
+      max_items: 20
+    on_error: continue
+
+  - id: home_review_report
+    name: "Generate Home Review Report"
+    depends_on: [check_maintenance, check_medication_expiry, check_inventory_gaps]
+    agent: housekeeper
+    action: generate_home_report
+    params:
+      maintenance: "{{steps.check_maintenance.output}}"
+      medications: "{{steps.check_medication_expiry.output}}"
+      inventory_gaps: "{{steps.check_inventory_gaps.output}}"
+      deliver_to: "#home"

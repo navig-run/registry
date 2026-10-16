@@ -1,0 +1,56 @@
+name: quarterly-review
+version: "1.0.0"
+description: >
+  Quarterly strategic and financial review. Runs in the last week of each quarter.
+  Combines financial analysis, project retrospectives, client pipeline health,
+  and OKR progress into a comprehensive quarterly report for strategic planning.
+schedule:
+  cron: "0 9 25 3,6,9,12 *"
+  timezone: "{{TIMEZONE}}"
+  enabled: true
+on_demand: true
+formation: strategic-planning
+
+steps:
+  - name: quarterly-financials
+    description: Generate quarterly revenue, expense, and tax reports
+    skill: tax-summary
+    params:
+      quarter: "current-quarter"
+
+  - name: project-retrospectives
+    description: Compile project status, completed deliveries, and lessons learned
+    depends_on: quarterly-financials
+
+  - name: client-pipeline-health
+    description: Analyze lead conversion rates, client retention, revenue per client
+    depends_on: quarterly-financials
+
+  - name: okr-progress
+    description: Review quarterly OKRs against targets, flag at-risk objectives
+    depends_on: project-retrospectives
+
+  - name: competitive-landscape
+    description: Summarize market shifts, competitor moves, positioning adjustments
+    depends_on: okr-progress
+
+  - name: compile-quarterly-report
+    description: |
+      Combine all inputs into quarterly strategic report:
+      - Financial health (revenue, expenses, tax status)
+      - Project portfolio (completed, in-progress, pipeline)
+      - Client health (new, active, churned)
+      - OKR scorecard
+      - Strategic recommendations for next quarter
+    depends_on:
+      - client-pipeline-health
+      - competitive-landscape
+
+  - name: set-next-quarter-okrs
+    description: Draft OKRs for the upcoming quarter based on review findings
+    depends_on: compile-quarterly-report
+
+  - name: notify-all
+    description: Distribute quarterly report to #strategic, summary to all channels
+    inbox_channel: "#strategic"
+    depends_on: set-next-quarter-okrs

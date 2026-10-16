@@ -1,0 +1,71 @@
+id: alert-triage
+name: Alert Triage
+version: "1.0.0"
+description: >
+  Parse and assess an incoming alert payload. Prints urgency, user impact,
+  likely cause, and first-response actions.
+category: monitoring
+platform: [windows, linux, macos]
+formation: incident-response
+author: navig-run
+
+parameters:
+  - name: alert
+    type: string
+    required: true
+    description: "Alert name or path to alert JSON file"
+  - name: service
+    type: string
+    required: false
+    description: "Affected service (overrides value in alert payload)"
+  - name: environment
+    type: string
+    required: false
+    default: "prod"
+
+steps:
+  - name: parse-alert
+    description: Parse alert name and determine urgency
+    shell: auto
+    script: |
+      python3 - "{{alert}}" "{{service}}" "{{environment}}" <<'EOF'
+      import sys, json, os
+
+      # Values arrive as argv — never pasted into Python source.
+      alert = sys.argv[1]
+      service = sys.argv[2] or "unknown"
+      env = sys.argv[3]
+
+      # Load from file if path given
+      payload = {}
+      if os.path.isfile(alert):
+          with open(alert) as f:
+              payload = json.load(f)
+          alert = payload.get("alertname", alert)
+          service = payload.get("labels", {}).get("job", service)
+
+      # Simple heuristic urgency mapping
+      critical_keywords = ["down", "outage", "exhausted", "oom", "critical"]
+      high_keywords = ["high", "error_rate", "latency", "failing", "timeout"]
+
+      alert_lower = alert.lower()
+      if any(k in alert_lower for k in critical_keywords):
+          urgency = "P1 — CRITICAL"
+          impact = "Possible full outage"
+      elif any(k in alert_lower for k in high_keywords):
+          urgency = "P2 — HIGH"
+          impact = "Degraded service"
+      else:
+          urgency = "P3 — MEDIUM"
+          impact = "Partial degradation or warning"
+
+      print(f"Alert:       {alert}")
+      print(f"Service:     {service}")
+      print(f"Environment: {env}")
+      print(f"Urgency:     {urgency}")
+      print(f"Est. Impact: {impact}")
+      print()
+      print("→ Check #incidents for an open incident on this service.")
+      print("→ Run health-probe skill to confirm current state.")
+      print("→ Consult runbooks/ for this alert type.")
+      EOF

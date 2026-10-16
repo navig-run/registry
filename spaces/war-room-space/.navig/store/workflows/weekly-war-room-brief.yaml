@@ -1,0 +1,42 @@
+name: weekly-war-room-brief
+description: |
+  Weekly full-theater brief. Open operations, intel signals, narrative posture,
+  legal status. Delivered to #war-room inbox.
+
+schedule:
+  cron: "0 7 * * 1"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: ops-command
+
+steps:
+  - id: ops_status
+    name: "Active Operations Status"
+    agent: strategist
+    action: list_active_operations
+    on_error: continue
+
+  - id: intel_digest
+    name: "Intelligence Digest"
+    agent: intelligence-officer
+    action: generate_weekly_digest
+    on_error: continue
+
+  - id: narrative_posture
+    name: "Narrative Posture"
+    agent: narrative-engineer
+    action: assess_narrative_posture
+    on_error: continue
+
+  - id: war_brief
+    name: "Deliver War Room Brief"
+    depends_on: [ops_status, intel_digest, narrative_posture]
+    agent: strategist
+    action: generate_war_brief
+    params:
+      ops: "{{steps.ops_status.output}}"
+      intel: "{{steps.intel_digest.output}}"
+      narrative: "{{steps.narrative_posture.output}}"
+      deliver_to: "#war-room"

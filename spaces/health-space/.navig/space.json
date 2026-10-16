@@ -1,0 +1,16 @@
+{
+  "id": "health-space",
+  "name": "Health",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "Physical and mental health tracking — metrics, protocols, logs, and routines. Structure and runbooks only; agents are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "bureau-space",
+  "name": "Bureau",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "French administrative life — official documents, taxes, housing, health coverage, civil status, and correspondence. Filing works today through navig paperwork and navig cabinet; agents are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": [],
+  "locale": "fr"
+}

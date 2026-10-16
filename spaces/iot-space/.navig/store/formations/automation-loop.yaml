@@ -1,0 +1,51 @@
+id: automation-loop
+name: Automation Loop
+version: "1.0.0"
+description: >
+  Formation covering scenes, schedules, triggers, and Home Assistant entity sync.
+  Active when automations need designing, validating, or reconciling with the live
+  device inventory.
+
+agents:
+  lead: automa
+  supporting: [broker]
+
+trigger_conditions:
+  - "New device onboarded that should join a scene or automation"
+  - "Home Assistant entity list changes (from ha-entity-sync)"
+  - "Scheduled scene time reached"
+  - "Manual invocation: navig formation run automation-loop"
+  - "Operator requests a new automation design"
+
+action_scope:
+  - ALLOW: ha-entity-sync, mqtt-publish (scene/command payloads)
+  - ALLOW: read device-registry.json and mqtt-topics.md
+  - ALLOW: dry-run scene simulation
+  - DENY: enable an automation without a passing dry-run
+  - DENY: delete existing HA automations without approval
+  - DENY: publish to critical-device command topics unattended
+
+skills_used:
+  - ha-entity-sync
+  - mqtt-publish
+
+workflows_used:
+  - automation-review
+  - device-onboard   # scene-join step
+
+communication:
+  inbox_channel: "#automation"
+  escalation: operator
+  notify_on:
+    - entity_out_of_sync
+    - orphaned_entity
+    - scene_dry_run_failed
+
+context_memory:
+  read: [device-registry.json, mqtt-topics.md]
+  write: [device-registry.json]
+
+example_invocation: |
+  # Trigger automation loop formation manually:
+  navig formation run automation-loop
+  # automa will: sync HA entities → validate automations → dry-run scenes → report drift

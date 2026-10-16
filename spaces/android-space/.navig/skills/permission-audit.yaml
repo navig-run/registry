@@ -1,0 +1,79 @@
+id: permission-audit
+name: Permission Audit
+version: "1.0.0"
+description: >
+  Audit which apps hold dangerous runtime permissions (camera, microphone,
+  location, contacts, SMS, storage) using `dumpsys package` and `pm list
+  permissions`. Surfaces over-privileged apps so the operator can revoke access.
+category: privacy
+platform: [windows, linux, macos]
+formation: privacy-hardening
+author: navig-run
+
+parameters:
+  - name: permission
+    type: enum
+    values: [all, CAMERA, RECORD_AUDIO, ACCESS_FINE_LOCATION, READ_CONTACTS, READ_SMS, READ_EXTERNAL_STORAGE]
+    default: all
+  - name: package
+    type: string
+    description: "Audit a single package (blank = all granted-dangerous apps)"
+    default: ""
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+
+steps:
+  - id: audit_single
+    name: "Audit permissions for one package"
+    condition: "package != ''"
+    shell: auto
+    script: |
+      echo "=== PERMISSIONS: {{package}} ==="
+      adb {{#serial}}-s {{serial}}{{/serial}} shell dumpsys package "{{package}}" | \
+        grep -iE "granted=true|permission\." | grep -iE "CAMERA|RECORD_AUDIO|LOCATION|CONTACTS|SMS|STORAGE|PHONE"
+
+  - id: audit_by_permission
+    name: "List apps holding a specific dangerous permission"
+    condition: "package == '' and permission != 'all'"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      Write-Output "=== APPS GRANTED android.permission.{{permission}} ==="
+      $pkgs = & adb $sel shell pm list packages 2>$null | ForEach-Object { $_ -replace '^package:', '' }
+      foreach ($p in $pkgs) {
+        $p = $p.Trim(); if (-not $p) { continue }
+        $g = & adb $sel shell dumpsys package $p 2>$null | Select-String "android.permission.{{permission}}: granted=true"
+        if ($g) { Write-Output $p }
+      }
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      echo "=== APPS GRANTED android.permission.{{permission}} ==="
+      adb $sel shell pm list packages | tr -d '\r' | sed 's/^package://' | while read -r p; do
+        [ -z "$p" ] && continue
+        adb $sel shell dumpsys package "$p" 2>/dev/null | \
+          grep -q "android.permission.{{permission}}: granted=true" && echo "$p"
+      done
+
+  - id: audit_all
+    name: "Summary of all dangerous permission groups"
+    condition: "package == '' and permission == 'all'"
+    shell: auto
+    script: |
+      echo "=== DANGEROUS PERMISSION GROUPS (definitions) ==="
+      adb {{#serial}}-s {{serial}}{{/serial}} shell pm list permissions -d -g | \
+        grep -iE "group|dangerous" | head -60
+
+output:
+  fields: [package, permission, granted]
+  store_to: ".navig/memory/known-issues.json"
+  merge: true
+
+examples:
+  - description: "Full dangerous-permission overview"
+    command: "navig skill run permission-audit"
+  - description: "Which apps can access the microphone?"
+    command: "navig skill run permission-audit --permission RECORD_AUDIO"
+  - description: "Audit one app's granted permissions"
+    command: "navig skill run permission-audit --package com.example.app"

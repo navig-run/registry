@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "space": "freelance",
+  "description": "MCP server configuration for freelance space — scoped file access and shell tools",
+  "updated": "2026-03-12",
+  "servers": [
+    {
+      "id": "filesystem",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_roots": [
+          "{workspace_root}",
+          "{workspace_root}/clients",
+          "{workspace_root}/invoices",
+          "{workspace_root}/projects",
+          "{workspace_root}/.navig/memory"
+        ],
+        "max_file_size_mb": 5,
+        "follow_symlinks": false
+      }
+    },
+    {
+      "id": "shell",
+      "type": "mcp-server",
+      "provider": "navig-builtin",
+      "config": {
+        "allowed_commands": ["python", "python3", "py"],
+        "working_dir": "{workspace_root}",
+        "timeout_seconds": 30
+      }
+    }
+  ]
+}

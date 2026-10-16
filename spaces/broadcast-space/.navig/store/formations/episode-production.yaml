@@ -1,0 +1,52 @@
+id: episode-production
+name: "Episode Production"
+version: "1.0.0"
+description: |
+  End-to-end episode production pipeline. Takes an episode from concept
+  through recording, editing, mastering, and final approval. The host
+  leads creative direction while sound-engineer handles audio quality.
+agents:
+  lead: host
+  supporting:
+    - sound-engineer
+    - show-planner
+    - publisher
+    - community-manager
+trigger_conditions:
+  - "New episode production requested"
+  - "Episode in production queue"
+  - "Recording session completed"
+action_scope:
+  ALLOW:
+    - Record audio
+    - Edit and master audio
+    - Generate show notes and transcript
+    - Prepare for publishing
+  DENY:
+    - Publish without host approval
+    - Skip mastering step
+    - Delete source recordings
+skills_used:
+  - audio-record
+  - audio-edit
+  - noise-reduce
+  - loudness-normalize
+  - transcript-generate
+  - show-notes-write
+  - clip-extract
+workflows_used:
+  - episode-production
+communication:
+  inbox_channel: "#episodes"
+  escalation: operator
+  notify_on:
+    - recording_complete
+    - mastering_complete
+    - episode_approved
+context_memory:
+  read:
+    - space-context
+    - goals
+  write:
+    - space-context
+example_invocation: "Produce episode 15: 'AI in Education' — interview with Jane Doe"

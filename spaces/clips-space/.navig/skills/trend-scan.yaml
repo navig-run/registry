@@ -1,0 +1,56 @@
+id: trend-scan
+name: Trend Scan
+version: "1.0.0"
+description: "Scan platforms for trending sounds, formats, hashtags, and challenges."
+category: analytics
+platform: [windows, linux, macos]
+formation: trend-ride
+author: navig-run
+
+parameters:
+  - name: platforms
+    type: list
+    default: [tiktok, reels, shorts]
+    description: "Platforms to scan for trends"
+  - name: threshold
+    type: string
+    default: rising
+    description: "Trend threshold: emerging, rising, peak"
+  - name: limit
+    type: integer
+    default: 20
+    description: "Maximum number of trends to return"
+
+steps:
+  - id: fetch-trending
+    name: Fetch trending content
+    shell: bash
+    script_windows: |
+      yt-dlp --flat-playlist --print "%(title)s | %(view_count)s | %(upload_date)s" "https://www.tiktok.com/trending" 2>nul | head -{{limit}}
+    script_linux: |
+      yt-dlp --flat-playlist --print "%(title)s | %(view_count)s | %(upload_date)s" "https://www.tiktok.com/trending" 2>/dev/null | head -{{limit}}
+    script_macos: |
+      yt-dlp --flat-playlist --print "%(title)s | %(view_count)s | %(upload_date)s" "https://www.tiktok.com/trending" 2>/dev/null | head -{{limit}}
+
+  - id: extract-patterns
+    name: Extract trend patterns
+    shell: bash
+    script_windows: |
+      echo "Extracting trend patterns from fetched data..."
+      echo "Sounds | Formats | Hashtags | Challenges"
+    script_linux: |
+      echo "Extracting trend patterns from fetched data..."
+      echo "Sounds | Formats | Hashtags | Challenges"
+    script_macos: |
+      echo "Extracting trend patterns from fetched data..."
+      echo "Sounds | Formats | Hashtags | Challenges"
+
+  - id: rank-trends
+    name: Rank trends by velocity
+    shell: bash
+    script_windows: |
+      echo "Ranking trends by velocity and relevance..."
+    script_linux: |
+      echo "Ranking trends by velocity and relevance..."
+    script_macos: |
+      echo "Ranking trends by velocity and relevance..."

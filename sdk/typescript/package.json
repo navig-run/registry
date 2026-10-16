@@ -1,0 +1,36 @@
+{
+  "name": "navig-sdk",
+  "version": "2.4.14",
+  "description": "NAVIG Plugin SDK — build JSON-RPC stdio plugins for the NAVIG CLI",
+  "main": "dist/plugin.js",
+  "types": "dist/plugin.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/plugin.js",
+      "types": "./dist/plugin.d.ts"
+    }
+  },
+  "engines": { "node": ">=18.0.0" },
+  "keywords": ["navig", "plugin", "sdk", "cli", "automation", "json-rpc", "stdio"],
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry.git",
+    "directory": "sdk/typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/navig-run/registry/issues"
+  },
+  "homepage": "https://github.com/navig-run/registry/tree/main/sdk",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "files": ["dist", "src"],
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}

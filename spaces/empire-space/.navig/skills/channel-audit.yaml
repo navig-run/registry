@@ -1,0 +1,72 @@
+id: channel-audit
+name: Channel Audit
+version: "1.0.0"
+description: >
+  Audit all revenue streams by channel and produce a channel performance
+  breakdown. Surfaces top channels, zero-revenue channels, and concentration risk.
+category: analytics
+platform: [windows, linux, macos]
+formation: portfolio-ops
+author: empire-space
+
+parameters:
+  - name: venture
+    type: string
+    required: false
+    default: "all"
+    description: "Venture to audit, or 'all'"
+
+steps:
+  - id: audit_channels
+    name: "Audit Revenue Channels"
+    shell: auto
+    env:
+      NAVIG_PARAM_VENTURE: "{{params.venture}}"
+    script: |
+      python3 - <<'EOF'
+      import os
+      import json
+      from collections import defaultdict
+
+      rev_path = ".navig/memory/revenue.json"
+      venture_filter = os.environ.get("NAVIG_PARAM_VENTURE", "").lower()
+
+      try:
+          with open(rev_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          print("No revenue data found. Track revenue streams first.")
+          raise SystemExit(0)
+
+      streams = [s for s in data.get("streams", []) if s.get("status") == "active"]
+      if venture_filter != "all":
+          streams = [s for s in streams if s.get("venture", "").lower() == venture_filter]
+
+      channel_totals = defaultdict(float)
+      channel_arr = defaultdict(float)
+      for s in streams:
+          channel_totals[s.get("channel", "unknown")] += s.get("amount", 0)
+          channel_arr[s.get("channel", "unknown")] += s.get("arr", s.get("amount", 0))
+
+      total_arr = sum(channel_arr.values())
+      sorted_channels = sorted(channel_arr.items(), key=lambda x: x[1], reverse=True)
+
+      scope = f"venture '{venture_filter}'" if venture_filter != "all" else "all ventures"
+      print(f"Channel Audit — {scope}\n")
+      print(f"{'Channel':<20} {'ARR':>12} {'Share':>7}")
+      print("-" * 42)
+      for ch, arr in sorted_channels:
+          pct = round(arr / total_arr * 100, 1) if total_arr > 0 else 0
+          risk = " ⚠️ concentration" if pct > 50 else ""
+          print(f"{ch:<20} {arr:>12,.2f} {pct:>6.1f}%{risk}")
+      print("-" * 42)
+      print(f"{'TOTAL':<20} {total_arr:>12,.2f} 100.0%")
+
+      if len(sorted_channels) == 1:
+          print("\n⚠️  RISK: 100% channel concentration. Diversification required.")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: channel_audit
+    from: audit_channels

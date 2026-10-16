@@ -1,0 +1,60 @@
+id: clip-factory
+name: Clip Factory
+version: "1.0.0"
+description: |
+  End-to-end clip production formation. Takes a concept from idea to
+  published clip across all target platforms. Coordinates ideation,
+  hook writing, editing, and distribution in a single pipeline.
+
+agents:
+  lead: clip-director
+  supporting:
+    - hook-writer
+    - clip-editor
+    - trend-scout
+    - distributor
+
+trigger_conditions:
+  - "new clip"
+  - "clip idea"
+  - "produce clip"
+  - "create clip"
+
+action_scope:
+  ALLOW:
+    - clip creation and editing
+    - hook and caption writing
+    - platform formatting
+    - scheduling and posting
+  DENY:
+    - account settings modification
+    - API credential changes
+    - bulk deletion of published clips
+
+skills_used:
+  - hook-score
+  - clip-trim
+  - caption-generate
+  - sound-match
+  - format-adapt
+  - batch-export
+  - hashtag-optimize
+  - multi-post
+
+workflows_used:
+  - daily-clip
+
+communication:
+  inbox_channel: "#clips"
+  escalation: operator
+  notify_on: [completed, failed]
+
+context_memory:
+  read:
+    - memory/space-context.json
+    - memory/goals.json
+  write:
+    - memory/space-context.json
+
+example_invocation: |
+  navig formation run "Make a clip about 5 productivity hacks for TikTok, Reels and Shorts"

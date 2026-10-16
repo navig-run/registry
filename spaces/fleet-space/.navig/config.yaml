@@ -1,0 +1,9 @@
+space_id: fleet-space
+runtime: navig-space-2
+
+fleet:
+  max_concurrent_agents: 9
+  default_fleet_size: 5
+  result_timeout_minutes: 30
+  conflict_resolution: commander
+  merge_strategy: synthesize

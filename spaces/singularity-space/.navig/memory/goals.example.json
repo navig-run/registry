@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "space": "singularity",
+  "goals": [
+    {
+      "id": "signal-coverage",
+      "title": "Signal coverage",
+      "description": "No major AI or civilizational event missed unlogged",
+      "status": "active",
+      "priority": "high"
+    },
+    {
+      "id": "self-versioning",
+      "title": "Self-versioning discipline",
+      "description": "Snapshot self at least quarterly. Track the delta.",
+      "status": "active",
+      "priority": "medium"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "lab-space",
+  "version": "1.0.0",
+  "description": "Live command REPL — run, tweak, and share any Navig command",
+  "owner": "navig-run",
+  "tier": "studio",
+  "status": "planned",
+  "packages": [],
+  "capability_deps": [
+    "agent",
+    "tools",
+    "storage"
+  ],
+  "config_key": null,
+  "viral_hook": "Share a working command sequence as a URL — runs in the recipient's Navig instance",
+  "inbox": ".navig/inbox",
+  "memory": ".navig/memory",
+  "plans": ".navig/plans",
+  "state": ".navig/state",
+  "created": "2026-03-17",
+  "crossplatform": true
+}

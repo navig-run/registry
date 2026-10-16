@@ -1,0 +1,30 @@
+{
+  "id": "travel-space",
+  "name": "Travel Space",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "Plan, track, and document every trip — from daydream to debrief. Agents, formations and workflows ship; packaged skills (cost estimate, day plan, flight check, packing list) are planned.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "budget-watcher",
+    "document-keeper",
+    "itinerary-builder",
+    "trip-planner"
+  ],
+  "formations": [
+    "active-trip",
+    "post-trip",
+    "trip-planning"
+  ],
+  "skills": [],
+  "workflows": [
+    "new-trip",
+    "pre-departure",
+    "trip-debrief"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "trip-planning"
+}

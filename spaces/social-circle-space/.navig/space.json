@@ -1,0 +1,16 @@
+{
+  "id": "social-circle-space",
+  "name": "Social Circle",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "planned",
+  "description": "Your entire human network — mapped, searchable, and deeply personal. Design, config and runbooks ship; agents, packages and the graph view are planned. Contacts work today through navig contacts.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [],
+  "formations": [],
+  "skills": [],
+  "workflows": [],
+  "packages": [],
+  "subspaces": []
+}

@@ -1,0 +1,95 @@
+name: Validate Skills & Spaces
+
+on:
+  pull_request:
+    paths:
+      - 'cli-skills/**'
+      - 'ai-skills/**'
+      - 'library/**'
+      - 'examples/**'
+      - 'spaces/**'
+      - 'contributors/**'
+
+jobs:
+  validate:
+    name: Validate NAVIG assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install NAVIG
+        run: pip install navig --quiet
+
+      - name: Validate all skill YAML files
+        run: |
+          python - <<'EOF'
+          import sys, json, glob
+          from pathlib import Path
+
+          errors = []
+          warnings = []
+
+          # Validate CLI skills
+          for f in sorted(glob.glob("cli-skills/**/*.yaml", recursive=True)):
+              if f.endswith("_template.yaml"):
+                  continue
+              import yaml
+              try:
+                  data = yaml.safe_load(Path(f).read_text())
+                  if not isinstance(data, dict):
+                      errors.append(f"{f}: not a dict")
+                      continue
+                  for req in ["name", "description", "version", "category", "license"]:
+                      if not data.get(req):
+                          errors.append(f"{f}: missing required field '{req}'")
+                  if data.get("risk_level") == "destructive":
+                      cmds = data.get("commands", [])
+                      for c in cmds:
+                          if isinstance(c, dict) and c.get("risk") == "destructive":
+                              if not c.get("confirmation"):
+                                  errors.append(f"{f}: destructive command '{c.get('name', '?')}' missing 'confirmation' field")
+              except Exception as e:
+                  errors.append(f"{f}: YAML parse error — {e}")
+
+          # Validate space manifests
+          for f in sorted(glob.glob("examples/**/space.manifest.json", recursive=True)):
+              try:
+                  data = json.loads(Path(f).read_text())
+                  for req in ["id", "display_name", "version", "description", "license"]:
+                      if not data.get(req):
+                          errors.append(f"{f}: missing required field '{req}'")
+              except Exception as e:
+                  errors.append(f"{f}: JSON parse error — {e}")
+
+          if errors:
+              print("ERRORS:")
+              for e in errors:
+                  print(f"  ✗ {e}")
+              sys.exit(2)
+          else:
+              skill_count = len(glob.glob("cli-skills/**/*.yaml", recursive=True))
+              ai_count = len(glob.glob("ai-skills/**/*.md", recursive=True))
+              print(f"✓ Validation passed — {skill_count} CLI skills, {ai_count} AI skills checked")
+          EOF
+
+      - name: Check for secrets
+        run: |
+          # Fail if any skill file contains what looks like a hardcoded secret
+          bad=0
+          for f in $(find cli-skills ai-skills library examples spaces -name "*.yaml" -o -name "*.json" 2>/dev/null); do
+            if grep -qE '(password|secret|token|api_key)\s*[:=]\s*[A-Za-z0-9+/]{16,}' "$f"; then
+              echo "FAIL: possible hardcoded secret in $f"
+              bad=1
+            fi
+          done
+          if [ $bad -eq 1 ]; then
+            exit 1
+          else
+            echo "✓ No hardcoded secrets found"
+          fi

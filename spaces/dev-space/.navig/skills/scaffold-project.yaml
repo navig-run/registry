@@ -1,0 +1,62 @@
+id: scaffold-project
+name: Scaffold Project
+version: "1.0.0"
+description: Generate a new project skeleton from a built-in template (userscript, chrome-extension, node-script, python-script).
+category: scaffolding
+platform: [windows, linux, macos]
+formation: dev-workflow
+author: navig-run
+
+parameters:
+  - name: type
+    type: enum
+    values: [userscript, chrome-extension, node-script, python-script]
+    default: node-script
+    required: true
+  - name: name
+    type: string
+    description: "Project name (used as directory name and display name)"
+    required: true
+  - name: match
+    type: string
+    description: "URL match pattern (required for userscript and chrome-extension types)"
+    default: "https://*/*"
+
+steps:
+  - id: create_userscript
+    name: "Create Userscript"
+    condition: "params.type == 'userscript'"
+    agent: scripter
+    action: scaffold_userscript
+    params:
+      name: "{{params.name}}"
+      match: "{{params.match}}"
+      output_dir: "userscripts-workshop/{{params.name}}"
+
+  - id: create_extension
+    name: "Create Chrome Extension"
+    condition: "params.type == 'chrome-extension'"
+    agent: scripter
+    action: scaffold_extension
+    params:
+      name: "{{params.name}}"
+      match: "{{params.match}}"
+      output_dir: "chrome-extensions-workshop/{{params.name}}"
+
+  - id: create_node
+    name: "Create Node Script"
+    condition: "params.type == 'node-script'"
+    agent: coder
+    action: scaffold_node
+    params:
+      name: "{{params.name}}"
+      output_dir: "{{params.name}}"
+
+  - id: create_python
+    name: "Create Python Script"
+    condition: "params.type == 'python-script'"
+    agent: coder
+    action: scaffold_python
+    params:
+      name: "{{params.name}}"
+      output_dir: "{{params.name}}"

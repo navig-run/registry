@@ -1,0 +1,66 @@
+name: monthly-review
+description: |
+  Monthly performance review covering listener analytics, episode
+  performance, growth metrics, and strategic recommendations for
+  the next month.
+schedule:
+  cron: "0 10 1 * *"
+  timezone: "UTC"
+  enabled: true
+on_demand: true
+formation: audience-feedback
+
+steps:
+  - id: pull-analytics
+    name: "Pull Platform Analytics"
+    agent: publisher
+    action: "Collect listener data from all platforms"
+    params:
+      period: "30d"
+      platforms: ["apple_podcasts", "spotify", "youtube"]
+    depends_on: []
+    on_error: "continue"
+    timeout_seconds: 600
+
+  - id: episode-performance
+    name: "Analyse Episode Performance"
+    agent: show-planner
+    action: "Rank episodes by performance and identify patterns"
+    params:
+      metrics: ["downloads", "completion_rate", "reviews"]
+    depends_on: ["pull-analytics"]
+    on_error: "continue"
+    timeout_seconds: 600
+
+  - id: feedback-summary
+    name: "Summarise Listener Feedback"
+    agent: community-manager
+    action: "Compile reviews, comments, and survey responses"
+    params:
+      period: "30d"
+    depends_on: ["pull-analytics"]
+    on_error: "continue"
+    timeout_seconds: 600
+    parallel: true
+
+  - id: growth-analysis
+    name: "Growth Metrics Analysis"
+    agent: community-manager
+    action: "Analyse subscriber growth, retention, and engagement trends"
+    params:
+      compare_previous: true
+    depends_on: ["pull-analytics"]
+    on_error: "continue"
+    timeout_seconds: 600
+    parallel: true
+
+  - id: monthly-report
+    name: "Generate Monthly Report"
+    agent: host
+    action: "Compile full monthly report with recommendations"
+    params:
+      template: "performance-review"
+      sections: ["overview", "top_episodes", "growth", "feedback", "recommendations"]
+    depends_on: ["episode-performance", "feedback-summary", "growth-analysis"]
+    on_error: "continue"
+    timeout_seconds: 600

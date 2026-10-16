@@ -1,0 +1,65 @@
+name: Dev Studio
+description: Full-stack developer formation — code review, CI monitoring, deploy assist, and weekly retrospective
+version: 1.0.0
+license: MIT
+
+# A formation wires multiple agents to a specific work context.
+# Activate with: navig space use dev-studio
+agents:
+  - id: dev-pilot
+    name: Dev Pilot
+    role: >
+      Primary hands-on coding agent. Review PRs, summarise recent commits,
+      answer questions about the local codebase, and guide debugging sessions.
+      Prefer concise, direct technical answers.
+    bound_skills:
+      - git-ops
+      - system-health
+
+  - id: deploy-guardian
+    name: Deploy Guardian
+    role: >
+      Pre-deploy safety agent. Before any production deployment, run the deploy
+      runbook prompt, check system health baseline, and surface any open incidents.
+      Block deploys if health check fails. Never skip the rollback plan step.
+    bound_skills:
+      - system-health
+      - docker-ops
+      - security-audit
+    bound_prompts:
+      - deploy-runbook
+
+  - id: dev-chronicler
+    name: Dev Chronicler
+    role: >
+      Weekly retrospective agent. Every Friday at 4 PM, collect git summary,
+      run the weekly-review prompt, and post the digest to the configured channel.
+      Keep a rolling log at .navig/plans/reviews/.
+    bound_skills:
+      - git-ops
+    bound_prompts:
+      - weekly-review
+    schedule: "0 16 * * 5"   # Fridays 4 PM
+    output: telegram
+
+  - id: ci-watchdog
+    name: CI Watchdog
+    role: >
+      Monitor CI/CD pipeline status. Alert when a build fails on main or when a
+      deploy is stuck. Include the failing test name and a link to the run.
+    alert_channel: telegram
+    trigger:
+      on: webhook
+      event: ci.build.failed
+
+trigger:
+  on: space_activated
+  actions:
+    - run_skill: git-ops status
+    - run_skill: system-health vitals
+    - notify: "Dev Studio formation active. Codebase and system status ready."
+
+escalation:
+  deploy_blocked:
+    - notify: telegram
+    - log: ~/.navig/logs/deploys.jsonl

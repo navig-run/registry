@@ -1,0 +1,46 @@
+{
+  "kind": "space",
+  "id": "dev-studio",
+  "name": "Dev Studio",
+  "description": "Full-stack developer workspace — local coding, CI, deploys, and weekly retro in one space",
+  "version": "1.0.0",
+  "formation": "dev-studio",
+
+  "context": {
+    "project_root": ".",
+    "primary_language": "python",
+    "ci_provider": "github-actions",
+    "deploy_method": "docker compose"
+  },
+
+  "skills": [
+    "git-ops",
+    "system-health",
+    "docker-ops",
+    "security-audit"
+  ],
+
+  "prompts": [
+    "deploy-runbook",
+    "debug-session",
+    "weekly-review"
+  ],
+
+  "vault_keys": [
+    {
+      "name": "github_token",
+      "description": "GitHub PAT for CI status and PR APIs",
+      "required": false
+    },
+    {
+      "name": "telegram_bot_token",
+      "description": "Telegram bot token for deploy and CI alerts",
+      "required": false
+    }
+  ],
+
+  "notifications": {
+    "channel": "telegram",
+    "events": ["deploy.blocked", "ci.build.failed", "weekly.review.ready"]
+  }
+}

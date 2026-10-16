@@ -1,0 +1,9 @@
+id: sprint-cycle
+name: Sprint Cycle
+version: "1.0.0"
+description: Weekly operating rhythm across all active projects.
+space: project
+lead: project-planner
+supporting: [task-tracker, milestone-keeper, blocker-resolver]
+trigger_conditions: [weekly on standup day]
+workflows: [weekly-standup]

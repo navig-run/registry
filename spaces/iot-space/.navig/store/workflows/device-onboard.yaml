@@ -1,0 +1,139 @@
+name: device-onboard
+description: |
+  Interactive guided workflow for registering a new IoT device into the space.
+  Prompts for device metadata, fingerprints it, tests MQTT reachability, optionally
+  flashes firmware, updates the registry and wiki, then notifies the agent team.
+
+on_demand: true
+interactive: true
+formation: discovery-sweep
+agent_lead: beacon
+
+steps:
+  - id: collect_metadata
+    name: "Collect Device Metadata"
+    type: interactive_prompt
+    prompt: |
+      Welcome to the IoT device onboarding wizard. Please provide the following:
+
+      1. Device name (e.g., "plug-office", "sensor-hall"):
+      2. IP address (static on the IoT VLAN preferred):
+      3. MAC address (format XX:XX:XX:XX:XX:XX):
+      4. Protocol [wifi/zigbee/zwave/matter/ble]:
+      5. Device type [plug/bulb/sensor/camera/hub/controller/meter]:
+      6. Firmware ecosystem [tasmota/esphome/shelly/zigbee2mqtt/vendor/other]:
+      7. MQTT base topic (e.g., "cmnd/plug-office", leave blank for none):
+      8. Room / location (e.g., "office", "hallway"):
+      9. Notes (optional):
+    collect:
+      - name: device_name
+      - name: device_ip
+      - name: device_mac
+        validate: "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+      - name: device_protocol
+        choices: [wifi, zigbee, zwave, matter, ble]
+      - name: device_type
+        choices: [plug, bulb, sensor, camera, hub, controller, meter]
+      - name: device_firmware
+        choices: [tasmota, esphome, shelly, zigbee2mqtt, vendor, other]
+      - name: device_mqtt_topic
+        required: false
+      - name: device_location
+      - name: device_notes
+        required: false
+
+  - id: ping_test
+    name: "Reachability Test"
+    depends_on: [collect_metadata]
+    type: shell
+    command_windows: "ping -n 4 {{steps.collect_metadata.device_ip}}"
+    command_linux: "ping -c 4 {{steps.collect_metadata.device_ip}}"
+    command_macos: "ping -c 4 {{steps.collect_metadata.device_ip}}"
+    timeout_seconds: 30
+    on_error: warn   # device may be a battery Zigbee device that sleeps
+
+  - id: fingerprint
+    name: "Fingerprint Device"
+    depends_on: [collect_metadata]
+    skill: device-discover
+    params:
+      range: "{{steps.collect_metadata.device_ip}}/32"
+      method: all
+    timeout_seconds: 45
+    on_error: warn
+
+  - id: mqtt_probe
+    name: "MQTT Topic Probe"
+    depends_on: [collect_metadata]
+    condition: "{{steps.collect_metadata.device_mqtt_topic}} != ''"
+    skill: mqtt-subscribe
+    params:
+      topic: "{{steps.collect_metadata.device_mqtt_topic}}/#"
+      count: 3
+      duration: 15
+    on_error: warn
+
+  - id: firmware_check
+    name: "Check Firmware Version"
+    depends_on: [collect_metadata]
+    condition: "{{steps.collect_metadata.device_firmware}} in ['tasmota','esphome','shelly']"
+    skill: firmware-check
+    params:
+      target: "{{steps.collect_metadata.device_ip}}"
+      platform: "{{steps.collect_metadata.device_firmware}}"
+    timeout_seconds: 30
+    on_error: warn
+
+  - id: confirm_and_write
+    name: "Confirm Data & Write Registry"
+    depends_on: [collect_metadata, ping_test, fingerprint, mqtt_probe, firmware_check]
+    type: interactive_confirm
+    message: |
+      Ready to register the following device:
+
+      Name:       {{steps.collect_metadata.device_name}}
+      IP:         {{steps.collect_metadata.device_ip}}
+      MAC:        {{steps.collect_metadata.device_mac}}
+      Protocol:   {{steps.collect_metadata.device_protocol}}
+      Type:       {{steps.collect_metadata.device_type}}
+      Firmware:   {{steps.collect_metadata.device_firmware}}
+      MQTT topic: {{steps.collect_metadata.device_mqtt_topic}}
+      Location:   {{steps.collect_metadata.device_location}}
+      Ping:       {{steps.ping_test.status}}
+
+      Confirm registration? [Y/N]
+
+  - id: write_registry
+    name: "Write Device Registry Entry"
+    depends_on: [confirm_and_write]
+    condition: "{{steps.confirm_and_write.confirmed}} == true"
+    agent: beacon
+    action: append_device_registry
+    params:
+      entry:
+        name: "{{steps.collect_metadata.device_name}}"
+        ip: "{{steps.collect_metadata.device_ip}}"
+        mac: "{{steps.collect_metadata.device_mac}}"
+        protocol: "{{steps.collect_metadata.device_protocol}}"
+        type: "{{steps.collect_metadata.device_type}}"
+        firmware: "{{steps.firmware_check.output}}"
+        mqtt_topic: "{{steps.collect_metadata.device_mqtt_topic}}"
+        location: "{{steps.collect_metadata.device_location}}"
+        notes: "{{steps.collect_metadata.device_notes}}"
+        registered: "{{now_iso}}"
+        status: "active"
+
+  - id: update_wiki
+    name: "Update Devices Wiki"
+    depends_on: [write_registry]
+    agent: beacon
+    action: update_wiki_devices_table
+    params:
+      device: "{{steps.write_registry.entry}}"
+
+  - id: notify_agents
+    name: "Notify Agent Team"
+    depends_on: [write_registry]
+    type: broadcast
+    message: "New IoT device registered: {{steps.collect_metadata.device_name}} ({{steps.collect_metadata.device_ip}}) — Sensor will begin monitoring telemetry shortly."
+    channels: ["#discovery", "#mqtt", "#ops"]

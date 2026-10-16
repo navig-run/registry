@@ -1,0 +1,10 @@
+{
+  "name": "freelance-space",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Freelance business operations — client management, time tracking, invoicing, and revenue visibility.",
+  "keywords": ["navig", "space", "freelance", "clients", "invoicing", "time-tracking", "revenue"],
+  "author": "navig-run",
+  "license": "MIT",
+  "repository": "https://github.com/navig-run/registry"
+}

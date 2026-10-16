@@ -1,0 +1,150 @@
+id: wake-on-lan
+name: Wake on LAN
+version: "1.0.0"
+description: >
+  Send a Wake-on-LAN magic packet to any device by its MAC address or registry alias.
+  Supports broadcast and directed broadcast, with optional post-wake connectivity check.
+category: remote-access
+platform: [windows, linux, macos]
+formation: cross-platform-ops
+author: navig-run
+
+parameters:
+  - name: target
+    type: string
+    description: "Device alias from registry OR raw MAC (AA:BB:CC:DD:EE:FF)"
+    required: true
+  - name: broadcast
+    type: string
+    description: "Broadcast address (e.g. 192.168.1.255)"
+    default: "{{config.wol_broadcast}}"
+  - name: port
+    type: int
+    description: "UDP port for WOL packet"
+    default: 9
+  - name: wait_and_ping
+    type: bool
+    description: "After sending, poll until host responds to ping"
+    default: true
+  - name: ping_timeout
+    type: int
+    description: "Seconds to wait for host to come online"
+    default: 60
+
+steps:
+  - id: resolve_mac
+    name: "Resolve MAC address from device registry"
+    shell: auto
+    # Parameters reach the scripts as environment variables, never pasted into code.
+    env:
+      NAVIG_PARAM_TARGET: "{{target}}"
+    script: |
+      python3 -c "
+      import json, os, re, sys
+
+      target = os.environ.get('NAVIG_PARAM_TARGET', '')
+      mac_pattern = re.compile(r'^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$')
+
+      if mac_pattern.match(target):
+          print(f'mac={target}')
+          print(f'host=')
+          sys.exit(0)
+
+      reg_path = '.navig/memory/device-registry.json'
+      if not os.path.exists(reg_path):
+          print(f'ERROR: No device registry and target is not a MAC address')
+          sys.exit(1)
+
+      reg = json.load(open(reg_path))
+      for device in reg.get('devices', []):
+          if device.get('name') == target or device.get('alias') == target:
+              mac = device.get('mac')
+              if not mac:
+                  print(f'ERROR: Device {target} has no MAC address registered')
+                  sys.exit(1)
+              print(f'mac={mac}')
+              print(f'host={device.get(\"ip\",\"\")}')
+              sys.exit(0)
+
+      print(f'ERROR: Device \"{target}\" not found in registry')
+      sys.exit(1)
+      "
+
+  - id: send_magic_packet
+    name: "Transmit WOL magic packet"
+    shell: auto
+    env:
+      NAVIG_PARAM_TARGET: "{{target}}"
+      NAVIG_PARAM_BROADCAST: "{{broadcast}}"
+      NAVIG_PARAM_PORT: "{{port}}"
+    script: |
+      python3 -c "
+      import socket, struct, sys, re, os
+
+      # Prefer the MAC resolved by the previous step; fall back to the raw target.
+      mac_str = os.environ.get('NAVIG_VAR_mac') or os.environ.get('NAVIG_PARAM_TARGET', '')
+      broadcast = os.environ.get('NAVIG_PARAM_BROADCAST', '255.255.255.255')
+      port = int(os.environ.get('NAVIG_PARAM_PORT') or 9)
+      # Clean MAC: remove colons/dashes
+      mac_str = re.sub(r'[:\-\.]', '', mac_str)
+      if len(mac_str) != 12:
+          print('ERROR: Invalid MAC address')
+          sys.exit(1)
+
+      mac_bytes = bytes.fromhex(mac_str)
+      magic    = b'\xff' * 6 + mac_bytes * 16
+      sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+      sock.sendto(magic, (broadcast, port))
+      sock.close()
+      print(f'✓ Magic packet sent → MAC: {\":\".join(mac_str[i:i+2] for i in range(0,12,2))}')
+      print(f'  Broadcast: {broadcast}:{port}')
+      "
+
+  - id: wait_for_host
+    name: "Poll until host responds"
+    condition: "wait_and_ping == true"
+    shell: auto
+    env:
+      NAVIG_PARAM_TARGET: "{{target}}"
+      NAVIG_PARAM_PING_TIMEOUT: "{{ping_timeout}}"
+    script: |
+      python3 -c "
+      import subprocess, time, sys, os
+
+      host = os.environ.get('NAVIG_VAR_host') or os.environ.get('NAVIG_PARAM_TARGET', '')
+      # If target is a MAC, try to use the IP from the registry (set in resolve_mac)
+      # For simplicity, we use the provided target as host if it looks like an IP
+      import re
+      if re.match(r'^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$', host):
+          print('Skipping ping poll: only MAC provided, no IP to poll')
+          sys.exit(0)
+
+      timeout = int(os.environ.get('NAVIG_PARAM_PING_TIMEOUT') or 120)
+      interval = 3
+      elapsed  = 0
+      print(f'Polling {host} every {interval}s for up to {timeout}s...')
+
+      while elapsed < timeout:
+          result = subprocess.run(['ping', '-c', '1', '-W', '1', host],
+              capture_output=True, text=True) if sys.platform != 'win32' else \
+              subprocess.run(['ping', '-n', '1', '-w', '1000', host],
+              capture_output=True, text=True)
+          if result.returncode == 0:
+              print(f'✓ {host} is online (after {elapsed}s)')
+              sys.exit(0)
+          time.sleep(interval)
+          elapsed += interval
+          print(f'  {elapsed}s elapsed…')
+
+      print(f'✗ {host} did not respond within {timeout}s')
+      sys.exit(1)
+      "
+
+examples:
+  - description: "Wake device by registry alias"
+    command: "navig skill run wake-on-lan --target homeserver"
+  - description: "Wake by raw MAC address"
+    command: "navig skill run wake-on-lan --target AA:BB:CC:DD:EE:FF --broadcast 192.168.1.255"
+  - description: "Wake and don't wait for response"
+    command: "navig skill run wake-on-lan --target nas --wait_and_ping false"

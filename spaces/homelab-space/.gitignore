@@ -1,0 +1,124 @@
+# NAVIG Homelab Space — .gitignore
+# Safe to commit: skills, formations, agents, workflows, prompts, wiki structure,
+#                 memory schema/examples, MCP config (no secrets), store assets.
+# NOT safe:       vault data, real device credentials, local logs, sensitive registry.
+
+# ─────────────────────────────────────────────
+# NAVIG vault & secrets — NEVER commit these
+# ─────────────────────────────────────────────
+.navig/vault/
+.navig/vault.yaml
+.navig/*.key
+.navig/*.pem
+.navig/*.p12
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets.*
+**/credentials.*
+
+# ─────────────────────────────────────────────
+# Local device registry — contains real IPs, MACs
+# Commit device-registry.example.json instead
+# ─────────────────────────────────────────────
+.navig/memory/device-registry.json
+!.navig/memory/device-registry.example.json
+
+# ─────────────────────────────────────────────
+# Logs and audit trails
+# ─────────────────────────────────────────────
+.navig/logs/
+*.log
+*.log.*
+logs/
+
+# ─────────────────────────────────────────────
+# NAVIG runtime state (local-only, not shareable)
+# ─────────────────────────────────────────────
+.navig/.lock
+.navig/session/
+.navig/cache/
+.navig/tmp/
+
+# ─────────────────────────────────────────────
+# SSH keys and credentials
+# ─────────────────────────────────────────────
+**/*.pem
+**/*.key
+**/*.ppk
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
+**/*.pub
+!**/*.pub.example
+
+# ─────────────────────────────────────────────
+# OS junk
+# ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ─────────────────────────────────────────────
+# Editor junk
+# ─────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.#*
+
+# ─────────────────────────────────────────────
+# Temporary / scratch files
+# ─────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+scratch/
+temp/
+tmp/
+
+# ─────────────────────────────────────────────
+# NAVIG space pack artifacts
+# ─────────────────────────────────────────────
+*.navig-space
+*.space.zip
+*.space.tar.gz
+
+# ─────────────────────────────────────────────
+# What IS committed (override safety nets above)
+# ─────────────────────────────────────────────
+# Skills, formations, agents, prompts, workflows — all safe
+!.navig/skills/
+!.navig/store/formations/
+!.navig/store/agents/
+!.navig/store/prompts/
+!.navig/store/workflows/
+
+# Wiki and example memory seeds (no real data) — your live memory files stay local
+!.navig/wiki/
+.navig/memory/*.json
+!.navig/memory/*.example.json
+
+# MCP config (no secrets embedded)
+!.navig/store/mcp/
+
+# Inbox routes — only the example seed is committed
+.navig/inbox/routes.yaml
+!.navig/inbox/routes.example.yaml
+
+# Store assets
+!space.manifest.json
+!README.md
+!PREVIEW.md
+!CHANGELOG.md
+!LICENSE
+!screenshots/
+
+# Context and config (review for sensitive values before committing)
+!.navig/config.yaml
+!.navig/context.md

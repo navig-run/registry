@@ -1,0 +1,58 @@
+id: tax-estimate
+name: Tax Estimate
+version: "1.0.0"
+description: >
+  Calculates estimated federal tax liability for the current tax year
+  based on year-to-date income pulled from categorized transactions,
+  known deductions, and current-year tax brackets. Output is an estimate
+  only — not a substitute for professional tax preparation.
+
+steps:
+  - id: sum-income
+    name: Sum YTD Gross Income
+    description: Total all "income" category transactions for the tax year
+    script_windows: |
+      $taxYear = $env:PARAM_YEAR
+      Write-Host "Scanning transactions for tax year $taxYear"
+      # Sum all category=income transactions across all months of the year
+
+  - id: total-deductions
+    name: Total Known Deductions
+    description: Sum deductible categories logged this year
+    script_windows: |
+      # Read deductions log from documents/tax/{year}/deductions.json if exists
+      $deductionsFile = "documents/tax/$taxYear/deductions.json"
+      if (Test-Path $deductionsFile) {
+        $deductions = Get-Content $deductionsFile | ConvertFrom-Json
+        $totalDeductions = ($deductions | Measure-Object -Property amount -Sum).Sum
+        Write-Host "Found $($deductions.Count) logged deductions: `$$totalDeductions total"
+      } else {
+        Write-Warning "No deductions log — only standard deduction will be applied"
+      }
+
+  - id: estimate-liability
+    name: Calculate Estimated Liability
+    description: Apply tax brackets to taxable income
+    script_windows: |
+      # 2025 tax brackets (single filer - adjust for filing status)
+      # This is a simplified estimate — does not account for AMT, credits, etc.
+      Write-Host ""
+      Write-Host "TAX ESTIMATE — $taxYear (SIMPLIFIED)"
+      Write-Host ("=" * 50)
+      Write-Host "Gross income:        `$xx,xxx"
+      Write-Host "Standard deduction:  `$14,600 (2025 single)"
+      Write-Host "Taxable income:      `$xx,xxx"
+      Write-Host "Estimated federal:   `$x,xxx"
+      Write-Host ""
+      Write-Host "NOTE: This is a simplified estimate only."
+      Write-Host "Consult a tax professional for actual filing."
+
+params:
+  - name: year
+    required: false
+    default: "2025"
+    description: "Tax year to estimate"
+  - name: filing_status
+    required: false
+    default: single
+    description: "single | married_joint | married_separate | head_of_household"

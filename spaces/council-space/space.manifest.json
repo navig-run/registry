@@ -1,0 +1,24 @@
+{
+  "space_id": "council-space",
+  "display_name": "Council Space",
+  "description": "Assemble a council of agents. Watch them argue. Extract decisions.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "labs",
+  "status": "labs",
+  "tags": [
+    "council",
+    "multi-agent",
+    "debate",
+    "decisions",
+    "formations"
+  ],
+  "capability_deps": [
+    "formations",
+    "agent",
+    "memory"
+  ]
+}

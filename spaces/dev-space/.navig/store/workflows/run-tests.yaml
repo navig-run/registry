@@ -1,0 +1,43 @@
+name: run-tests
+description: |
+  Execute the test suite across all registered projects. Reports pass/fail
+  per project and surfaces any new failures to the #debug inbox.
+
+schedule:
+  cron: "0 8 * * *"
+  timezone: "local"
+  enabled: false     # enable once test targets are configured
+
+on_demand: true
+formation: dev-workflow
+
+steps:
+  - id: discover_tests
+    name: "Discover Test Files"
+    agent: coder
+    action: discover_tests
+    params:
+      root: "{{config.workspace_root}}"
+      patterns: ["test-*.js", "*.test.js", "*.spec.js", "test_*.py", "*_test.py"]
+    on_error: stop
+
+  - id: execute_tests
+    name: "Execute Tests"
+    depends_on: [discover_tests]
+    skill: run-tests
+    params:
+      test_files: "{{steps.discover_tests.output}}"
+      parallel: true
+      output_format: "json"
+    timeout_seconds: 300
+    on_error: continue
+
+  - id: report_failures
+    name: "Report Failures"
+    depends_on: [execute_tests]
+    agent: debugger
+    action: report_test_failures
+    params:
+      results: "{{steps.execute_tests.output}}"
+      deliver_to: "#debug"
+      only_if_failures: true

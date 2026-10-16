@@ -1,0 +1,7 @@
+{
+  "space": "deploy-space",
+  "version": "1.0",
+  "status": "planned",
+  "total_deploys": 0,
+  "total_rollbacks": 0
+}

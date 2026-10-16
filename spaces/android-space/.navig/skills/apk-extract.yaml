@@ -1,0 +1,72 @@
+id: apk-extract
+name: APK Extract
+version: "1.0.0"
+description: >
+  Extract an installed app's APK(s) off a device to disk. Resolves the on-device
+  path(s) with `pm path <package>`, pulls them with `adb pull`, and handles
+  split-APK apps (base + config splits). Useful for backup and offline analysis.
+category: apps
+platform: [windows, linux, macos]
+formation: app-ops
+author: navig-run
+
+parameters:
+  - name: package
+    type: string
+    description: "Package name to extract (e.g. com.example.app)"
+    default: ""
+  - name: serial
+    type: string
+    description: "Target device serial (blank = only connected device)"
+    default: ""
+  - name: dest
+    type: string
+    description: "Local destination directory"
+    default: "devices/apks"
+
+steps:
+  - id: resolve_path
+    name: "Resolve on-device APK path(s)"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $paths = & adb $sel shell pm path "{{package}}" 2>$null
+      if (-not $paths) { Write-Error "Package not found: {{package}}"; exit 1 }
+      Write-Output "=== APK PATHS for {{package}} ==="
+      $paths
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      paths=$(adb $sel shell pm path "{{package}}" 2>/dev/null | tr -d '\r')
+      [ -z "$paths" ] && { echo "Package not found: {{package}}"; exit 1; }
+      echo "=== APK PATHS for {{package}} ==="; echo "$paths"
+
+  - id: pull
+    name: "Pull each APK to the destination"
+    shell: auto
+    script_windows: |
+      $sel = if ("{{serial}}") { "-s {{serial}}" } else { "" }
+      $out = "{{dest}}\{{package}}"
+      New-Item -ItemType Directory -Force -Path $out | Out-Null
+      $paths = & adb $sel shell pm path "{{package}}" 2>$null
+      foreach ($line in $paths) {
+        $p = ($line -replace '^package:', '').Trim()
+        if ($p) { adb $sel pull $p "$out\" }
+      }
+      Write-Output "[OK] Extracted to $out"
+    script_linux: |
+      sel=""; [ -n "{{serial}}" ] && sel="-s {{serial}}"
+      out="{{dest}}/{{package}}"; mkdir -p "$out"
+      adb $sel shell pm path "{{package}}" 2>/dev/null | tr -d '\r' | sed 's/^package://' | \
+      while read -r p; do [ -n "$p" ] && adb $sel pull "$p" "$out/"; done
+      echo "[OK] Extracted to $out"
+
+output:
+  fields: [package, apk_files, dest]
+  store_to: ".navig/memory/known-issues.json"
+  merge: false
+
+examples:
+  - description: "Extract an installed app's APK to disk"
+    command: "navig skill run apk-extract --package com.example.app"
+  - description: "Extract a split-APK app to a custom folder"
+    command: "navig skill run apk-extract --package com.google.android.youtube --dest devices/apks"

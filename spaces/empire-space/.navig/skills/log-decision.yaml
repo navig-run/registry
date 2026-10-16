@@ -1,0 +1,78 @@
+id: log-decision
+name: Log Decision
+version: "1.0.0"
+description: >
+  Record a strategic decision to the empire decision log. Decisions are
+  append-only — they can be updated with outcomes but never deleted.
+category: governance
+platform: [windows, linux, macos]
+formation: venture-review
+author: empire-space
+
+parameters:
+  - name: title
+    type: string
+    required: true
+    description: "Short decision title"
+  - name: context
+    type: string
+    required: true
+    description: "The situation that prompted this decision"
+  - name: decision
+    type: string
+    required: true
+    description: "What was decided"
+  - name: alternatives
+    type: string
+    required: false
+    default: ""
+    description: "Alternatives that were considered"
+  - name: venture
+    type: string
+    required: false
+    default: "portfolio"
+    description: "Venture this decision applies to, or 'portfolio' for empire-level"
+
+steps:
+  - id: write_decision
+    name: "Write Decision to Log"
+    shell: auto
+    env:
+      NAVIG_PARAM_TITLE: "{{params.title}}"
+      NAVIG_PARAM_VENTURE: "{{params.venture}}"
+      NAVIG_PARAM_CONTEXT: "{{params.context}}"
+      NAVIG_PARAM_DECISION: "{{params.decision}}"
+      NAVIG_PARAM_ALTERNATIVES: "{{params.alternatives}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      decisions_path = ".navig/memory/decisions.json"
+      try:
+          with open(decisions_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"decisions": []}
+
+      entry = {
+          "id": f"dec_{len(data['decisions']) + 1:04d}",
+          "type": "strategic",
+          "title": os.environ.get("NAVIG_PARAM_TITLE", ""),
+          "venture": os.environ.get("NAVIG_PARAM_VENTURE", ""),
+          "context": os.environ.get("NAVIG_PARAM_CONTEXT", ""),
+          "decision": os.environ.get("NAVIG_PARAM_DECISION", ""),
+          "alternatives": os.environ.get("NAVIG_PARAM_ALTERNATIVES", ""),
+          "outcome": "pending",
+          "timestamp": datetime.utcnow().isoformat() + "Z"
+      }
+      data["decisions"].append(entry)
+      with open(decisions_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Decision logged: [{entry['id']}] {entry['title']} → {entry['venture']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_decision

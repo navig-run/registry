@@ -1,0 +1,62 @@
+id: analytics-aggregate
+name: Analytics Aggregate
+version: "1.0.0"
+description: "Aggregate performance analytics across TikTok, Reels, and Shorts into unified metrics."
+category: analytics
+platform: [windows, linux, macos]
+formation: performance-review
+author: navig-run
+
+parameters:
+  - name: period
+    type: string
+    default: 7d
+    description: "Time period: 1d, 7d, 30d, custom"
+  - name: platforms
+    type: list
+    default: [tiktok, reels, shorts]
+    description: "Platforms to aggregate"
+  - name: metrics
+    type: list
+    default: [views, likes, shares, comments, retention]
+    description: "Metrics to pull"
+
+steps:
+  - id: fetch-platform-data
+    name: Fetch data from each platform
+    shell: bash
+    script_windows: |
+      echo "Fetching analytics for period: {{period}}"
+      echo "Platforms: {{platforms}}"
+      echo "Metrics: {{metrics}}"
+    script_linux: |
+      echo "Fetching analytics for period: {{period}}"
+      echo "Platforms: {{platforms}}"
+      echo "Metrics: {{metrics}}"
+    script_macos: |
+      echo "Fetching analytics for period: {{period}}"
+      echo "Platforms: {{platforms}}"
+      echo "Metrics: {{metrics}}"
+
+  - id: normalize-metrics
+    name: Normalise metrics across platforms
+    shell: bash
+    script_windows: |
+      echo "Normalising cross-platform metrics..."
+      echo "Views | Likes | Shares | Comments | Avg Retention"
+    script_linux: |
+      echo "Normalising cross-platform metrics..."
+      echo "Views | Likes | Shares | Comments | Avg Retention"
+    script_macos: |
+      echo "Normalising cross-platform metrics..."
+      echo "Views | Likes | Shares | Comments | Avg Retention"
+
+  - id: generate-summary
+    name: Generate analytics summary
+    shell: bash
+    script_windows: |
+      echo "Generating unified analytics summary..."
+    script_linux: |
+      echo "Generating unified analytics summary..."
+    script_macos: |
+      echo "Generating unified analytics summary..."

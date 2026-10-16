@@ -1,0 +1,91 @@
+id: track-revenue
+name: Track Revenue
+version: "1.0.0"
+description: >
+  Add or update a revenue stream record for a venture. Supports one-time,
+  recurring (MRR), and periodic revenue types. Computes ARR for recurring streams.
+category: finance
+platform: [windows, linux, macos]
+formation: portfolio-ops
+author: empire-space
+
+parameters:
+  - name: venture
+    type: string
+    required: true
+    description: "Venture ID or name"
+  - name: stream_name
+    type: string
+    required: true
+    description: "Revenue stream name (e.g. 'SaaS subscriptions', 'Consulting retainer')"
+  - name: type
+    type: enum
+    values: [mrr, one-time, quarterly, annual, other]
+    required: true
+    description: "Revenue type"
+  - name: amount
+    type: string
+    required: true
+    description: "Amount in primary currency (decimal)"
+  - name: currency
+    type: string
+    required: false
+    default: "USD"
+  - name: channel
+    type: string
+    required: false
+    default: "direct"
+    description: "Acquisition/distribution channel"
+
+steps:
+  - id: write_revenue_stream
+    name: "Write Revenue Stream"
+    shell: auto
+    env:
+      NAVIG_PARAM_AMOUNT: "{{params.amount}}"
+      NAVIG_PARAM_TYPE: "{{params.type}}"
+      NAVIG_PARAM_VENTURE: "{{params.venture}}"
+      NAVIG_PARAM_STREAM_NAME: "{{params.stream_name}}"
+      NAVIG_PARAM_CURRENCY: "{{params.currency}}"
+      NAVIG_PARAM_CHANNEL: "{{params.channel}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      rev_path = ".navig/memory/revenue.json"
+      try:
+          with open(rev_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"streams": [], "last_updated": None}
+
+      amount = float(os.environ.get("NAVIG_PARAM_AMOUNT", ""))
+      rev_type = os.environ.get("NAVIG_PARAM_TYPE", "")
+      arr = round(amount * 12, 2) if rev_type == "mrr" else (round(amount * 4, 2) if rev_type == "quarterly" else amount)
+
+      stream = {
+          "id": f"rev_{len(data['streams']) + 1:04d}",
+          "venture": os.environ.get("NAVIG_PARAM_VENTURE", ""),
+          "stream_name": os.environ.get("NAVIG_PARAM_STREAM_NAME", ""),
+          "type": rev_type,
+          "amount": amount,
+          "arr": arr,
+          "currency": os.environ.get("NAVIG_PARAM_CURRENCY", ""),
+          "channel": os.environ.get("NAVIG_PARAM_CHANNEL", ""),
+          "status": "active",
+          "recorded_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data["streams"].append(stream)
+      data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+      os.makedirs(os.path.dirname(rev_path), exist_ok=True)
+      with open(rev_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      arr_note = f" (ARR: {stream['currency']} {arr:,.2f})" if rev_type in ("mrr", "quarterly") else ""
+      print(f"Revenue tracked: [{stream['id']}] {stream['stream_name']} — {stream['venture']} — {stream['currency']} {amount:,.2f}{arr_note}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_revenue_stream

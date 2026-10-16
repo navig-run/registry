@@ -1,0 +1,42 @@
+id: evening-reflection
+name: Evening Reflection
+version: "1.0.0"
+description: Daily wind-down ritual — log day's energy, mood close, gratitude, journal prompt, and next-day prep.
+
+agents:
+  lead: daily-planner
+  supporting:
+    - wellness-tracker
+
+trigger_conditions:
+  - Evening time reached (scheduled)
+  - Manual evening trigger
+
+action_scope:
+  - End-of-day mood and energy log
+  - Gratitude reflection (3 things)
+  - Journal entry prompt
+  - Review today's priorities (completed vs. deferred)
+  - Set tomorrow's top intention
+  - Sleep preparation reminder
+
+skills_used:
+  - log-mood
+  - journal-entry
+
+workflows_used:
+  - evening-reflection
+
+communication:
+  inbox_channel: "#daily"
+  escalation: operator
+  notify_on:
+    - task carry-forward pattern (3+ days same task deferred)
+
+context_memory:
+  read:
+    - .navig/memory/goals.json
+  write:
+    - spaces/growth/journal/
+
+example_invocation: "@evening-reflection run"

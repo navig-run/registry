@@ -1,0 +1,102 @@
+id: log-item
+name: Log Item
+version: "1.0.0"
+description: >
+  Add or update a household inventory item. Every item is scoped to a room.
+  Supports all categories, conditions, quantities, and storage locations.
+category: inventory
+platform: [windows, linux, macos]
+formation: household-ops
+author: residence-space
+
+parameters:
+  - name: room
+    type: string
+    required: true
+    description: "Room name — must match a key in room-registry.json (or 'new' to auto-register)"
+  - name: name
+    type: string
+    required: true
+    description: "Item name"
+  - name: category
+    type: enum
+    values: [appliance, furniture, electronics, clothing, food, cleaning, tools, documents, decor, other]
+    required: false
+    default: other
+    description: "Item category"
+  - name: qty
+    type: integer
+    required: false
+    default: 1
+    description: "Quantity"
+  - name: condition
+    type: enum
+    values: [new, good, fair, poor, broken, unknown]
+    required: false
+    default: good
+    description: "Item condition"
+  - name: location_note
+    type: string
+    required: false
+    default: ""
+    description: "Storage location within the room (e.g. 'top shelf', 'under bed')"
+
+steps:
+  - id: write_item
+    name: "Write Item to Inventory"
+    shell: auto
+    env:
+      NAVIG_PARAM_ROOM: "{{params.room}}"
+      NAVIG_PARAM_NAME: "{{params.name}}"
+      NAVIG_PARAM_CATEGORY: "{{params.category}}"
+      NAVIG_PARAM_QTY: "{{params.qty}}"
+      NAVIG_PARAM_CONDITION: "{{params.condition}}"
+      NAVIG_PARAM_LOCATION_NOTE: "{{params.location_note}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      name = os.environ.get("NAVIG_PARAM_NAME", "")
+      room = os.environ.get("NAVIG_PARAM_ROOM", "")
+      if not name or not room:
+          print("Both 'name' and 'room' are required.")
+          raise SystemExit(1)
+      qty_raw = os.environ.get("NAVIG_PARAM_QTY", "") or "1"
+      try:
+          qty = int(qty_raw)
+      except ValueError:
+          print(f"Invalid 'qty' value: {qty_raw!r} (expected an integer)")
+          raise SystemExit(1)
+
+      memory_path = ".navig/memory/inventory.json"
+      try:
+          with open(memory_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError):
+          data = {"items": [], "last_updated": None}
+
+      item = {
+          "id": f"inv_{len(data['items']) + 1:04d}",
+          "name": name,
+          "room": room,
+          "category": os.environ.get("NAVIG_PARAM_CATEGORY", "") or "other",
+          "qty": qty,
+          "condition": os.environ.get("NAVIG_PARAM_CONDITION", "") or "good",
+          "location_note": os.environ.get("NAVIG_PARAM_LOCATION_NOTE", ""),
+          "status": "active",
+          "added": datetime.utcnow().isoformat() + "Z",
+          "updated": datetime.utcnow().isoformat() + "Z"
+      }
+      data["items"].append(item)
+      data["last_updated"] = datetime.utcnow().isoformat() + "Z"
+      os.makedirs(os.path.dirname(memory_path), exist_ok=True)
+      with open(memory_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Logged: [{item['id']}] {item['name']} in {item['room']} ({item['condition']}, qty {item['qty']})")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_item

@@ -1,0 +1,58 @@
+id: thumbnail-lab
+name: Thumbnail Lab
+version: "1.0.0"
+description: |
+  Thumbnail design and testing formation. Creates thumbnails,
+  runs A/B tests, scores designs for CTR potential, and maintains
+  the channel's visual brand identity.
+
+agents:
+  lead: art-director
+  supporting:
+    - growth-analyst
+    - showrunner
+
+trigger_conditions:
+  - "create thumbnail"
+  - "thumbnail test"
+  - "a/b test"
+  - "design cover"
+  - "brand graphics"
+
+action_scope:
+  ALLOW:
+    - create and edit thumbnails
+    - run A/B thumbnail tests
+    - score thumbnail CTR potential
+    - update visual templates
+    - export graphics in multiple sizes
+  DENY:
+    - publish videos
+    - change channel settings
+    - alter video content
+
+skills_used:
+  - thumbnail-score
+  - analytics-pull
+
+workflows_used:
+  - thumbnail-test
+
+communication:
+  inbox_channel: "#thumbnails"
+  escalation: showrunner
+  notify_on:
+    - thumbnail_ready
+    - ab_test_complete
+    - score_below_threshold
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/wiki/thumbnail-playbook.md
+  write:
+    - thumbnails/
+    - .navig/state/
+
+example_invocation: |
+  navig formation run "Design 3 thumbnail variants for the video 'Docker in 10 Minutes'"

@@ -1,0 +1,34 @@
+id: narrative-war
+name: Narrative War
+version: "1.0.0"
+description: >
+  Narrative and communications formation. Narrative Engineer leads
+  messaging preparation, counter-narrative drafting, and arsenal loading.
+
+agents:
+  lead: narrative-engineer
+  supporting: [strategist, legal-counsel]
+
+trigger_conditions:
+  - "Narrative threat flagged"
+  - "Reputation audit requested"
+  - "Communications asset staged for review"
+
+action_scope:
+  - ALLOW: arsenal-search
+  - ALLOW: write to .navig/memory/arsenal-registry.json
+  - DENY: publish any content without operator approval
+  - DENY: include legal references without legal-counsel review
+
+skills_used:
+  - arsenal-search
+
+communication:
+  inbox_channel: "#narrative"
+  escalation: strategist
+  notify_on:
+    - narrative_asset_staged_for_approval
+
+context_memory:
+  read: [arsenal-registry.json, intel-log.json]
+  write: [arsenal-registry.json]

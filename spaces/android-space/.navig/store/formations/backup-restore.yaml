@@ -1,0 +1,51 @@
+id: backup-restore
+name: Backup & Restore
+version: "1.0.0"
+description: >
+  Formation covering data safety: adb backup archives, media pulls, per-app data
+  export, integrity verification, and phone-to-phone migration. Active on the nightly
+  schedule and whenever a device is being replaced or reset.
+
+agents:
+  lead: keeper
+  supporting: [installer]
+
+trigger_conditions:
+  - "Nightly backup schedule fires"
+  - "Operator requests a device or app backup"
+  - "New-phone migration requested"
+  - "Manual invocation: navig formation run backup-restore"
+  - "Device about to be factory-reset or handed off"
+
+action_scope:
+  - ALLOW: app-backup, file-transfer
+  - ALLOW: adb backup / restore / pull media directories
+  - ALLOW: write backups under backup_dir (default devices/backups)
+  - ALLOW: coordinate with installer to reinstall apps on the target
+  - DENY: deleting source media after a pull without confirmation
+  - DENY: device wipe / factory reset / firmware flashing
+
+skills_used:
+  - app-backup
+  - file-transfer
+
+workflows_used:
+  - nightly-backup      # media pull + app-backup step
+  - new-device-onboard  # migration/restore step
+
+communication:
+  inbox_channel: "#backup"
+  escalation: operator
+  notify_on:
+    - backup_complete
+    - backup_verify_failed
+    - migration_complete
+
+context_memory:
+  read: [device-registry.json]
+  write: [device-registry.json, known-issues.json]
+
+example_invocation: |
+  # Trigger the backup-restore formation manually:
+  navig formation run backup-restore
+  # keeper will: pull media → adb backup apps → verify → log per device

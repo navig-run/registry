@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "add-page",
+      "prompt": "I'm working in the deck. How do I add a new screen at /settings in this Next.js App Router app?",
+      "expect": {
+        "contains": ["app/", "page.tsx", "layout.tsx"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "server-client-boundary",
+      "prompt": "Why does useState throw 'cannot be used in a Server Component' in this Next.js app, and how do I fix it?",
+      "expect": {
+        "contains": ["use client", "Server Component"],
+        "excludes": []
+      }
+    },
+    {
+      "id": "wire-to-daemon",
+      "prompt": "I need to wire a button in the deck to a core API call. Which port and route does the deck talk to, and how does that work in dev?",
+      "expect": {
+        "contains": ["/api/deck", "8789", "gateway"],
+        "excludes": []
+      }
+    }
+  ]
+}

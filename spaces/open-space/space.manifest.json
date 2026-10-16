@@ -1,0 +1,25 @@
+{
+  "space_id": "open-space",
+  "display_name": "Open Space",
+  "description": "Build in the open — stream live sessions, publish workflows, and let the community fork and remix your work.",
+  "schema_version": "2.0",
+  "runtime": "navig-space-2",
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "author": "navig-run",
+  "tier": "community",
+  "status": "planned",
+  "tags": [
+    "open",
+    "community",
+    "public",
+    "stream",
+    "share",
+    "fork"
+  ],
+  "capability_deps": [
+    "agent",
+    "blackbox",
+    "storage"
+  ]
+}

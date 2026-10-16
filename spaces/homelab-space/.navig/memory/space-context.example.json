@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "space": "homelab",
+  "updated": "2026-02-26",
+  "purpose": "Unified cross-platform operations hub for all personal hardware, devices, networks, and computers",
+  "owner": {
+    "handle": "operator",
+    "timezone": "UTC",
+    "primary_OS": "Windows",
+    "primary_shell": "PowerShell"
+  },
+  "device_count": 0,
+  "platforms": ["Windows", "Linux", "macOS"],
+  "primary_network": {
+    "subnet": "192.168.1.0/24",
+    "gateway": "192.168.1.1",
+    "dns": ["192.168.1.1", "1.1.1.1"]
+  },
+  "backup_location": {
+    "type": "local",
+    "path": "<your-backup-path>"
+  },
+  "active_formations": [
+    "network-ops",
+    "hardware-patrol",
+    "cross-platform-ops",
+    "security-watch",
+    "maintenance-crew"
+  ],
+  "active_agents": ["atlas", "sentinel", "wrench", "herald", "archivist", "pulse"],
+  "skills_installed": [
+    "network-scan",
+    "port-audit",
+    "cable-trace",
+    "hardware-inventory",
+    "gpu-health",
+    "disk-clean",
+    "process-investigate",
+    "ssh-connect",
+    "wake-on-lan",
+    "sync-configs"
+  ],
+  "notes": "Edit this file after completing initial device onboarding. Update device_count, primary_network subnet, and backup_location to match your environment."
+}

@@ -1,0 +1,85 @@
+id: log-insight
+name: Log Insight
+version: "1.0.0"
+description: >
+  Log an insight, reflection, or destiny note. Supports both destiny-log entries
+  (future-state trajectories) and general insights to the AI journal.
+category: self-tracking
+platform: [windows, linux, macos]
+formation: destiny-mapping
+author: singularity-space
+
+parameters:
+  - name: type
+    type: enum
+    values: [destiny, insight, ai, reflection, question, realization]
+    required: true
+    description: "Entry type"
+  - name: title
+    type: string
+    required: true
+  - name: content
+    type: string
+    required: true
+    description: "The insight, trajectory note, or reflection"
+  - name: probability
+    type: string
+    required: false
+    default: ""
+    description: "If type=destiny, estimated probability this trajectory realizes (e.g. '0.7', '70%')"
+  - name: horizon
+    type: string
+    required: false
+    default: ""
+    description: "Time horizon (e.g. '6 months', '3 years', '10 years')"
+
+steps:
+  - id: write_insight
+    name: "Write Insight Entry"
+    shell: auto
+    env:
+      NAVIG_PARAM_TYPE: "{{params.type}}"
+      NAVIG_PARAM_TITLE: "{{params.title}}"
+      NAVIG_PARAM_CONTENT: "{{params.content}}"
+      NAVIG_PARAM_PROBABILITY: "{{params.probability}}"
+      NAVIG_PARAM_HORIZON: "{{params.horizon}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      entry_type = os.environ.get("NAVIG_PARAM_TYPE", "")
+      target_path = ".navig/memory/destiny-log.json" if entry_type == "destiny" else ".navig/memory/ai-journal.json"
+      container_key = "entries"
+
+      try:
+          with open(target_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {container_key: []}
+
+      entry = {
+          "id": f"ins_{len(data[container_key]) + 1:04d}",
+          "type": entry_type,
+          "title": os.environ.get("NAVIG_PARAM_TITLE", ""),
+          "content": os.environ.get("NAVIG_PARAM_CONTENT", ""),
+          "probability": os.environ.get("NAVIG_PARAM_PROBABILITY", ""),
+          "horizon": os.environ.get("NAVIG_PARAM_HORIZON", ""),
+          "status": "open",
+          "logged_at": datetime.utcnow().isoformat() + "Z"
+      }
+      data[container_key].append(entry)
+      os.makedirs(os.path.dirname(target_path), exist_ok=True)
+      with open(target_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+
+      dest = "destiny log" if entry_type == "destiny" else "AI journal"
+      horizon_note = f" | horizon: {entry['horizon']}" if entry['horizon'] else ""
+      prob_note = f" | p={entry['probability']}" if entry['probability'] else ""
+      print(f"[{entry['id']}] {entry_type}: '{entry['title']}' → {dest}{horizon_note}{prob_note}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: write_insight

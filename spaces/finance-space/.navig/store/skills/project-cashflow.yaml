@@ -1,0 +1,47 @@
+id: project-cashflow
+name: Project Cashflow
+version: "1.0.0"
+description: >
+  Projects end-of-month balance and end-of-quarter savings based on current
+  spending pace and known scheduled income/expenses. Uses actual MTD data
+  plus average daily run rate to estimate month-end figures.
+
+steps:
+  - id: load-actuals
+    name: Load MTD Actuals
+    description: Read categorized transactions for current month to date
+    script_windows: |
+      $month = (Get-Date -Format "yyyy-MM")
+      $daysElapsed = (Get-Date).Day
+      $daysInMonth = [DateTime]::DaysInMonth((Get-Date).Year, (Get-Date).Month)
+      Write-Host "Days elapsed: $daysElapsed / $daysInMonth"
+
+  - id: calculate-pace
+    name: Calculate Daily Run Rate Per Category
+    description: Divide MTD spend by days elapsed to get daily pace
+    script_windows: |
+      # daily_rate = MTD_actual / days_elapsed
+      # projected_monthly = daily_rate * days_in_month
+      Write-Host "Projecting end-of-month spend per category from current pace"
+
+  - id: project-balance
+    name: Project Account Balances
+    description: Current balance + projected income - projected expenses
+    script_windows: |
+      Write-Host ""
+      Write-Host "CASHFLOW PROJECTION — $(Get-Date -Format "MMMM yyyy")"
+      Write-Host ("=" * 55)
+      Write-Host "Days into month: $daysElapsed / $daysInMonth"
+      Write-Host ""
+      Write-Host "PROJECTED END-OF-MONTH"
+      Write-Host "  Income:     $x,xxx"
+      Write-Host "  Expenses:   $x,xxx"
+      Write-Host "  Net:        $xxx"
+      Write-Host ""
+      Write-Host "(Based on $daysElapsed-day pace. Import more transactions for accuracy.)"
+
+params:
+  - name: months_ahead
+    required: false
+    default: "1"
+    description: "Number of months to project forward (1-3)"

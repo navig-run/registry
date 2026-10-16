@@ -1,0 +1,133 @@
+id: expense-report
+name: Expense Report
+version: "1.0.0"
+description: |
+  Generate an expense report for a given period. Aggregates from finance/expenses/
+  by category, identifies top spending areas, and calculates totals.
+category: finance
+platform: [windows, linux, macos]
+formation: financial-review
+agent: controller
+author: navig-run
+
+parameters:
+  - name: period
+    description: "Report period: YYYY-MM for monthly, Q1-YYYY for quarterly, YYYY for yearly"
+    required: true
+  - name: output_dir
+    description: Directory to save report
+    required: false
+    default: finance/reports
+
+outputs:
+  - name: report_file
+    description: Path to generated expense report
+  - name: total_expenses
+    description: Total expenses for the period
+
+steps:
+  - name: generate-expense-report
+    description: Scan expense records, aggregate by category, produce report
+    env:
+      NAVIG_PARAM_PERIOD: "{{ period }}"
+      NAVIG_PARAM_OUTPUT_DIR: "{{ output_dir }}"
+    script: |
+      import datetime, os, pathlib, yaml
+
+      def param(name, default=""):
+          """A skill parameter; the runner passes it as NAVIG_PARAM_<NAME>."""
+          return os.environ.get("NAVIG_PARAM_" + name.upper(), "").strip() or default
+
+      def setting(path, env, default=""):
+          """A company setting: env var first, then .navig/config.yaml. Unfilled placeholders count as unset."""
+          value = os.environ.get(env, "")
+          if not value:
+              try:
+                  import yaml
+                  node = yaml.safe_load(pathlib.Path(".navig/config.yaml").read_text(encoding="utf-8")) or {}
+                  for key in path.split("."):
+                      node = node.get(key) if isinstance(node, dict) else None
+                  value = "" if node is None else str(node)
+              except Exception:
+                  value = ""
+          return default if not value or value.startswith("{") else value
+
+      PREFIX = setting("finance.expenses.prefix", "COMPANY_EXPENSE_PREFIX", "EXP")
+      CURRENCY = setting("finance.currency", "COMPANY_CURRENCY", "USD")
+
+      expenses_dir = pathlib.Path("finance/expenses")
+      output_dir = pathlib.Path(param("output_dir", "finance/reports"))
+      output_dir.mkdir(parents=True, exist_ok=True)
+
+      period = param("period")
+      today = datetime.date.today().isoformat()
+
+      def in_period(day):
+          """YYYY-MM, YYYY, or Qn-YYYY."""
+          if period.upper().startswith("Q") and "-" in period:
+              q, y = period.upper().split("-", 1)
+              months = {1: "010203", 2: "040506", 3: "070809", 4: "101112"}[int(q[1])]
+              return day[:4] == y and day[5:7] in [months[i:i + 2] for i in (0, 2, 4)]
+          return day.startswith(period)
+
+      total = 0.0
+      by_category = {}
+      by_vendor = {}
+      by_method = {}
+      count = 0
+
+      for f in sorted(expenses_dir.glob(f"{PREFIX}-*.yaml")):
+          with open(f, encoding="utf-8") as fh:
+              record = yaml.safe_load(fh)
+          if not record or "date" not in record:
+              continue
+          if not in_period(str(record["date"])):
+              continue
+
+          amount = float(record.get("amount", 0))
+          total += amount
+          count += 1
+
+          cat = record.get("category", "miscellaneous")
+          vendor = record.get("vendor", "unknown")
+          method = record.get("payment_method", "unknown")
+
+          by_category[cat] = by_category.get(cat, 0) + amount
+          by_vendor[vendor] = by_vendor.get(vendor, 0) + amount
+          by_method[method] = by_method.get(method, 0) + amount
+
+      report = f"""# Expense Report — {period}
+      Generated: {today}
+
+      ## Summary
+      - **Total Expenses:** {total:,.2f} {CURRENCY}
+      - **Transactions:** {count}
+
+      ## By Category
+      | Category | Amount | % of Total |
+      |----------|--------|-----------|
+      """
+      for cat, amt in sorted(by_category.items(), key=lambda x: -x[1]):
+          pct = (amt / total * 100) if total > 0 else 0
+          report += f"| {cat} | {amt:,.2f} {CURRENCY} | {pct:.1f}% |\n"
+
+      report += """
+      ## Top Vendors
+      | Vendor | Amount |
+      |--------|--------|
+      """
+      for v, amt in sorted(by_vendor.items(), key=lambda x: -x[1])[:10]:
+          report += f"| {v} | {amt:,.2f} {CURRENCY} |\n"
+
+      report += """
+      ## By Payment Method
+      | Method | Amount |
+      |--------|--------|
+      """
+      for m, amt in sorted(by_method.items(), key=lambda x: -x[1]):
+          report += f"| {m} | {amt:,.2f} {CURRENCY} |\n"
+
+      filepath = output_dir / f"expenses-{period}.md"
+      filepath.write_text(report, encoding="utf-8")
+      print(f"Expense report -> {filepath}")
+      print(f"   {total:,.2f} {CURRENCY} across {count} transactions in {len(by_category)} categories")

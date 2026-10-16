@@ -1,0 +1,29 @@
+# Example inbox routes — copy this file to routes.yaml (same folder) to enable routing.
+# Schema: channels[] { id, name, agents, priority, keywords, description } + defaults.
+channels:
+  - id: insights
+    name: "#insights"
+    description: Quick insight captures during or after learning sessions
+    agents: [book-synthesizer]
+    keywords: [insight, note, remember, key point, learned, realized, idea, concept]
+
+  - id: courses
+    name: "#courses"
+    description: New courses, books, or tutorials to add to the library
+    agents: [course-tracker]
+    keywords: [course, book, tutorial, reading, watching, learning, started, enrolled]
+
+  - id: reviews
+    name: "#reviews"
+    description: Spaced repetition review items and weekly review sessions
+    agents: [review-scheduler]
+    keywords: [review, quiz, recall, practice, test, spaced]
+
+  - id: skills
+    name: "#skills"
+    description: Skill updates, assessments, learning path changes
+    agents: [skill-planner]
+    keywords: [skill, improve, level up, goal, target, get better]
+
+defaults:
+  unrouted_fallback: book-synthesizer

@@ -1,0 +1,32 @@
+space: studio-space
+version: "1.0.0"
+
+# Primary settings
+sessions_dir: "sessions/"
+samples_dir: "samples/"
+releases_dir: "releases/"
+default_shell_windows: powershell
+default_shell_linux: bash
+default_shell_macos: zsh
+
+# Audio defaults
+default_sample_rate: 44100
+default_bit_depth: 24
+default_format: wav
+loudness_standard: streaming  # streaming (-14 LUFS), broadcast (-23), club (-6)
+
+# Paths
+skills_dir: ".navig/skills/"
+formations_dir: ".navig/store/formations/"
+agents_dir: ".navig/store/agents/"
+workflows_dir: ".navig/store/workflows/"
+prompts_dir: ".navig/store/prompts/"
+wiki_dir: ".navig/wiki/"
+memory_dir: ".navig/memory/"
+
+# Agent defaults
+default_formation: track-production
+escalation_agent: operator
+
+# Logging
+log_level: info

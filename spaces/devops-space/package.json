@@ -1,0 +1,20 @@
+{
+  "name": "devops-space",
+  "version": "1.0.0",
+  "description": "NAVIG community space for DevOps — CI/CD, IaC, SRE, and incident response.",
+  "private": true,
+  "author": "navig-run",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/devops-space"
+  },
+  "navig": {
+    "space": "devops-space",
+    "runtime": "navig-space-2",
+    "entry": ".navig/config.yaml"
+  },
+  "keywords": ["navig", "community-space", "devops", "ci-cd", "terraform", "sre", "incident-response"],
+  "license": "MIT",
+  "engines": { "navig": ">=2.0.0" }
+}

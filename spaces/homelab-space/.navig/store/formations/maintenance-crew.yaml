@@ -1,0 +1,60 @@
+id: maintenance-crew
+name: Maintenance Crew
+version: "1.0.0"
+description: >
+  Automated maintenance formation covering disk cleanup, log rotation, update checking,
+  and config synchronization. Runs on schedule and on triggered thresholds.
+
+agents:
+  lead: wrench
+  supporting: [archivist, pulse]
+
+trigger_conditions:
+  - "Any disk volume below 10% free (from hardware-patrol alert)"
+  - "Log files older than 30 days detected"
+  - "Config sync has not run in 7 days"
+  - "Weekly maintenance window: Saturday 03:00"
+  - "Manual: navig formation run maintenance-crew"
+  - "nightly-sync workflow trigger (23:30 daily)"
+
+action_scope:
+  - ALLOW: disk-clean (dry_run=true by default; dry_run=false requires confirm)
+  - ALLOW: sync-configs (push/pull)
+  - ALLOW: rotate logs
+  - ALLOW: check for package updates (list only, no auto-install)
+  - ALLOW: write to .navig/logs/
+  - DENY: system package upgrades without operator approval
+  - DENY: delete files newer than min_age_days without operator confirm
+
+skills_used:
+  - disk-clean
+  - sync-configs
+
+workflows_used:
+  - nightly-sync
+  - deep-audit   # disk-clean step
+  - weekly-review
+
+maintenance_schedule:
+  disk_clean_dry_run: "0 3 * * 6"     # Sat 03:00 dry run
+  disk_clean_live:    "0 4 1 * *"     # 1st of month 04:00 live
+  config_sync:        "30 23 * * *"   # Daily 23:30
+  log_rotation:       "0 2 * * *"     # Daily 02:00
+
+communication:
+  inbox_channel: "#maintenance"
+  escalation: operator
+  notify_on:
+    - disk_cleanup_complete
+    - disk_critically_low
+    - sync_failed
+    - update_available
+
+context_memory:
+  read: [device-registry.json, goals.json, space-context.json]
+  write: []
+
+example_invocation: |
+  # Run full maintenance pass:
+  navig formation run maintenance-crew
+  # wrench will: disk-clean (dry) → config sync → log rotate → report

@@ -1,0 +1,79 @@
+id: build-op
+name: Build Operation
+version: "1.0.0"
+description: >
+  Create a new operation in the war room registry with objective, BLUF,
+  theater assignment, and initial status.
+category: operations
+platform: [windows, linux, macos]
+formation: ops-command
+author: war-room-space
+
+parameters:
+  - name: name
+    type: string
+    required: true
+    description: "Operation name (e.g. 'Op Silencer', 'Legal Block: CompetitorX')"
+  - name: objective
+    type: string
+    required: true
+    description: "What this operation must achieve"
+  - name: bluf
+    type: string
+    required: true
+    description: "Bottom Line Up Front — one sentence on the situation"
+  - name: theater
+    type: enum
+    values: [legal, narrative, intelligence, competitive, cyber, forensic, combined]
+    required: true
+    description: "Primary theater"
+  - name: priority
+    type: enum
+    values: [critical, high, medium, low]
+    required: false
+    default: "medium"
+
+steps:
+  - id: create_operation
+    name: "Create Operation"
+    shell: auto
+    env:
+      NAVIG_PARAM_NAME: "{{params.name}}"
+      NAVIG_PARAM_OBJECTIVE: "{{params.objective}}"
+      NAVIG_PARAM_BLUF: "{{params.bluf}}"
+      NAVIG_PARAM_THEATER: "{{params.theater}}"
+      NAVIG_PARAM_PRIORITY: "{{params.priority}}"
+    script: |
+      python3 - <<'EOF'
+      import json, os
+      from datetime import datetime
+
+      ops_path = ".navig/memory/operations.json"
+      try:
+          with open(ops_path, encoding="utf-8") as f:
+              data = json.load(f)
+      except Exception:
+          data = {"operations": []}
+
+      op = {
+          "id": f"op_{len(data['operations']) + 1:04d}",
+          "name": os.environ.get("NAVIG_PARAM_NAME", ""),
+          "objective": os.environ.get("NAVIG_PARAM_OBJECTIVE", ""),
+          "bluf": os.environ.get("NAVIG_PARAM_BLUF", ""),
+          "theater": os.environ.get("NAVIG_PARAM_THEATER", ""),
+          "priority": os.environ.get("NAVIG_PARAM_PRIORITY", ""),
+          "status": "planning",
+          "created_at": datetime.utcnow().isoformat() + "Z",
+          "updated_at": datetime.utcnow().isoformat() + "Z",
+          "outcome": None
+      }
+      data["operations"].append(op)
+      with open(ops_path, "w", encoding="utf-8") as f:
+          json.dump(data, f, indent=2, ensure_ascii=False)
+      print(f"Operation created: [{op['id']}] {op['name']} | {op['theater']} | {op['priority']} | {op['status']}")
+      EOF
+    on_error: fail
+
+outputs:
+  - name: result
+    from: create_operation

@@ -1,0 +1,30 @@
+name: Lint (fast)
+
+# Cheap PR gate: parse every JSON/YAML + sanity-check the registry indexes in a
+# couple of seconds (no `navig` install). Complements the heavier validate.yml.
+on:
+  push:
+    branches: [main]
+    paths: ["**.json", "**.yaml", "**.yml", ".github/scripts/validate_registry.py"]
+  pull_request:
+    paths: ["**.json", "**.yaml", "**.yml", ".github/scripts/validate_registry.py"]
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: pip install --quiet pyyaml
+      - name: Validate registry (JSON + YAML parse + index sanity)
+        run: python .github/scripts/validate_registry.py

@@ -1,0 +1,79 @@
+id: track-learning
+name: Track Learning
+version: "2.0.0"
+description: Log a book, course, article, or skill-building activity to the learning CSV. Tracks status, rating, and key takeaways.
+category: growth
+platform: [windows, linux, macos]
+formation: growth-ops
+author: navig-run
+
+parameters:
+  - name: title
+    description: "Title of book, course, or resource"
+    required: true
+  - name: type
+    description: "Type: book | course | article | video | podcast | practice"
+    required: true
+  - name: status
+    description: "Status: started | in-progress | completed | abandoned"
+    required: false
+    default: started
+  - name: rating
+    description: "Rating 1-5 (only for completed items)"
+    required: false
+  - name: takeaway
+    description: "Key takeaway or lesson learned"
+    required: false
+
+steps:
+  - name: append-learning
+    description: Append learning entry to spaces/growth/learning.csv
+    env:
+      NAVIG_PARAM_TITLE: "{{title}}"
+      NAVIG_PARAM_TYPE: "{{type}}"
+      NAVIG_PARAM_STATUS: "{{status}}"
+      NAVIG_PARAM_RATING: "{{rating}}"
+      NAVIG_PARAM_TAKEAWAY: "{{takeaway}}"
+    script: |
+      import os, pathlib, datetime, csv, sys
+      title = os.environ.get("NAVIG_PARAM_TITLE", "")
+      ltype = os.environ.get("NAVIG_PARAM_TYPE", "")
+      status = os.environ.get("NAVIG_PARAM_STATUS", "") or "started"
+      rating = os.environ.get("NAVIG_PARAM_RATING", "")
+      takeaway = os.environ.get("NAVIG_PARAM_TAKEAWAY", "")
+      if not title or not ltype:
+          print("Not recorded: 'title' and 'type' are required.")
+          sys.exit(1)
+      p = pathlib.Path("spaces/growth/learning.csv")
+      p.parent.mkdir(parents=True, exist_ok=True)
+      header = "date,title,type,status,rating,takeaway"
+      if not p.exists():
+          p.write_text(header + "\n", encoding="utf-8")
+      today = datetime.date.today().isoformat()
+      # Columns: date,title,type,status,rating,takeaway
+      row = [today, title, ltype, status, rating, takeaway]
+      with open(p, "a", encoding="utf-8", newline="") as f:
+          csv.writer(f, lineterminator="\n").writerow(row)
+      print(f"Learning logged: [{ltype}] {title} ({status})")
+    script_windows: |
+      $p = "spaces\growth\learning.csv"
+      $dir = Split-Path $p
+      if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+      $header = "date,title,type,status,rating,takeaway"
+      if (-not (Test-Path $p)) { Set-Content -Path $p -Value $header }
+      $today = (Get-Date).ToString("yyyy-MM-dd")
+      $title = "$env:NAVIG_PARAM_TITLE"
+      $ltype = "$env:NAVIG_PARAM_TYPE"
+      $status = $env:NAVIG_PARAM_STATUS
+      if (-not $status) { $status = "started" }
+      $rating = "$env:NAVIG_PARAM_RATING"
+      $takeaway = "$env:NAVIG_PARAM_TAKEAWAY"
+      if (-not $title -or -not $ltype) { Write-Host "Not recorded: 'title' and 'type' are required."; exit 1 }
+      function ConvertTo-CsvField([string]$v) {
+          if ($v -match '[",\r\n]') { return '"' + $v.Replace('"', '""') + '"' }
+          return $v
+      }
+      # Columns: date,title,type,status,rating,takeaway
+      $row = (@($today, $title, $ltype, $status, $rating, $takeaway) | ForEach-Object { ConvertTo-CsvField $_ }) -join ","
+      Add-Content -Path $p -Value $row
+      Write-Host "Learning logged: [$ltype] $title ($status)"

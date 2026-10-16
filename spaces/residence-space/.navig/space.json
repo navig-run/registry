@@ -1,0 +1,35 @@
+{
+  "id": "residence-space",
+  "name": "Residence",
+  "version": "1.0.0",
+  "tier": "personal",
+  "status": "active",
+  "description": "Home operations — room-based household inventory, medication tracking with expiry alerts, and a maintenance calendar for any dwelling.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": [
+    "housekeeper",
+    "medic",
+    "organizer",
+    "steward"
+  ],
+  "formations": [
+    "household-ops",
+    "maintenance-crew",
+    "medical-watch"
+  ],
+  "skills": [
+    "check-expiry",
+    "inventory-export",
+    "log-item",
+    "track-medication"
+  ],
+  "workflows": [
+    "medication-expiry-check",
+    "monthly-inventory-audit",
+    "weekly-home-review"
+  ],
+  "packages": [],
+  "subspaces": [],
+  "default_formation": "household-ops"
+}

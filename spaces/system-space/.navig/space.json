@@ -1,0 +1,43 @@
+{
+  "id": "system-space",
+  "kind": "space",
+  "name": "System",
+  "version": "1.0.0",
+  "tier": "studio",
+  "status": "active",
+  "description": "OS & filesystem operator — deep Windows + filesystem knowledge, safe bulk inventory, migration, trash-not-delete and long-path purge through the bin/system.ps1 engine, plus purpose-based classification. CLI-driven, navig-wired.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agent": {
+    "default": "organizer",
+    "formation": "organize-pipeline"
+  },
+  "agents": [
+    {"id": "inspector", "role": "Inventory, sizing, audit — fast file/dir scans, size distributions, dupe & broken-file detection", "formation": "organize-pipeline"},
+    {"id": "organizer", "role": "Classify & file — sort by purpose/type/size, build INDEX manifests",                                 "formation": "organize-pipeline"},
+    {"id": "mover",     "role": "Safe move/migrate/delete — same-volume rename, cross-volume robocopy, long-path purge, trash+restore-log", "formation": "safe-migration"},
+    {"id": "converter", "role": "Format conversion — archives, documents, images",                                                     "formation": "organize-pipeline"}
+  ],
+  "formations": [
+    {"id": "organize-pipeline", "description": "Inventory -> classify -> file -> index (dry-run + manifest)"},
+    {"id": "safe-migration",    "description": "Verify on destination -> move original to trash -> log -> never hard-delete"}
+  ],
+  "skills": [],
+  "workflows": [],
+  "packages": [
+    {"id": "robocopy",   "role": "copy/move/mirror/purge (long-path native, /B backup mode)"},
+    {"id": "powershell", "role": "IO.Directory/File rename+delete, ACL, drive info"},
+    {"id": "7zip",       "role": "archive create/extract"},
+    {"id": "pandoc",     "role": "document conversion"},
+    {"id": "imagemagick","role": "image conversion"}
+  ],
+  "subspaces": [],
+  "meta": {
+    "planned": {
+      "skills": ["fs-inventory", "file-organize", "safe-move", "long-path-ops", "dedupe", "bulk-rename", "convert", "cleanup"],
+      "workflows": ["drive-organize", "safe-reclaim"]
+    },
+    "tags": ["windows", "filesystem", "ntfs", "robocopy", "powershell", "organization", "migration", "dedupe", "long-paths", "conversion"],
+    "platform": ["Windows"]
+  }
+}

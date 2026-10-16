@@ -1,0 +1,74 @@
+schema_version: "1.0"
+space: clips-space
+
+routes:
+  - channel: "#clips"
+    owner: clip-director
+    triggers:
+      - keyword: "new clip"
+        formation: clip-factory
+      - keyword: "clip idea"
+        formation: clip-factory
+    response_mode: async
+    schedule: null
+    notify_on: [completed, failed]
+
+  - channel: "#hooks"
+    owner: hook-writer
+    triggers:
+      - keyword: "write hook"
+        formation: clip-factory
+      - keyword: "hook ideas"
+        formation: clip-factory
+    response_mode: async
+    schedule: null
+    notify_on: [completed]
+
+  - channel: "#editing"
+    owner: clip-editor
+    triggers:
+      - keyword: "trim"
+        formation: clip-factory
+      - keyword: "edit clip"
+        formation: repurpose-lab
+    response_mode: async
+    schedule: null
+    notify_on: [completed, failed]
+
+  - channel: "#trends"
+    owner: trend-scout
+    triggers:
+      - keyword: "trend alert"
+        formation: trend-ride
+      - keyword: "trending"
+        formation: trend-ride
+    response_mode: async
+    schedule: null
+    notify_on: [completed, failed]
+
+  - channel: "#scheduling"
+    owner: distributor
+    triggers:
+      - keyword: "schedule"
+        formation: batch-schedule
+      - keyword: "post"
+        formation: batch-schedule
+    response_mode: async
+    schedule: null
+    notify_on: [completed]
+
+  - channel: "#analytics"
+    owner: trend-scout
+    triggers:
+      - keyword: "analytics"
+        formation: performance-review
+      - keyword: "performance"
+        formation: performance-review
+    response_mode: async
+    schedule: null
+    notify_on: [completed]
+
+fallback:
+  owner: clip-director
+  response_mode: async
+  notify_on: [failed]

@@ -1,0 +1,36 @@
+{
+  "name": "iot-space",
+  "version": "1.0.0",
+  "description": "NAVIG space — IoT & smart-home command mesh",
+  "private": true,
+  "author": "navig-run",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navig-run/registry",
+    "directory": "spaces/iot-space"
+  },
+  "scripts": {
+    "validate":     "navig space doctor --no-interactive",
+    "status":       "navig space check --no-interactive",
+    "skills":       "navig skill list",
+    "discover":     "navig skill run device-discover",
+    "doctor":       "navig space doctor --no-interactive && navig skill list"
+  },
+  "navig": {
+    "type": "space",
+    "min_navig_version": "2.0.0",
+    "skills_dir": ".navig/skills",
+    "entry_workflow": "morning-mesh-sweep"
+  },
+  "keywords": [
+    "navig",
+    "space",
+    "iot",
+    "smart-home",
+    "mqtt",
+    "zigbee",
+    "matter",
+    "automation"
+  ],
+  "license": "MIT"
+}

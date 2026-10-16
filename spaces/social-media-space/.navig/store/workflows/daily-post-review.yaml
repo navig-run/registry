@@ -1,0 +1,50 @@
+id: daily-post-review
+name: Daily Post Review
+version: "1.0.0"
+description: >
+  On-demand review cycle: lists all drafts currently in review status,
+  runs voice check on each, routes approved posts to scheduler and returns
+  rejected posts to post-writer with notes.
+
+formation: content-pipeline
+space: social-media-space
+enabled: true
+trigger: on_demand
+
+steps:
+  - id: list-drafts-in-review
+    name: List Drafts Awaiting Review
+    description: Find all draft .md files with status:draft or status:voice-check across all brands
+    inline: |
+      For each brand in brands/:
+        Scan content/drafts/{brand}/ for .md files where frontmatter status is
+        "draft" or "voice-check".
+        Build a manifest: brand, filename, platform, pillar, created.
+      Print manifest as table. Exit if empty.
+    output: .navig/ops/review-queue.json
+
+  - id: batch-voice-check
+    name: Run Voice Check on Each Draft
+    description: Apply check-brand-voice skill to every file in the queue
+    depends_on: list-drafts-in-review
+    skill: check-brand-voice
+    params:
+      queue_source: .navig/ops/review-queue.json
+      batch: true
+    output: .navig/ops/voice-check-results.json
+
+  - id: route-results
+    name: Route Approved and Rejected Drafts
+    description: Update frontmatter, notify channels
+    depends_on: batch-voice-check
+    inline: |
+      For each result in .navig/ops/voice-check-results.json:
+        If voice_score >= 7:
+          Update draft frontmatter status to "approved".
+          Post to #schedule: "{brand}/{filename} approved — ready to schedule"
+        Else:
+          Post to #drafts: "{brand}/{filename} returned (score {voice_score}/10): {notes}"
+
+notifications:
+  on_complete: "#review"
+  on_failure: operator

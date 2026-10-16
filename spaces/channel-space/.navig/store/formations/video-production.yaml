@@ -1,0 +1,66 @@
+id: video-production
+name: Video Production
+version: "1.0.0"
+description: |
+  End-to-end video production pipeline. From concept and scripting
+  through filming, editing, thumbnail creation, SEO optimisation,
+  and final publish. The core formation for channel operations.
+
+agents:
+  lead: showrunner
+  supporting:
+    - scriptwriter
+    - editor
+    - art-director
+    - growth-analyst
+
+trigger_conditions:
+  - "new video"
+  - "produce"
+  - "start production"
+  - "film"
+  - "publish video"
+
+action_scope:
+  ALLOW:
+    - create video projects
+    - write scripts and outlines
+    - edit and render video
+    - create thumbnails
+    - run SEO checks
+    - schedule uploads
+  DENY:
+    - delete published content
+    - change channel settings
+    - share analytics externally
+
+skills_used:
+  - seo-audit
+  - thumbnail-score
+  - title-generator
+  - description-writer
+  - tag-optimizer
+  - hook-analyzer
+
+workflows_used:
+  - video-production
+  - thumbnail-test
+
+communication:
+  inbox_channel: "#production"
+  escalation: operator
+  notify_on:
+    - production_complete
+    - publish_ready
+    - quality_check_failed
+
+context_memory:
+  read:
+    - .navig/memory/space-context.json
+    - .navig/wiki/content-strategy.md
+  write:
+    - .navig/state/
+    - content/
+
+example_invocation: |
+  navig formation run "Produce a 12-minute Docker tutorial video, from brief to publish checklist"

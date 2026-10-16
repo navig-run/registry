@@ -1,0 +1,26 @@
+id: start-course
+name: Start Course
+version: "1.0.0"
+description: Add a new course, book, or tutorial to the learning library.
+space: learn
+steps:
+  - step: 1
+    name: Define Item
+    agent: course-tracker
+    description: Type, title, author/instructor, skill area, format, estimated duration
+    manual: true
+  - step: 2
+    name: Set Progress Target
+    agent: course-tracker
+    description: Set completion goal and monthly time commitment
+    manual: true
+  - step: 3
+    name: Create Library Entry
+    agent: course-tracker
+    command: "@course-tracker add ..."
+    automated: true
+  - step: 4
+    name: Link to Skill
+    agent: skill-planner
+    command: "@skill-planner link --skill {skill} --item {slug}"
+    automated: true

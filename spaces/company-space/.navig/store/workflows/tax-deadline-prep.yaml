@@ -1,0 +1,55 @@
+name: tax-deadline-prep
+version: "1.0.0"
+description: >
+  Scheduled workflow that prepares tax filings before each deadline period.
+  Validates records, calculates obligations, checks thresholds, and compiles
+  the declaration package.
+schedule:
+  cron: "0 9 20 3,6,9,12 *"   # 20th of Mar, Jun, Sep, Dec at 09:00
+  timezone: "{{TIMEZONE}}"
+formation: financial-review
+
+steps:
+  - name: generate-tax-summary
+    description: Produce quarterly + YTD tax summary
+    skill: tax-summary
+
+  - name: validate-invoices
+    description: Cross-check all invoices in finance/invoices/ for the period — sequential numbering, required fields, totals
+    depends_on: generate-tax-summary
+
+  - name: validate-expenses
+    description: Cross-check all expenses in finance/expenses/ — category validity, receipt attachments, totals
+    depends_on: generate-tax-summary
+
+  - name: calculate-tax
+    description: |
+      Calculate tax obligation for the period:
+        - Apply {{TAX_RATE}} to qualifying revenue
+        - Check cumulative revenue against {{TAX_THRESHOLD_1}} and {{TAX_THRESHOLD_2}}
+        - Flag anomalies or missing data
+    depends_on:
+      - validate-invoices
+      - validate-expenses
+
+  - name: threshold-alert
+    description: |
+      If cumulative revenue approaches or exceeds {{TAX_THRESHOLD_1}}, alert
+      controller and chief about regime change implications.
+    condition: "cumulative_revenue >= threshold_1 * 0.85"
+    inbox_channel: "#finance"
+    depends_on: calculate-tax
+
+  - name: prepare-declaration
+    description: Compile declaration package — summary, supporting documents, calculation worksheet
+    depends_on: calculate-tax
+
+  - name: notify-controller
+    description: Send declaration package to controller for review and filing
+    inbox_channel: "#finance"
+    depends_on: prepare-declaration
+
+  - name: notify-chief
+    description: Notify chief with tax summary and any threshold warnings
+    inbox_channel: "#strategic"
+    depends_on: notify-controller

@@ -1,0 +1,64 @@
+id: financial-review
+name: Financial Review
+version: "1.0.0"
+description: |
+  Monthly and quarterly financial analysis. Controller produces the numbers,
+  chief reviews and makes strategic decisions based on financial health.
+  Ensures business compliance and tax readiness.
+
+agents:
+  lead: controller
+  supporting:
+    - chief
+
+trigger_conditions:
+  - Monthly financial close due (1st of month)
+  - Quarterly review due
+  - Annual review due (January)
+  - Tax threshold alert triggered
+  - Revenue ceiling alert triggered
+  - Tax deadline approaching
+
+action_scope:
+  - Monthly P&L generation
+  - Expense categorization review
+  - Revenue trend analysis
+  - Tax contribution calculation ({{TAX_RATE}})
+  - Tax threshold monitoring ({{TAX_THRESHOLD_1}})
+  - Revenue ceiling monitoring ({{TAX_THRESHOLD_2}})
+  - Quarterly tax summary and declaration prep
+  - Annual financial review with strategic recommendations
+  - Cash flow forecasting
+
+skills_used:
+  - revenue-report
+  - expense-report
+  - tax-summary
+
+workflows_used:
+  - monthly-financial-close
+  - quarterly-review
+  - tax-deadline-prep
+
+communication:
+  channels:
+    - "#finance"
+    - "#strategic"
+  escalation: operator
+  notify_on:
+    - tax threshold >80%
+    - revenue ceiling >80%
+    - monthly expenses up >20% vs previous month
+    - tax declaration deadline <7 days
+
+context_memory:
+  read:
+    - .navig/config.yaml
+    - finance/invoices/
+    - finance/expenses/
+    - finance/tax/
+    - finance/reports/
+  write:
+    - finance/reports/
+    - finance/tax/
+    - reports/

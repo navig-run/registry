@@ -1,0 +1,52 @@
+name: monthly-empire-review
+description: |
+  Monthly comprehensive empire review. Full financial P&L, venture stage
+  progression, channel audit, decision review, and 3-month outlook.
+
+schedule:
+  cron: "0 9 1 * *"
+  timezone: "local"
+  enabled: true
+
+on_demand: true
+formation: portfolio-ops
+
+steps:
+  - id: revenue_pnl
+    name: "Monthly Revenue P&L"
+    agent: revenue-tracker
+    action: generate_monthly_pnl
+    on_error: continue
+
+  - id: stage_review
+    name: "Venture Stage Review"
+    agent: venture-scout
+    action: review_all_stages
+    params:
+      flag_stagnant_days: 90
+    on_error: continue
+
+  - id: channel_audit_run
+    name: "Channel Performance Audit"
+    skill: channel-audit
+    params:
+      venture: "all"
+    on_error: continue
+
+  - id: decision_review
+    name: "Open Decision Outcomes Review"
+    agent: portfolio-commander
+    action: review_pending_decisions
+    on_error: continue
+
+  - id: monthly_report
+    name: "Deliver Monthly Empire Report"
+    depends_on: [revenue_pnl, stage_review, channel_audit_run, decision_review]
+    agent: portfolio-commander
+    action: generate_monthly_report
+    params:
+      pnl: "{{steps.revenue_pnl.output}}"
+      stages: "{{steps.stage_review.output}}"
+      channels: "{{steps.channel_audit_run.output}}"
+      decisions: "{{steps.decision_review.output}}"
+      deliver_to: operator

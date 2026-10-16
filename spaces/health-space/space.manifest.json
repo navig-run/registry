@@ -1,0 +1,27 @@
+{
+  "space_id": "health-space",
+  "type": "human",
+  "name": "Health",
+  "owner": "navig-run",
+  "version": "1.0.0",
+  "created_at": "2026-03-02",
+  "description": "Physical and mental health tracking — metrics, protocols, logs, and routines.",
+  "paths": {
+    "docs": "docs",
+    "ops": "ops",
+    "inbox": "inbox",
+    "out": "out"
+  },
+  "meta": {
+    "tags": [
+      "health",
+      "fitness",
+      "mental-health",
+      "tracking",
+      "routines"
+    ]
+  },
+  "author": "navig-run",
+  "tier": "personal",
+  "status": "planned"
+}

@@ -1,0 +1,68 @@
+id: monthly-close
+name: Monthly Close
+version: "1.0.0"
+description: >
+  Complete end-of-month financial close. Run on the 1st–3rd of each month
+  to lock the prior month, produce all reports, and update goal progress.
+
+space: finance
+formation: monthly-review
+
+steps:
+  - step: 1
+    name: Import Transactions
+    agent: budget-analyst
+    description: Import all bank and credit card exports for the closed month
+    action: |
+      Place CSV exports in: transactions/{YYYY-MM}/
+      Supported format: date,description,amount,category,account,notes
+    manual: true
+    note: |
+      Download CSV exports from each financial institution before running step 2.
+
+  - step: 2
+    name: Categorize
+    agent: budget-analyst
+    skill: categorize-transaction
+    command: "@budget-analyst categorize --month {YYYY-MM}"
+    automated: true
+
+  - step: 3
+    name: Variance Report
+    agent: budget-analyst
+    skill: budget-variance
+    command: "@budget-analyst variance --month {YYYY-MM}"
+    automated: true
+    output: reports/{YYYY-MM}-variance.md
+
+  - step: 4
+    name: Cashflow Projection
+    agent: budget-analyst
+    skill: project-cashflow
+    command: "@budget-analyst pace --month current"
+    automated: true
+    output: reports/{YYYY-MM}-projection.md
+
+  - step: 5
+    name: Update Savings Goals
+    agent: savings-coach
+    command: "@savings-coach progress"
+    automated: true
+    output: reports/{YYYY-MM}-savings.md
+
+  - step: 6
+    name: Portfolio Snapshot
+    agent: investment-tracker
+    command: "@investment-tracker summary"
+    automated: true
+    output: reports/{YYYY-MM}-portfolio.md
+
+  - step: 7
+    name: Lock Month
+    agent: budget-analyst
+    description: Mark month as closed — no further edits to prior-month data
+    command: "@budget-analyst close --month {YYYY-MM}"
+    automated: true
+
+expected_duration: 15-30 minutes (mostly export download time)
+recommended_date: 1st–3rd of each month

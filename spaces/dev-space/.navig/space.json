@@ -1,0 +1,16 @@
+{
+  "id": "dev-space",
+  "name": "Dev Space",
+  "version": "1.0.0",
+  "tier": "work",
+  "status": "active",
+  "description": "Code authoring, userscript development, and browser extension engineering hub.",
+  "author": "navig-run",
+  "license": "MIT",
+  "agents": ["coder", "debugger", "reviewer", "scripter"],
+  "formations": ["dev-workflow", "review-cycle", "extension-build"],
+  "skills": ["code-lint", "run-tests", "scaffold-project", "publish-extension"],
+  "workflows": ["daily-standup", "code-review", "run-tests"],
+  "packages": [],
+  "subspaces": []
+}

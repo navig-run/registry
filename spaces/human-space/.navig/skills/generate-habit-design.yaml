@@ -1,0 +1,106 @@
+id: generate-habit-design
+name: Generate Habit Design
+version: "2.0.0"
+description: Design a new habit using the Atomic Habits framework — cue, craving, response, reward — with implementation intention and environment design tips.
+category: habits
+platform: [windows, linux, macos]
+formation: health-ops
+author: navig-run
+
+parameters:
+  - name: habit
+    description: "The habit you want to build (e.g., 'meditate 10 minutes')"
+    required: true
+  - name: frequency
+    description: "How often: daily | weekdays | 3x-week | weekly"
+    required: false
+    default: daily
+  - name: stack_after
+    description: "Existing habit to stack after (e.g., 'morning coffee')"
+    required: false
+  - name: difficulty
+    description: "Current difficulty: easy | moderate | hard"
+    required: false
+    default: moderate
+
+steps:
+  - name: design-habit
+    description: Generate structured habit design
+    env:
+      NAVIG_PARAM_HABIT: "{{habit}}"
+      NAVIG_PARAM_FREQUENCY: "{{frequency}}"
+      NAVIG_PARAM_STACK_AFTER: "{{stack_after}}"
+      NAVIG_PARAM_DIFFICULTY: "{{difficulty}}"
+    script: |
+      import os
+      habit = os.environ.get("NAVIG_PARAM_HABIT", "")
+      frequency = os.environ.get("NAVIG_PARAM_FREQUENCY", "") or "daily"
+      stack_after = os.environ.get("NAVIG_PARAM_STACK_AFTER", "")
+      difficulty = os.environ.get("NAVIG_PARAM_DIFFICULTY", "") or "moderate"
+
+      print(f"═══ HABIT DESIGN: {habit.upper()} ═══")
+      print()
+      print("1. IMPLEMENTATION INTENTION")
+      if stack_after:
+          print(f"   After I [{stack_after}], I will [{habit}].")
+      else:
+          print(f"   I will [{habit}] at [TIME] in [LOCATION].")
+      print(f"   Frequency: {frequency}")
+      print()
+
+      print("2. THE FOUR LAWS")
+      print(f"   CUE (make it obvious):")
+      if stack_after:
+          print(f"     → Stack after: {stack_after}")
+      print(f"     → Place a visual reminder where you'll see it")
+      print(f"   CRAVING (make it attractive):")
+      print(f"     → Pair with something you enjoy")
+      print(f"     → Join a community where the habit is normal")
+      print(f"   RESPONSE (make it easy):")
+      if difficulty == "hard":
+          print(f"     → Start with 2-minute version: do just the first step")
+          print(f"     → Reduce friction: prepare everything in advance")
+      elif difficulty == "moderate":
+          print(f"     → Reduce to a 5-minute commitment to start")
+          print(f"     → Remove one friction point from the process")
+      else:
+          print(f"     → Keep current form — already accessible")
+      print(f"   REWARD (make it satisfying):")
+      print(f"     → Track completion immediately (habit log)")
+      print(f"     → Use a visual streak tracker")
+      print()
+
+      print("3. ENVIRONMENT DESIGN")
+      print(f"   → Make cues for [{habit}] visible in your space")
+      print(f"   → Remove cues for competing bad habits")
+      print(f"   → Designate a specific location for this habit")
+      print()
+
+      print("4. RECOVERY PLAN")
+      print(f"   → Never miss twice in a row")
+      print(f"   → If you miss, do the 2-minute version")
+      print(f"   → Schedule a monthly habit portfolio review")
+      print()
+      print(f"Next: Add to your habit log with `log-health-metric` or `check-habit-streak`")
+    script_windows: |
+      $habit = "$env:NAVIG_PARAM_HABIT"
+      $frequency = $env:NAVIG_PARAM_FREQUENCY
+      if (-not $frequency) { $frequency = "daily" }
+      $stackAfter = $env:NAVIG_PARAM_STACK_AFTER
+      $difficulty = $env:NAVIG_PARAM_DIFFICULTY
+      if (-not $difficulty) { $difficulty = "moderate" }
+      Write-Host "=== HABIT DESIGN: $($habit.ToUpper()) ==="
+      Write-Host ""
+      Write-Host "1. IMPLEMENTATION INTENTION"
+      if ($stackAfter) { Write-Host "   After I [$stackAfter], I will [$habit]." }
+      else { Write-Host "   I will [$habit] at [TIME] in [LOCATION]." }
+      Write-Host "   Frequency: $frequency"
+      Write-Host ""
+      Write-Host "2. THE FOUR LAWS"
+      Write-Host "   CUE: Place a visual reminder; stack after existing habit"
+      Write-Host "   CRAVING: Pair with enjoyment; join a community"
+      Write-Host "   RESPONSE: Start with 2-min version; reduce friction"
+      Write-Host "   REWARD: Track immediately; visual streak"
+      Write-Host ""
+      Write-Host "3. ENVIRONMENT: Make cues visible, remove competing cues"
+      Write-Host "4. RECOVERY: Never miss twice; 2-min fallback; monthly review"

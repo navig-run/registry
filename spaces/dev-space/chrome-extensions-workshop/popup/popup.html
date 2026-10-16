@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starter Extension</title>
+  <!-- CSP: no unsafe-inline scripts. All JS loaded via external src. -->
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Starter Extension</h1>
+
+    <div class="status-row">
+      <span class="status-label">Status:</span>
+      <span id="status-badge" class="badge badge--loading">Loading…</span>
+    </div>
+
+    <button id="toggle-btn" class="btn" disabled>Toggle</button>
+
+    <p id="message" class="message"></p>
+  </div>
+
+  <!-- No inline scripts — MV3 CSP forbids them -->
+  <script src="popup.js" defer></script>
+</body>
+</html>

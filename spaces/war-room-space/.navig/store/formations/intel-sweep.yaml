@@ -1,0 +1,36 @@
+id: intel-sweep
+name: Intel Sweep
+version: "1.0.0"
+description: >
+  Intelligence collection and analysis formation. Intelligence Officer leads.
+  Processes raw signals, updates adversary dossiers, and surfaces patterns.
+
+agents:
+  lead: intelligence-officer
+  supporting: [strategist]
+
+trigger_conditions:
+  - "New intel signal logged"
+  - "Adversary activity detected"
+  - "Periodic intel sweep workflow"
+  - "Manual: activate the intel-sweep formation"
+
+action_scope:
+  - ALLOW: log-intel
+  - ALLOW: write to .navig/memory/intel-log.json
+  - ALLOW: write to .navig/memory/adversaries.json
+  - DENY: any action beyond intel logging
+
+skills_used:
+  - log-intel
+
+communication:
+  inbox_channel: "#intel"
+  escalation: strategist
+  notify_on:
+    - high_threat_signal_logged
+    - new_adversary_created
+
+context_memory:
+  read: [intel-log.json, adversaries.json]
+  write: [intel-log.json, adversaries.json]

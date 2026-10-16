@@ -1,0 +1,121 @@
+id: check-brand-voice
+name: Check Brand Voice
+version: "1.0.0"
+description: >
+  Evaluate a draft post against the brand's voice.json rules and produce a
+  numeric voice consistency score (1-10) with specific, actionable feedback.
+  Updates the draft frontmatter with voice_score and review notes.
+category: brand
+platform: [windows, linux, macos]
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: brand
+    description: Brand slug
+    required: true
+  - name: draft_file
+    description: Draft filename in content/drafts/{brand}/
+    required: true
+
+steps:
+  - name: load-voice-and-draft
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_DRAFT_FILE: "{{draft_file}}"
+    description: Load brand voice rules and draft text
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      draft_file = os.environ.get("NAVIG_PARAM_DRAFT_FILE", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+      if not draft_file or pathlib.Path(draft_file).name != draft_file:
+          sys.exit(f"Invalid draft file name {draft_file!r} - give a file name, not a path")
+
+      import json, pathlib, sys, re
+
+      voice_path = pathlib.Path("brands") / brand / "voice.json"
+      draft_path = pathlib.Path("content") / "drafts" / brand / draft_file
+
+      if not voice_path.exists():
+          print(f"ERROR: brands/{brand}/voice.json not found")
+          sys.exit(1)
+      if not draft_path.exists():
+          print(f"ERROR: Draft not found: {draft_path}")
+          sys.exit(1)
+
+      voice = json.loads(voice_path.read_text())
+      draft = draft_path.read_text()
+
+      # Extract body (text below frontmatter)
+      parts = draft.split("---", 2)
+      body = parts[2] if len(parts) >= 3 else draft
+      body_clean = re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL).strip()
+
+      print(f"\n{'='*55}")
+      print(f"  Voice Check — {draft_path.name}")
+      print(f"{'='*55}")
+      print(f"\n[Brand]: {brand}")
+      print(f"[Personality]: {voice.get('personality','?')}")
+      print(f"[Tone]: {voice.get('tone','?')}")
+      print(f"[Avoid]: {', '.join(voice.get('avoid', []))}")
+      print(f"\n[Draft preview]:\n{body_clean[:400]}...")
+
+      # Rule-based scoring
+      issues = []
+      score = 10
+
+      forbidden = voice.get("avoid", [])
+      for word in forbidden:
+          if word.lower() in body_clean.lower():
+              issues.append(f"Contains forbidden term/phrase: '{word}'")
+              score -= 2
+
+      # Check length hint
+      min_len = voice.get("min_body_chars", 50)
+      if len(body_clean) < min_len:
+          issues.append(f"Body too short ({len(body_clean)} chars). Brand expects ≥{min_len}.")
+          score -= 1
+
+      # Vocabulary checks
+      required_vibe = voice.get("must_feel", [])
+      for vibe in required_vibe:
+          if vibe.lower() not in body_clean.lower():
+              issues.append(f"Missing required vibe/keyword: '{vibe}'")
+              score -= 0.5
+
+      score = max(1, round(score))
+
+      print(f"\n[Voice Score]: {score}/10")
+      if issues:
+          print("\n[Issues]:")
+          for i, issue in enumerate(issues, 1):
+              print(f"  {i}. {issue}")
+      else:
+          print("\n[Issues]: None — voice is consistent")
+
+      verdict = "APPROVED" if score >= 7 else ("NEEDS REVISION" if score >= 5 else "REJECTED — rewrite required")
+      print(f"\n[Verdict]: {verdict}")
+      print(f"{'='*55}\n")
+
+      # Write score back to frontmatter
+      new_status = "approved" if score >= 7 else "draft"
+      draft_updated = draft
+      draft_updated = re.sub(r"voice_score: .*", f"voice_score: {score}", draft_updated)
+      draft_updated = re.sub(r"status: draft", f"status: {new_status}", draft_updated)
+      draft_path.write_text(draft_updated)
+
+      if score < 7:
+          sys.exit(1)
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $voicePath = "brands\$($env:NAVIG_PARAM_BRAND)\voice.json"
+      $draftPath = "content\drafts\$($env:NAVIG_PARAM_BRAND)\$($env:NAVIG_PARAM_DRAFT_FILE)"
+      if (-not (Test-Path $voicePath)) { Write-Error "voice.json not found"; exit 1 }
+      if (-not (Test-Path $draftPath)) { Write-Error "Draft not found"; exit 1 }
+      $voice = Get-Content $voicePath | ConvertFrom-Json
+      $draft = Get-Content $draftPath -Raw
+      Write-Host "Voice Check for $($env:NAVIG_PARAM_DRAFT_FILE)"
+      Write-Host "Brand: $($env:NAVIG_PARAM_BRAND) | Personality: $($voice.personality)"
+      Write-Host "Review draft manually against voice rules in $voicePath"

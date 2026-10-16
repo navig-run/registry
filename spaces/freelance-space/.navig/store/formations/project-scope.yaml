@@ -1,0 +1,36 @@
+id: project-scope
+name: Project Scope
+version: "1.0.0"
+description: >
+  Formation for project scoping, milestone management, and scope-creep
+  monitoring. Account Manager leads with Strategist providing budget-vs-actual
+  analysis.
+
+agents:
+  lead: account-manager
+  supporting: [strategist]
+
+trigger_conditions:
+  - "New project added"
+  - "Project milestone marked complete"
+  - "Project budget utilization > 80%"
+  - "Manual: activate the project-scope formation"
+
+action_scope:
+  - ALLOW: write to .navig/memory/projects.json
+  - ALLOW: read time-log.json to compare against budget
+  - DENY: modify invoice or time records
+
+workflows_used:
+  - monthly-strategy-review
+
+communication:
+  inbox_channel: "#clients"
+  escalation: operator
+  notify_on:
+    - project_budget_80pct_utilized
+    - project_past_deadline
+
+context_memory:
+  read: [projects.json, time-log.json, clients.json, rates.json]
+  write: [projects.json]

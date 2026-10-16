@@ -1,0 +1,135 @@
+id: schedule-post
+name: Schedule Post
+version: "1.0.0"
+description: >
+  Move an approved draft from content/drafts/ to content/scheduled/ with a
+  confirmed datetime and platform. Validates no slot conflict exists within
+  ±30 minutes. Respects optimal posting times from space-context.json.
+category: scheduling
+platform: [windows, linux, macos]
+formation: content-pipeline
+author: navig-run
+
+parameters:
+  - name: brand
+    description: Brand slug
+    required: true
+  - name: draft_file
+    description: Filename of the approved draft in content/drafts/{brand}/
+    required: true
+  - name: schedule_at
+    description: "ISO 8601 datetime e.g. 2026-03-20T09:00:00Z"
+    required: true
+  - name: platform
+    description: "Confirm platform (must match draft frontmatter)"
+    required: true
+
+steps:
+  - name: validate-draft
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_DRAFT_FILE: "{{draft_file}}"
+    description: Check draft exists and status is approved
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      draft_file = os.environ.get("NAVIG_PARAM_DRAFT_FILE", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+      if not draft_file or pathlib.Path(draft_file).name != draft_file:
+          sys.exit(f"Invalid draft file name {draft_file!r} - give a file name, not a path")
+
+      import pathlib, sys, re
+      draft_path = pathlib.Path("content") / "drafts" / brand / draft_file
+      if not draft_path.exists():
+          print(f"ERROR: Draft not found: {draft_path}")
+          sys.exit(1)
+      text = draft_path.read_text()
+      if "status: approved" not in text:
+          print(f"ERROR: Draft status is not 'approved'. Have brand-guardian review first.")
+          print(f"  Run: @brand-guardian review --brand {brand} --draft {draft_file}")
+          sys.exit(1)
+      print("Draft validated — status: approved")
+    script_windows: |
+      if ($env:NAVIG_PARAM_BRAND -notmatch '^[a-z0-9][a-z0-9_-]*$') { Write-Error "Invalid brand slug"; exit 1 }
+      $p = "content\drafts\$($env:NAVIG_PARAM_BRAND)\$($env:NAVIG_PARAM_DRAFT_FILE)"
+      if (-not (Test-Path $p)) { Write-Error "Draft not found: $p"; exit 1 }
+      $text = Get-Content $p -Raw
+      if ($text -notmatch "status: approved") {
+          Write-Error "Draft not approved. Run: @brand-guardian review --brand $($env:NAVIG_PARAM_BRAND) --draft $($env:NAVIG_PARAM_DRAFT_FILE)"
+          exit 1
+      }
+      Write-Host "Draft validated."
+
+  - name: check-conflict
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_SCHEDULE_AT: "{{schedule_at}}"
+      NAVIG_PARAM_PLATFORM: "{{platform}}"
+    description: Validate no post is already scheduled within ±30 minutes for this brand+platform
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      schedule_at = os.environ.get("NAVIG_PARAM_SCHEDULE_AT", "").strip()
+      platform = os.environ.get("NAVIG_PARAM_PLATFORM", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+
+      import pathlib, json, datetime
+      sched_dir = pathlib.Path("content") / "scheduled" / brand
+      target = datetime.datetime.fromisoformat(schedule_at.replace("Z", "+00:00"))
+      if sched_dir.exists():
+          for f in sched_dir.glob(f"*-{platform}-*.json"):
+              try:
+                  existing = json.loads(f.read_text())
+                  existing_dt = datetime.datetime.fromisoformat(existing.get("scheduled_at","").replace("Z","+00:00"))
+                  delta = abs((target - existing_dt).total_seconds())
+                  if delta < 1800:
+                      print(f"WARNING: Slot conflict with {f.name} ({existing_dt.isoformat()}). Choose a different time.")
+                      import sys; sys.exit(1)
+              except Exception:
+                  pass
+      print("No slot conflicts. Proceeding.")
+    depends_on: validate-draft
+
+  - name: move-to-scheduled
+    env:
+      NAVIG_PARAM_BRAND: "{{brand}}"
+      NAVIG_PARAM_DRAFT_FILE: "{{draft_file}}"
+      NAVIG_PARAM_SCHEDULE_AT: "{{schedule_at}}"
+      NAVIG_PARAM_PLATFORM: "{{platform}}"
+    description: Write scheduled queue item JSON
+    script: |
+      import os, pathlib, re, sys
+      brand = os.environ.get("NAVIG_PARAM_BRAND", "").strip()
+      draft_file = os.environ.get("NAVIG_PARAM_DRAFT_FILE", "").strip()
+      schedule_at = os.environ.get("NAVIG_PARAM_SCHEDULE_AT", "").strip()
+      platform = os.environ.get("NAVIG_PARAM_PLATFORM", "").strip()
+      if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", brand):
+          sys.exit(f"Invalid brand slug {brand!r} - use lowercase letters, digits, - and _")
+      if not draft_file or pathlib.Path(draft_file).name != draft_file:
+          sys.exit(f"Invalid draft file name {draft_file!r} - give a file name, not a path")
+
+      import pathlib, json, datetime, shutil, re
+      draft_path = pathlib.Path("content") / "drafts" / brand / draft_file
+      text = draft_path.read_text()
+      slug = re.sub(r"[^a-z0-9]+", "-", draft_file.replace(".md","").lower())
+      ts = schedule_at.replace(":","").replace("-","").split(".")[0].replace("Z","")
+      sched_dir = pathlib.Path("content") / "scheduled" / brand
+      sched_dir.mkdir(parents=True, exist_ok=True)
+      item = {
+          "brand": brand,
+          "platform": platform,
+          "draft_file": draft_file,
+          "scheduled_at": schedule_at,
+          "status": "scheduled",
+          "created_at": datetime.datetime.utcnow().isoformat() + "Z"
+      }
+      out = sched_dir / f"{ts}-{platform}-{slug}.json"
+      out.write_text(json.dumps(item, indent=2))
+      # Update draft status
+      text = text.replace("status: approved", "status: scheduled")
+      draft_path.write_text(text)
+      print(f"Scheduled: {out.name}")
+      print(f"  Brand: {brand} | Platform: {platform} | Time: {schedule_at}")
+    depends_on: check-conflict

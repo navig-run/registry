@@ -1,0 +1,109 @@
+id: esphome
+name: esphome
+version: "1.0.0"
+description: >
+  Wraps the ESPHome CLI as a NAVIG tool. Provides config compilation, serial and OTA
+  flashing, log streaming, and version reporting for ESP8266/ESP32 devices. ESPHome is
+  a Python package installed via pip on every platform.
+author: navig-run
+navig_min_version: "2.0.0"
+category: firmware
+formation: firmware-fleet
+
+install:
+  windows:
+    method: pip
+    package: esphome
+    version: "2024.6"
+    bin_path: "esphome"
+    post_install: |
+      # esphome installs into the active Python environment's Scripts dir
+      Write-Output "Ensure the Python Scripts directory is on PATH: py -m pip show esphome"
+  linux:
+    method: pip
+    package: esphome
+    pipx: esphome
+  macos:
+    method: pip
+    package: esphome
+    brew: esphome
+
+discovery:
+  type: static
+  refresh_on_start: false
+
+tools:
+  - id: esphome
+    name: esphome
+    description: Compile, flash, and stream logs for ESPHome devices
+    category: firmware
+    icon: 🔩
+    platform: [windows, linux, macos]
+    requires_elevation: false
+    bin_windows: esphome
+    bin_linux: esphome
+    bin_macos: esphome
+
+    commands:
+      - name: version
+        description: "Print the installed ESPHome version"
+        shell_windows: 'esphome version'
+        shell_linux: 'esphome version'
+        shell_macos: 'esphome version'
+        args: {}
+
+      - name: compile
+        description: "Compile a device YAML config into firmware"
+        shell_windows: 'esphome compile "{config}"'
+        shell_linux: 'esphome compile "{config}"'
+        shell_macos: 'esphome compile "{config}"'
+        args:
+          config: { type: path, required: true, description: "Path to the device .yaml config" }
+
+      - name: run
+        description: "Compile and upload (OTA or serial) to a device"
+        shell_windows: 'esphome run "{config}" --device {device}'
+        shell_linux: 'esphome run "{config}" --device {device}'
+        shell_macos: 'esphome run "{config}" --device {device}'
+        args:
+          config: { type: path, required: true }
+          device: { type: string, required: false, default: "OTA", description: "IP/hostname for OTA, or serial port" }
+
+      - name: logs
+        description: "Stream live logs from a device"
+        shell_windows: 'esphome logs "{config}" --device {device}'
+        shell_linux: 'esphome logs "{config}" --device {device}'
+        shell_macos: 'esphome logs "{config}" --device {device}'
+        args:
+          config: { type: path, required: true }
+          device: { type: string, required: false, default: "OTA" }
+
+      - name: upload
+        description: "Upload already-compiled firmware to a device"
+        shell_windows: 'esphome upload "{config}" --device {device}'
+        shell_linux: 'esphome upload "{config}" --device {device}'
+        shell_macos: 'esphome upload "{config}" --device {device}'
+        args:
+          config: { type: path, required: true }
+          device: { type: string, required: false, default: "OTA" }
+
+notes:
+  - "ESPHome is a Python package — install with 'pip install esphome' (or pipx); needs Python 3.9+"
+  - "First flash must be over serial; subsequent flashes can be OTA once the device is on the network"
+  - "Each device has its own .yaml config — keep them under the space (e.g. esphome/ dir)"
+  - "OTA requires the device's ota password; store it in the space vault, never in the config committed to git"
+  - "Use 'esphome logs' to confirm a device rejoined Wi-Fi and MQTT after an OTA"
+
+examples:
+  - description: "Show the ESPHome version"
+    command: "esphome version"
+  - description: "OTA-update a sensor from its config"
+    command: "esphome run sensor-hall.yaml --device sensor-hall.local"
+  - description: "Stream logs from a device"
+    command: "esphome logs plug-office.yaml --device 192.168.20.31"
+  - description: "Through the space's skills"
+    command: "navig skill run ota-update"
+
+# Changelog
+# - 2026-07-10: created — wraps ESPHome 2024.6 CLI for the NAVIG iot space;
+#               version/compile/run/logs/upload commands for ESP firmware management
