@@ -1,16 +1,16 @@
 {
   "version": "0.1",
-  "updated": "2026-10-16",
+  "updated": "2026-10-17",
   "generated_by": "scripts/gen_plugin_registry.py",
   "description": "Index of first-party NAVIG plugins. Each extends navig (`navig <verb>`) and some also run standalone. They install from their NATIVE channel (pip / npm), not via `navig plugin add`, which git-clones and cannot install a pip or npm distribution. `published` and `released` reflect the real index at generation time: `released` is the version an install delivers, `version` is the in-repo manifest (which can run ahead of a release). An entry with published=false carries no install command on purpose.",
-  "total": 34,
-  "published": 29,
+  "total": 35,
+  "published": 31,
   "plugins": [
     {
       "id": "agentctl",
       "package": "navig-agentctl",
       "channel": "pip",
-      "version": "0.3.0",
+      "version": "0.4.2",
       "released": "0.2.0",
       "published": true,
       "install": "pip install navig-agentctl",
@@ -19,7 +19,7 @@
         "agentctl"
       ],
       "scripts": [],
-      "summary": "Agent Control Center (devops section): sessions, worktrees & tasks — one read-only view, then a controller."
+      "summary": "Agent Control Center (devops section): sessions, worktrees, tasks and the Agent Monitor (runs, hooks, verified lands) — one view, then a controller."
     },
     {
       "id": "antivirus",
@@ -42,7 +42,7 @@
       "id": "audio",
       "package": "navig-audio",
       "channel": "pip",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "released": "0.3.0",
       "published": true,
       "install": "pip install navig-audio",
@@ -146,7 +146,9 @@
       "package": "navig-chats",
       "channel": "pip",
       "version": "0.1.0",
-      "published": false,
+      "released": "0.1.0",
+      "published": true,
+      "install": "pip install navig-chats",
       "standalone": true,
       "commands": [
         "chats"
@@ -319,8 +321,8 @@
       "id": "generate",
       "package": "navig-generate",
       "channel": "pip",
-      "version": "0.3.0",
-      "released": "0.2.1",
+      "version": "0.4.0",
+      "released": "0.4.0",
       "published": true,
       "install": "pip install navig-generate",
       "standalone": true,
@@ -351,7 +353,7 @@
       "id": "media",
       "package": "navig-media",
       "channel": "pip",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "published": false,
       "standalone": true,
       "commands": [],
@@ -364,8 +366,8 @@
       "id": "media-core",
       "package": "navig-media-core",
       "channel": "pip",
-      "version": "0.1.1",
-      "released": "0.1.0",
+      "version": "0.2.0",
+      "released": "0.2.0",
       "published": true,
       "install": "pip install navig-media-core",
       "standalone": false,
@@ -444,6 +446,21 @@
       "summary": "navig mstore -- Microsoft Store publishing verbs for NAVIG, wrapping the msstore-publish block."
     },
     {
+      "id": "notes",
+      "package": "navig-notes",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "notes"
+      ],
+      "scripts": [
+        "navig-notes"
+      ],
+      "summary": "navig notes -- your web sticky notes on this computer: the NAVIG Dock syncs every note you keep on a page, a site or everywhere, so you can list, search, add and export them from the command line, and NAVIG's Recall can find them (never sent to an AI unless you allow it)."
+    },
+    {
       "id": "obs",
       "package": "navig-obs",
       "channel": "pip",
@@ -479,15 +496,17 @@
       "id": "pipeline",
       "package": "navig-pipeline",
       "channel": "pip",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "released": "0.2.2",
       "published": true,
       "install": "pip install navig-pipeline",
       "standalone": true,
       "commands": [
+        "content",
         "pipeline"
       ],
       "scripts": [
+        "navig-content",
         "navig-pipeline"
       ],
       "summary": "The content assembly line: short vertical clips cut to the beat, narrated reels, captions and hooks, and download → transcribe → script → narrate → fan-out — its own navig-pipeline command, with your own keys; also `navig pipeline` inside navig."
@@ -515,7 +534,7 @@
       "id": "text",
       "package": "navig-text",
       "channel": "pip",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "released": "0.4.0",
       "published": true,
       "install": "pip install navig-text",
@@ -534,7 +553,7 @@
       "package": "navig-vault",
       "channel": "pip",
       "version": "0.11.0",
-      "released": "0.10.0",
+      "released": "0.11.0",
       "published": true,
       "install": "pip install navig-vault",
       "standalone": true,
@@ -549,7 +568,7 @@
       "id": "video",
       "package": "navig-video",
       "channel": "pip",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "released": "0.2.2",
       "published": true,
       "install": "pip install navig-video",
@@ -567,7 +586,9 @@
       "package": "navig-vm",
       "channel": "pip",
       "version": "0.1.0",
-      "published": false,
+      "released": "0.1.0",
+      "published": true,
+      "install": "pip install navig-vm",
       "standalone": true,
       "commands": [
         "vm"

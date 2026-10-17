@@ -46,7 +46,7 @@ space_json:
 
   # ── Real nested spaces (not logical links) ────────────────────────────────
   subspaces:
-    type: array[{ id: string, path: string, description: string }]
+    type: "array[{ id: string, path: string, description: string }]"
     # Folders inside this space that are spaces themselves, e.g. { path: "spaces/ops" }.
     # A relationship between two independent spaces is NOT a subspace.
 
