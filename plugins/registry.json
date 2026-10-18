@@ -1,9 +1,9 @@
 {
   "version": "0.1",
-  "updated": "2026-10-17",
+  "updated": "2026-10-18",
   "generated_by": "scripts/gen_plugin_registry.py",
   "description": "Index of first-party NAVIG plugins. Each extends navig (`navig <verb>`) and some also run standalone. They install from their NATIVE channel (pip / npm), not via `navig plugin add`, which git-clones and cannot install a pip or npm distribution. `published` and `released` reflect the real index at generation time: `released` is the version an install delivers, `version` is the in-repo manifest (which can run ahead of a release). An entry with published=false carries no install command on purpose.",
-  "total": 35,
+  "total": 39,
   "published": 31,
   "plugins": [
     {
@@ -20,6 +20,17 @@
       ],
       "scripts": [],
       "summary": "Agent Control Center (devops section): sessions, worktrees, tasks and the Agent Monitor (runs, hooks, verified lands) — one view, then a controller."
+    },
+    {
+      "id": "ahk",
+      "package": "navig-ahk",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": false,
+      "commands": [],
+      "scripts": [],
+      "summary": "AutoHotkey v2 automation for navig — click, type, open, windows and AI-written scripts, as its own plugin."
     },
     {
       "id": "antivirus",
@@ -59,7 +70,7 @@
       "id": "blackbox",
       "package": "navig-blackbox",
       "channel": "pip",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "released": "0.1.1",
       "published": true,
       "install": "pip install navig-blackbox",
@@ -110,7 +121,7 @@
       "id": "cabinet",
       "package": "navig-cabinet",
       "channel": "pip",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "released": "0.3.0",
       "published": true,
       "install": "pip install navig-cabinet",
@@ -128,7 +139,7 @@
       "id": "calendar",
       "package": "navig-calendar",
       "channel": "pip",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "released": "0.2.0",
       "published": true,
       "install": "pip install navig-calendar",
@@ -180,7 +191,7 @@
       "id": "dedupe",
       "package": "navig-dedupe",
       "channel": "pip",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "released": "0.1.1",
       "published": true,
       "install": "pip install navig-dedupe",
@@ -232,7 +243,7 @@
       "id": "download",
       "package": "navig-download",
       "channel": "pip",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "released": "0.3.0",
       "published": true,
       "install": "pip install navig-download",
@@ -252,7 +263,7 @@
       "id": "ebay",
       "package": "navig-ebay",
       "channel": "pip",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "released": "0.2.0",
       "published": true,
       "install": "pip install navig-ebay",
@@ -286,7 +297,7 @@
       "id": "explore",
       "package": "navig-explore",
       "channel": "pip",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "released": "0.2.0",
       "published": true,
       "install": "pip install navig-explore",
@@ -321,7 +332,7 @@
       "id": "generate",
       "package": "navig-generate",
       "channel": "pip",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "released": "0.4.0",
       "published": true,
       "install": "pip install navig-generate",
@@ -336,7 +347,7 @@
       "id": "github",
       "package": "navig-github",
       "channel": "pip",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "released": "0.3.0",
       "published": true,
       "install": "pip install navig-github",
@@ -348,6 +359,17 @@
         "navig-github"
       ],
       "summary": "The full GitHub toolbox (backup, mirror, export, manage): its own navig-github command, and `navig github` inside navig."
+    },
+    {
+      "id": "matrix",
+      "package": "navig-matrix",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": false,
+      "commands": [],
+      "scripts": [],
+      "summary": "Matrix messaging surface for navig — rooms, invites, tokens, admin and the inbox bridge, as its own plugin."
     },
     {
       "id": "media",
@@ -395,7 +417,7 @@
       "id": "mini",
       "package": "navig-mini",
       "channel": "pip",
-      "version": "1.1.3",
+      "version": "1.1.4",
       "released": "1.1.3",
       "published": true,
       "install": "pip install navig-mini",
@@ -432,7 +454,7 @@
       "id": "msstore",
       "package": "navig-msstore",
       "channel": "pip",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "released": "0.7.0",
       "published": true,
       "install": "pip install navig-msstore",
@@ -449,7 +471,7 @@
       "id": "notes",
       "package": "navig-notes",
       "channel": "pip",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "published": false,
       "standalone": true,
       "commands": [
@@ -512,10 +534,25 @@
       "summary": "The content assembly line: short vertical clips cut to the beat, narrated reels, captions and hooks, and download → transcribe → script → narrate → fan-out — its own navig-pipeline command, with your own keys; also `navig pipeline` inside navig."
     },
     {
+      "id": "recap",
+      "package": "navig-recap",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": true,
+      "commands": [
+        "recap"
+      ],
+      "scripts": [
+        "navig-recap"
+      ],
+      "summary": "Visual recap of a work session: timeline, tool mix, mind map, files and UI mockups rendered to one navigable HTML report, with PNG exports."
+    },
+    {
       "id": "social",
       "package": "navig-social",
       "channel": "pip",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "released": "0.2.1",
       "published": true,
       "install": "pip install navig-social",
@@ -529,6 +566,17 @@
         "navig-social"
       ],
       "summary": "NAVIG Social module — compose, schedule & publish across social networks (Studio + one-call fan-out). A first-party navig plugin (free, toggleable)."
+    },
+    {
+      "id": "telegram",
+      "package": "navig-telegram",
+      "channel": "pip",
+      "version": "0.1.0",
+      "published": false,
+      "standalone": false,
+      "commands": [],
+      "scripts": [],
+      "summary": "Telegram surface for navig — bot management, sessions, status and the MTProto user-account verbs, as its own plugin."
     },
     {
       "id": "text",
@@ -585,7 +633,7 @@
       "id": "vm",
       "package": "navig-vm",
       "channel": "pip",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "released": "0.1.0",
       "published": true,
       "install": "pip install navig-vm",
